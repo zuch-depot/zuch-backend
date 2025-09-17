@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -32,20 +32,32 @@ func main() {
 	// hier den Server starten
 	go startServer()
 
-	//every Tick
-	for {
-		//Speichern, welche Tiles am Ende des Threads entblocked werden muss
+	//Zeit pro Tick bestimmen
+	tickTime, err := strconv.ParseInt(os.Getenv("TICKTIMEMILISEC"), 10, 64)
+	if err != nil {
+		panic(err) //anderes Log?
+	}
 
+	//jeder Tick
+	for {
 		start := time.Now()
 
-		time.Sleep(10 * time.Millisecond)
-		fmt.Println("ich bin in main", <-userInputs)
-		remainingTime := time.Since(start) //zielzeit muss noch eingerechnet werden -> sollte in config
+		//Speichern, welche Tiles am Ende des Threads entblocked werden muss
 
-		if remainingTime.Milliseconds() < 1 {
-			//logging, dass der Server hin
+		//Client Inputs
+
+		//Train move
+
+		//process factorys
+
+		//load/unload
+
+		//syncen, dass jeder Tick nur 1 mal
+		remainingTime := tickTime - time.Since(start).Abs().Milliseconds()
+		if remainingTime < 1 {
+			//logging, dass der Server hinterher hinkt
 		} else {
-			time.Sleep(time.Duration(remainingTime.Nanoseconds()))
+			time.Sleep(time.Duration(remainingTime * 1000))
 		}
 	}
 }
