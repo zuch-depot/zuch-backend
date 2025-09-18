@@ -2,8 +2,8 @@ package main
 
 // --------------------------------------------------
 type Tile struct {
-	tracks      []bool
-	signals     []bool
+	tracks      [4]bool
+	signals     [4]bool
 	isPlattform bool
 	isBlocked   bool
 }
