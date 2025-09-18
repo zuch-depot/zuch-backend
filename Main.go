@@ -1,12 +1,13 @@
 package main
 
 import (
-	"log"
+	"log/slog"
 	"os"
 	"strconv"
 	"time"
 
 	"github.com/joho/godotenv"
+	"github.com/telemachus/humane"
 )
 
 var (
@@ -16,7 +17,7 @@ var (
 	tiles     [][]Tile
 	trains    []Train
 )
-var logger = log.New(os.Stdout, "Server:", log.LstdFlags)
+var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true}))
 var userInputs = make(chan UserInput, 300) //Queue, die die UserInputs bis zum Start des nächsten Ticks speichert
 
 func main() {
@@ -36,7 +37,7 @@ func main() {
 	//Zeit pro Tick bestimmen
 	tickTime, err := strconv.ParseInt(os.Getenv("TICKTIMEMILISEC"), 10, 64)
 	if err != nil {
-		panic(err) //anderes Log?
+		logger.Error("Failed to convert Ticktime to Int", slog.String("Error", err.Error())) //anderes Log?// Panic beendet das programm :(
 	}
 
 	//jeder Tick
