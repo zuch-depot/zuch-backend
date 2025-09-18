@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 
@@ -31,13 +31,13 @@ func startServer() {
 
 	http.HandleFunc("/ws", acceptNewClient)
 
-	log.Fatal(http.ListenAndServe("localhost:"+os.Getenv("PORT"), nil))
+	logger.Error("error running Webserver", slog.String("Error", http.ListenAndServe("localhost:"+os.Getenv("PORT"), nil).Error()))
 
 }
 
 func acceptNewClient(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
-	for k, _ := range playerConnections {
+	for k := range playerConnections {
 		if k == username {
 			w.WriteHeader(423)
 			return
@@ -46,14 +46,14 @@ func acceptNewClient(w http.ResponseWriter, r *http.Request) {
 
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		logger.Println("Failed to Upgrade connection")
+		logger.Error("Failed to Upgrade connection")
 	}
 
 	//Überprüfung, ob username doppelt ist
 
 	users = append(users, User{username: username, isConnected: true})
 
-	logger.Println("Accepted new Client, with username " + username)
+	logger.Info("Accepted new Client, with username ", slog.String("Username", username))
 
 	playerConnections[username] = conn //kan man das auch mit der []users verbinden?
 
@@ -66,7 +66,7 @@ func checkForClientInput(username string, conn *websocket.Conn) {
 		var v UserInput
 		err := conn.ReadJSON(&v)
 		if err != nil {
-			log.Println(username+"; Error while checking for input", err) //logger or log?
+			logger.Warn(username+": Error while checking for input", slog.String("Error", err.Error())) //logger or log?
 		}
 
 		v.username = username

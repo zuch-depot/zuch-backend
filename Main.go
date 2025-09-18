@@ -1,13 +1,13 @@
 package main
 
 import (
-	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"strconv"
 	"time"
 
 	"github.com/joho/godotenv"
+	"github.com/telemachus/humane"
 )
 
 var (
@@ -17,7 +17,7 @@ var (
 	tiles     [][]Tile
 	trains    []Train
 )
-var logger = log.New(os.Stdout, "Server:", log.LstdFlags)
+var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true}))
 var userInputs = make(chan UserInput, 300) //Queue, die die UserInputs bis zum Start des nächsten Ticks speichert
 
 func main() {
@@ -36,7 +36,7 @@ func main() {
 	//Zeit pro Tick bestimmen
 	tickTime, err := strconv.ParseInt(os.Getenv("TICKTIMEMILISEC"), 10, 64)
 	if err != nil {
-		panic(err) //anderes Log?
+		logger.Error("Failed to convert Ticktime to Int", slog.String("Error", err.Error())) //anderes Log?// Panic beendet das programm :(
 	}
 
 	//jeder Tick
@@ -85,12 +85,12 @@ func initializeTiles() {
 	//Map Größe aus config laden
 	sizeX, err := strconv.ParseInt(os.Getenv("XSIZE"), 10, 64)
 	if err != nil {
-		log.Println("Error while loading Size of Map in the x dimension", err)
+		logger.Error("Error while loading Size of Map in the x dimension", err)
 	}
 
 	sizeY, err := strconv.ParseInt(os.Getenv("YSIZE"), 10, 64)
 	if err != nil {
-		log.Println("Error while loading Size of Map in the y dimension", err)
+		logger.Error("Error while loading Size of Map in the y dimension", err)
 	}
 
 	//initalising 2d slice
@@ -107,5 +107,5 @@ func initializeTiles() {
 		}
 	}
 
-	fmt.Println("Tiles initialised with a Map size of", sizeX, sizeY)
+	logger.Info("Tiles initialised new Map", slog.Int("SizeX", int(sizeX)), slog.Int("SizeY", int(sizeY)))
 }
