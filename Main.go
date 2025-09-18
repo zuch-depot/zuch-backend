@@ -28,6 +28,7 @@ func main() {
 	// Map erstellen
 	initializeTiles()
 	createTrains()
+	trains[0].recalculatePath()
 	// sich merken wer wer ist
 	// wenn wer rausfliegt sollten die sachen noch da sein
 
@@ -64,7 +65,7 @@ func main() {
 
 		//anzeigen Testing
 		if tick%500 == 0 {
-			printMap()
+			//printMap()
 		}
 
 		//syncen, dass jeder Tick nur 1 mal

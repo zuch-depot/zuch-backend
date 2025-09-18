@@ -13,11 +13,11 @@ var (
 	testMap = []string{
 		/*
 		 0.1.2.3.4.5.6.7.8.9*/
-		"-.-.-.-.+.-.-.-.-.-", //0
-		" . . . .|. . . . . ", //1
-		" . . . .|. . . . . ", //2
-		" . . . .|. . . . . ", //3
-		" .-.-.-.+.-.+. . . ", //4
+		"-.+.-.-.+.-.-.-.-.-", //0
+		" .|. . .+.+. . . . ", //1
+		" . . . . .+.+. . . ", //2
+		" .|. . . . .|. . . ", //3
+		" .+.-.-.+.-.+. . . ", //4
 		" . . . .|. .|. . . ", //5
 		" . . . .|. .|. . . ", //6
 		" . .-.-.+.-.+.-.-. ", //7
@@ -70,7 +70,7 @@ func initializeTiles() {
 // nur fürs Testen
 func createTrains() {
 	//Zug eins
-	trains = append(trains, Train{tilePosition: [3]int{1, 0, 3}, tileGoal: [3]int{4, 4, 4}})
+	trains = append(trains, Train{position: [3]int{1, 0, 3}, goal: [3]int{4, 4, 4}})
 }
 
 // nur fürs Testen
@@ -104,7 +104,7 @@ func printMap() {
 
 func isTrainAt(x int, y int) (bool, int) {
 	for i := range trains {
-		pos := trains[i].tilePosition
+		pos := trains[i].position
 		if pos[0] == x && pos[1] == y {
 			return true, pos[2]
 		}
