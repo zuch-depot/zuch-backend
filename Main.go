@@ -27,6 +27,7 @@ func main() {
 	// beim ersten start (eventuell probieren Dateien einzulesen) sonst defaults setzen
 	// Map erstellen
 	initializeTiles()
+	createTrains()
 	// sich merken wer wer ist
 	// wenn wer rausfliegt sollten die sachen noch da sein
 
@@ -40,7 +41,7 @@ func main() {
 	}
 
 	//jeder Tick
-	for {
+	for tick := 0; ; tick++ {
 		start := time.Now()
 
 		//Speichern, welche Tiles am Ende des Threads entblocked werden muss
@@ -50,6 +51,7 @@ func main() {
 		processClientInputs()
 
 		//Train move
+		moveTrains()
 
 		//process factorys
 
@@ -58,6 +60,11 @@ func main() {
 		//entblocken
 		for i := range tilesToUnblock {
 			tilesToUnblock[i].isBlocked = false
+		}
+
+		//anzeigen Testing
+		if tick%500 == 0 {
+			printMap()
 		}
 
 		//syncen, dass jeder Tick nur 1 mal
@@ -81,31 +88,8 @@ func processClientInputs() {
 	}
 }
 
-func initializeTiles() {
-	//Map Größe aus config laden
-	sizeX, err := strconv.ParseInt(os.Getenv("XSIZE"), 10, 64)
-	if err != nil {
-		logger.Error("Error while loading Size of Map in the x dimension", slog.String("Error", err.Error()))
+func moveTrains() {
+	for i := range trains {
+		trains[i].move()
 	}
-
-	sizeY, err := strconv.ParseInt(os.Getenv("YSIZE"), 10, 64)
-	if err != nil {
-		logger.Error("Error while loading Size of Map in the y dimension", slog.String("Error", err.Error()))
-	}
-
-	//initalising 2d slice
-	tiles := make([][]Tile, sizeX)
-	for i := range tiles {
-		tiles[i] = make([]Tile, sizeY)
-	}
-
-	//Erstellung der Tiles
-	for i := range sizeX {
-		for o := range sizeY {
-			//hier die Infos für das Tile laden
-			tiles[i][o] = Tile{isPlattform: false}
-		}
-	}
-
-	logger.Info("Tiles initialised new Map", slog.Int("SizeX", int(sizeX)), slog.Int("SizeY", int(sizeY)))
 }
