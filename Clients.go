@@ -11,6 +11,7 @@ import (
 type User struct {
 	username    string
 	isConnected bool
+	connection  *websocket.Conn
 }
 
 type UserInput struct {
@@ -24,7 +25,6 @@ var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 }
-
 var playerConnections = make(map[string]*websocket.Conn)
 
 func startServer() {
@@ -51,9 +51,9 @@ func acceptNewClient(w http.ResponseWriter, r *http.Request) {
 
 	//Überprüfung, ob username doppelt ist
 
-	users = append(users, User{username: username, isConnected: true})
+	users = append(users, User{username: username, isConnected: true, connection: conn})
 
-	logger.Info("Accepted new Client, with username ", slog.String("Username", username))
+	logger.Info("Accepted new Client, with username "+username, slog.String("Username", username))
 
 	playerConnections[username] = conn //kan man das auch mit der []users verbinden?
 

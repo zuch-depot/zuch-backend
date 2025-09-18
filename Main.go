@@ -85,12 +85,12 @@ func initializeTiles() {
 	//Map Größe aus config laden
 	sizeX, err := strconv.ParseInt(os.Getenv("XSIZE"), 10, 64)
 	if err != nil {
-		logger.Error("Error while loading Size of Map in the x dimension", err)
+		logger.Error("Error while loading Size of Map in the x dimension", slog.String("Error", err.Error()))
 	}
 
 	sizeY, err := strconv.ParseInt(os.Getenv("YSIZE"), 10, 64)
 	if err != nil {
-		logger.Error("Error while loading Size of Map in the y dimension", err)
+		logger.Error("Error while loading Size of Map in the y dimension", slog.String("Error", err.Error()))
 	}
 
 	//initalising 2d slice
