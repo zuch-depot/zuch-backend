@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	users     []User
+	users     []*User
 	schedules []Schedule
 	stations  []Station
 	tiles     [][]Tile
@@ -36,14 +36,15 @@ func main() {
 	go startServer()
 
 	//Zeit pro Tick bestimmen
-	tickTime, err := strconv.ParseInt(os.Getenv("TICKTIMEMILISEC"), 10, 64)
+	ticksMilisec, err := strconv.Atoi(os.Getenv("TICKTIMEMILISEC"))
+
+	ticker := time.NewTicker(time.Duration(ticksMilisec) * time.Millisecond)
 	if err != nil {
 		logger.Error("Failed to convert Ticktime to Int", slog.String("Error", err.Error())) //anderes Log?// Panic beendet das programm :(
 	}
 
 	//jeder Tick
 	for tick := 0; ; tick++ {
-		start := time.Now()
 
 		//Speichern, welche Tiles am Ende des Threads entblocked werden muss
 		var tilesToUnblock []Tile
@@ -64,17 +65,10 @@ func main() {
 		}
 
 		//anzeigen Testing
-		if tick%500 == 0 {
-			//printMap()
+		if tick%50 == 0 {
+			// printMap()
 		}
-
-		//syncen, dass jeder Tick nur 1 mal
-		remainingTime := tickTime - time.Since(start).Abs().Milliseconds()
-		if remainingTime < 1 {
-			//logging, dass der Server hinterher hinkt
-		} else {
-			time.Sleep(time.Duration(remainingTime * 1000))
-		}
+		<-ticker.C
 	}
 }
 
