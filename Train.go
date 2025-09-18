@@ -19,7 +19,7 @@ func (t Train) move() {
 func (t Train) recalculatePath() {
 	t.currentPath = make(chan [3]int, 300) //
 
-	var visitedTiles map[[3]int][4]int //[4] == vorherhigX, vorherig Y, vorherigSub, Strecke
+	// var visitedTiles map[[3]int][4]int //[4] == vorherhigX, vorherig Y, vorherigSub, Strecke
 
 	/* erst auf dauerhaft blocked prüfen
 	*to visit (außer, da wo man hergekommen ist):

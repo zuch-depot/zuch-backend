@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	users     []User
+	users     []*User
 	schedules []Schedule
 	stations  []Station
 	tiles     [][]Tile
@@ -65,7 +65,7 @@ func main() {
 
 		//anzeigen Testing
 		if tick%50 == 0 {
-			printMap()
+			// printMap()
 		}
 		<-ticker.C
 	}

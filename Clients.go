@@ -25,7 +25,6 @@ var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 }
-var playerConnections = make(map[string]*websocket.Conn)
 
 func startServer() {
 
@@ -37,39 +36,64 @@ func startServer() {
 
 func acceptNewClient(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
-	for k := range playerConnections {
-		if k == username {
-			w.WriteHeader(423)
-			return
+	userExists := false
+	for _, v := range users {
+		if v.username == username { // Username has already connected at some point
+			userExists = true
+			if !v.isConnected { // reconnect user
+
+				logger.Info("Reconnecting previously disconnected User", slog.String("Username", v.username))
+				conn, err := upgrader.Upgrade(w, r, nil)
+				if err != nil {
+					logger.Error("Failed to Upgrade connection")
+				}
+				v.connection = conn
+				v.isConnected = true
+				initializeClient(v)
+				go checkForClientInput(v)
+
+			} else { // Deny User
+				http.Error(w, "User already Connected", 400)
+				logger.Info("User tried to connect but name is already in use", slog.String("Username", v.username))
+				return
+			}
 		}
+
 	}
+	if !userExists {
 
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		logger.Error("Failed to Upgrade connection")
+		// Create User
+		conn, err := upgrader.Upgrade(w, r, nil)
+		if err != nil {
+			logger.Error("Failed to Upgrade connection")
+		}
+
+		logger.Info("Accepted new Client, with username "+username, slog.String("Username", username))
+
+		user := User{username: username, isConnected: true, connection: conn}
+		users = append(users, &user)
+
+		//Überprüfung, ob username doppelt ist
+		initializeClient(&user)
+		go checkForClientInput(&user)
 	}
-
-	//Überprüfung, ob username doppelt ist
-
-	users = append(users, User{username: username, isConnected: true, connection: conn})
-
-	logger.Info("Accepted new Client, with username "+username, slog.String("Username", username))
-
-	playerConnections[username] = conn //kan man das auch mit der []users verbinden?
-
-	go checkForClientInput(username, conn)
-
 }
 
-func checkForClientInput(username string, conn *websocket.Conn) {
+func initializeClient(user *User) {
+	user.connection.WriteJSON("Hier kommt sicherlich bald eine nette funktion hin die einem alles für den anfang schickt :)")
+}
+
+func checkForClientInput(user *User) {
 	for {
 		var v UserInput
-		err := conn.ReadJSON(&v)
+		err := user.connection.ReadJSON(&v)
 		if err != nil {
-			logger.Warn(username+": Error while checking for input", slog.String("Error", err.Error())) //logger or log?
+			logger.Warn(user.username+": Error while checking for input, Closing Connection", slog.String("Error", err.Error())) //logger or log?
+			user.isConnected = false
+			user.connection = nil
+			return
 		}
 
-		v.username = username
 		userInputs <- v
 	}
 }
