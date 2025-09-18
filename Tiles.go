@@ -1,20 +1,11 @@
 package main
 
-type TileType struct {
-}
-
-// --------------------------------------------------
-type Obstacle struct {
-	TileType
-	removable bool
-}
-
 // --------------------------------------------------
 type Tile struct {
-	TileType
 	tracks      []bool
 	signals     []bool
 	isPlattform bool
+	isBlocked   bool
 }
 
 func (t Tile) addTrack(i int) {
@@ -35,12 +26,6 @@ func (t Tile) removeSignals() {
 
 func (t Tile) removePlattform() {
 
-}
-
-// --------------------------------------------------
-type AktiveTile struct {
-	TileType
-	storages []CargoStorage
 }
 
 // --------------------------------------------------

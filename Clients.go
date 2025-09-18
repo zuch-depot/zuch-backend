@@ -8,6 +8,11 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+type User struct {
+	username    string
+	isConnected bool
+}
+
 type UserInput struct {
 	action    string
 	username  string
@@ -43,9 +48,14 @@ func acceptNewClient(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Println("Failed to Upgrade connection")
 	}
+
+	//Überprüfung, ob username doppelt ist
+
+	users = append(users, User{username: username, isConnected: true})
+
 	logger.Println("Accepted new Client, with username " + username)
 
-	playerConnections[username] = conn
+	playerConnections[username] = conn //kan man das auch mit der []users verbinden?
 
 	go checkForClientInput(username, conn)
 
@@ -56,7 +66,7 @@ func checkForClientInput(username string, conn *websocket.Conn) {
 		var v UserInput
 		err := conn.ReadJSON(&v)
 		if err != nil {
-			log.Println(username+"; Error while checking for input", err)
+			log.Println(username+"; Error while checking for input", err) //logger or log?
 		}
 
 		v.username = username

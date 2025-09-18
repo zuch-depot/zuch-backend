@@ -6,5 +6,5 @@ type Station struct {
 
 // --------------------------------------------------
 type Plattform struct {
-	tiles []TileType
+	tiles []Tile
 }
