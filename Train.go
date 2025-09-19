@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"slices"
+)
 
 type Train struct {
 	//irgendwie noch zusmamenfassung in einen Zug, selbstreferenz funktioniert nicht
@@ -21,46 +24,54 @@ func (t Train) move() {
 func (t Train) recalculatePath() {
 
 	type ToDo struct {
-		x     int
-		y     int
-		sub   int
-		value int
+		x          int
+		y          int
+		sub        int
+		value      int //to prioritize closness
+		pathLength int
 	}
 
 	type Visit struct {
 		prevX         int
 		prevY         int
 		prevSub       int
-		value         int
+		value         int //path length
 		visited       bool
 		gotNeighbours bool //false is only looked at at least once
 	}
 
 	visited := make(map[[3]int]Visit, 1) //ggf. als *Visit
-	var toVisit []ToDo                   //[7] == x, y, sub, vorherigeX, vorherigeY, vorherigeSub, Wert
+	var toVisit []ToDo
 
-	/* erst auf dauerhaft blocked prüfen
-	*to visit (außer, da wo man hergekommen ist):
-	*	1 [x][y][2,3,4], [x-1][y][3]
-	*	2 [x][y][1,3,4], [x][y+1][4]
-	*	3 [x][y][1,2,4], [x+1][y][1]
-	*	4 [x][y][1,2,3], [x][y+1][2]
-	 */
-	toVisit = append(toVisit, ToDo{t.position[0], t.position[1], t.position[2], 0})
+	toVisit = append(toVisit, ToDo{t.position[0], t.position[1], t.position[2], 0, 0})
 	visited[[3]int{toVisit[0].x, toVisit[0].y, toVisit[0].sub}] = Visit{visited: true, gotNeighbours: true}
 
-	//max := 5
 	succesfull := false
-	for len(toVisit) > 0 { //&& max > 0 {
+	steps := 0
+	for len(toVisit) > 0 {
 
 		// fmt.Println(toVisit)
 		// fmt.Println("")
 		// fmt.Println(visited)
 		// fmt.Println("---------------------")
 
+		//sortieren der ToDos
+		// fmt.Println(toVisit)
+		slices.SortFunc(toVisit, func(a, b ToDo) int {
+			if a.value > b.value {
+				return 1
+			}
+			if a.value < b.value {
+				return -1
+			}
+			return 0
+		})
+		// fmt.Println("")
+		// fmt.Println(toVisit)
+		//Auswählen des aktuellen tiles
 		visitingTile := [3]int{toVisit[0].x, toVisit[0].y, toVisit[0].sub}
 
-		visitingValue := toVisit[0].value
+		visitingPathLength := toVisit[0].pathLength
 
 		if visitingTile == t.goal {
 			succesfull = true
@@ -76,9 +87,8 @@ func (t Train) recalculatePath() {
 		for i := range neighbours {
 
 			n := neighbours[i]
-			// fmt.Println("Nachbar", i, ":", n, "visited:", visited[n].visited, "gotNeighbours", visited[n].gotNeighbours)
 			if !visited[n].visited {
-				visited[n] = Visit{prevX: visitingTile[0], prevY: visitingTile[1], prevSub: visitingTile[2], value: visitingValue + 1, visited: true, gotNeighbours: false}
+				visited[n] = Visit{prevX: visitingTile[0], prevY: visitingTile[1], prevSub: visitingTile[2], value: visitingPathLength + 1, visited: true, gotNeighbours: false}
 			}
 			if !visited[n].gotNeighbours {
 				alreadyToDo := false
@@ -88,24 +98,17 @@ func (t Train) recalculatePath() {
 					}
 				}
 				if !alreadyToDo {
-					toVisit = append(toVisit, ToDo{x: n[0], y: n[1], sub: n[2], value: visitingValue + 1})
+					newCost := visitingPathLength + 1 + Abs(t.goal[0]-n[0]) + Abs(t.goal[1]-n[1])
+					//fmt.Println(visitingTile[0], visitingTile[1], visitingTile[2], "|", n, Abs(t.goal[0]-n[0])-Abs(t.goal[1]-n[1]))
+					toVisit = append(toVisit, ToDo{x: n[0], y: n[1], sub: n[2], pathLength: visitingPathLength + 1, value: newCost})
 				}
 			}
-
-			/*
-				if visited[n][3] > visitingValue+1 || visited[n][3] != 0 {
-					visited[n] = [4]int{visitingTile[0], visitingTile[1], visitingTile[2], visitingValue + 1}
-				}
-				if visited[n][3] != 0 {
-					toVisit = append(toVisit, [7]int{n[0], n[1], n[2], visitingTile[0], visitingTile[1], visitingTile[2], visitingValue + 1})
-				}*/
 		}
-
 		toVisit = toVisit[1:]
-		//max--
+		steps++
 	}
 	if succesfull {
-		//path := make(chan [3]int, 300) // wird falschrum reingeladen. Braucht first in, first out
+
 		var path [][3]int
 		for current := t.goal; current != t.position; {
 			//path <- current
@@ -113,15 +116,27 @@ func (t Train) recalculatePath() {
 			v := visited[current]
 			current = [3]int{v.prevX, v.prevY, v.prevSub}
 		}
-		//t.currentPath = path
-		fmt.Print(path)
+		fmt.Println(path)
+
+		path2 := make(chan [3]int, 300) // wird falschrum reingeladen. Braucht first in, first out
+		for i := len(path); i > 0; i-- {
+			path2 <- path[i-1]
+		}
+		t.currentPath = path2
 	}
 
-	fmt.Println("Ende Dijkstra")
+	fmt.Println("Ende Dijkstra, Anzahl Schritte:", steps)
 
 }
 
-//verified
+/* erst auf dauerhaft blocked prüfen
+*to visit (außer, da wo man hergekommen ist):
+*	1 [x][y][2,3,4], [x-1][y][3]
+*	2 [x][y][1,3,4], [x][y+1][4]
+*	3 [x][y][1,2,4], [x+1][y][1]
+*	4 [x][y][1,2,3], [x][y+1][2]
+ */
+// verified
 func neighbourTracks(x int, y int, sub int) [][3]int {
 
 	var r [][3]int
@@ -176,3 +191,10 @@ const (
 	Iron
 	Potatos
 )
+
+func Abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
