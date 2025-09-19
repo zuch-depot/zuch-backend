@@ -18,11 +18,18 @@ var (
 		" .|. . . .+.+. . . ", //2
 		" .|. . . . .|. . . ", //3
 		" .+.-.-.+.-.+. . . ", //4
-		" . . . .|. .|. . . ", //5
-		" . . . .|. .|. . . ", //6
-		" . .-.-.+.-.+.-.-. ", //7
+		" . . .+.+. .|. . . ", //5
+		" . . .|. . .|. . . ", //6
+		" . .-.+.-.-.+.-.-. ", //7
 		" . . . . . .|. . . ", //8
 		" . . . . . .|. . . ", //9
+	}
+	testSignals = [][3]int{
+		[3]int{3, 4, 3},
+		[3]int{4, 5, 2},
+		//[3]int{5, 7, 3},
+		[3]int{6, 6, 4},
+		[3]int{5, 2, 2},
 	}
 )
 
@@ -60,7 +67,16 @@ func initializeTiles() {
 			case "+":
 				tracks = [4]bool{true, true, true, true}
 			}
-			tiles[o][i] = Tile{isPlattform: false, tracks: tracks}
+
+			//signals testing
+			var signals [4]bool
+			for p := range testSignals {
+				if testSignals[p][0] == int(o) && testSignals[p][1] == int(i) {
+					signals[testSignals[p][2]-1] = true
+				}
+			}
+
+			tiles[o][i] = Tile{isPlattform: false, tracks: tracks, signals: signals}
 		}
 	}
 
@@ -70,9 +86,16 @@ func initializeTiles() {
 // nur fürs Testen, inkl. Schedule
 func createTrains() {
 	//Zug eins mit Schedule
-	stops := []Stop{Stop{id: 1, goal: [3]int{6, 8, 2}}, Stop{id: 2, goal: [3]int{4, 0, 1}}, Stop{id: 3, goal: [3]int{1, 3, 4}}}
+	stops := []Stop{
+		Stop{id: 1, goal: [3]int{6, 7, 2}},
+		Stop{id: 2, goal: [3]int{4, 0, 1}},
+		Stop{id: 3, goal: [3]int{1, 3, 4}}}
 	schedules = append(schedules, Schedule{stops: stops})
-	temp := []TrainType{TrainType{position: [3]int{4, 4, 3}}, TrainType{position: [3]int{4, 4, 1}}, TrainType{position: [3]int{3, 4, 3}}, TrainType{position: [3]int{3, 4, 1}}}
+	temp := []TrainType{
+		TrainType{position: [3]int{4, 4, 3}},
+		TrainType{position: [3]int{4, 4, 1}},
+		TrainType{position: [3]int{3, 4, 3}},
+		TrainType{position: [3]int{3, 4, 1}}}
 	trains = append(trains, Train{train: temp, schedule: schedules[0]})
 }
 
@@ -91,9 +114,13 @@ func printMap() {
 		fmt.Print(".")
 		for o := range tiles {
 
+			isSignal, s := isSignalAt(o, i)
+
 			isTrain, t := isTrainAt(o, i)
 			if isTrain {
 				fmt.Print(t)
+			} else if isSignal {
+				fmt.Print(s)
 			} else {
 				switch tiles[o][i].tracks {
 				case [4]bool{true, true, true, true}:
@@ -121,6 +148,17 @@ func isTrainAt(x int, y int) (bool, int) {
 			if pos[0] == x && pos[1] == y {
 				return true, pos[2]
 			}
+		}
+	}
+	return false, 0
+}
+
+// nur 1 Signal pro Tile anzeigen
+func isSignalAt(x int, y int) (bool, int) {
+	signals := tiles[x][y].signals
+	for i := range signals {
+		if signals[i] {
+			return true, i + 1
 		}
 	}
 	return false, 0

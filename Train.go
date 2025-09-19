@@ -59,17 +59,10 @@ func (t *Train) recalculatePath() {
 		gotNeighbours bool //false is only looked at at least once
 	}
 
-	test := func(firstIteration bool) bool {
+	dijkstra := func() bool {
 
 		visited := make(map[[3]int]Visit, 1) //ggf. als *Visit
 		var toVisit []ToDo
-
-		//Zug wird umgedreht, wenn kein Weg nach vorne zu finden ist
-		if !firstIteration {
-			t.reverseTrain()
-			fmt.Println("Reversed Train:", t.train)
-			// reverseTrain(t.train)
-		}
 
 		toVisit = append(toVisit, ToDo{t.train[0].position[0], t.train[0].position[1], t.train[0].position[2], 0, 0})
 		visited[[3]int{toVisit[0].x, toVisit[0].y, toVisit[0].sub}] = Visit{visited: true, gotNeighbours: true}
@@ -111,24 +104,26 @@ func (t *Train) recalculatePath() {
 			for i := range neighbours {
 				n := neighbours[i]
 
+				//Nur durchkommen, wenn Signal richtig rum ist
+				nTileSig := tiles[n[0]][n[1]].signals
+				vTileSig := tiles[visitingTile[0]][visitingTile[1]].signals
+				//wenn man sich sub3 anguckt und auf dem rechten Tile ein Signal steht und nicht auf sub 3 auch eins steht, dann nicht den Nachbarn wählen
+				if (visitingTile[2] == 3 && n[0] > visitingTile[0] && n[2] == 1 && nTileSig[0] && !vTileSig[2]) ||
+					(visitingTile[2] == 4 && n[1] > visitingTile[1] && n[2] == 2 && nTileSig[1] && !vTileSig[3]) ||
+					(visitingTile[2] == 1 && n[0] < visitingTile[0] && n[2] == 3 && nTileSig[2] && !vTileSig[0]) ||
+					(visitingTile[2] == 2 && n[1] < visitingTile[1] && n[2] == 4 && nTileSig[3] && !vTileSig[1]) {
+					continue
+				}
 				//wenn 1. Waggon im selben Tile, nicht im selben Tile weiter gucken
 				//wenn 1. Waggon nicht im selben Tile, nicht im anderen Tile gucken
 				// gibt es einen 1. Waggon, sonst fahre frei
 				if len(t.train) > 1 {
 					//ist der 1. Waggon im selben Tile wie Lokomotive?
-					//if t.train[1].position[0] == t.train[0].position[0] && t.train[1].position[1] == t.train[0].position[1] {
 					//ist der Nachbar im Tile der Lokomotive und Wagen?, dann nicht angucken, weil kann nicht befahren werden
 					if n[0] == t.train[1].position[0] && n[1] == t.train[1].position[1] {
 						fmt.Println("Angeguckt", visitingTile, "Skip Nachbar:", n)
 						continue
 					}
-					//} else {
-					/*
-						if n[0] == t.train[1].position[0] || n[1] != t.train[1].position[1] {
-							fmt.Println("Angeguckt", visitingTile, "Skip Nachbar2:", n)
-							continue
-						}*/
-					//}
 				}
 
 				//war man schonmal da?
@@ -147,6 +142,7 @@ func (t *Train) recalculatePath() {
 					}
 					//sonst füge in ToDo ein, dass man sich den mal angucken sollte
 					if !alreadyToDo {
+						//optimierung nach A*
 						newCost := visitingPathLength + 1 + Abs(t.nextStop.goal[0]-n[0]) + Abs(t.nextStop.goal[1]-n[1])
 						toVisit = append(toVisit, ToDo{x: n[0], y: n[1], sub: n[2], pathLength: visitingPathLength + 1, value: newCost})
 					}
@@ -175,10 +171,10 @@ func (t *Train) recalculatePath() {
 		return false
 	}
 
-	if !test(true) {
-		fmt.Println("Second Iteration")
+	if !dijkstra() {
 		//testet nochmal, dieses mal wird der Zug umggedreht um zu prüfen, ob dann ein Weg zu finden ist
-		if !test(false) {
+		t.reverseTrain()
+		if !dijkstra() {
 			fmt.Println("No Path found")
 		}
 	}
