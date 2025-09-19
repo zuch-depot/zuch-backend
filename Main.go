@@ -28,7 +28,6 @@ func main() {
 	// Map erstellen
 	initializeTiles()
 	createTrains()
-	trains[0].recalculatePath()
 	// sich merken wer wer ist
 	// wenn wer rausfliegt sollten die sachen noch da sein
 
@@ -47,13 +46,15 @@ func main() {
 	for tick := 0; ; tick++ {
 
 		//Speichern, welche Tiles am Ende des Threads entblocked werden muss
-		var tilesToUnblock []Tile
+		var tilesToUnblock []*Tile
 
 		//Client Inputs
 		processClientInputs()
 
 		//Train move
-		moveTrains()
+		if tick%30 == 0 {
+			moveTrains()
+		}
 
 		//process factorys
 
@@ -65,8 +66,8 @@ func main() {
 		}
 
 		//anzeigen Testing
-		if tick%50 == 0 {
-			// printMap()
+		if tick%30 == 0 {
+			printMap()
 		}
 		<-ticker.C
 	}

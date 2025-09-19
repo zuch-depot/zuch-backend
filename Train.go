@@ -6,22 +6,44 @@ import (
 )
 
 type Train struct {
-	//irgendwie noch zusmamenfassung in einen Zug, selbstreferenz funktioniert nicht
-	position    [3]int //x,y,track(1,2,3,4) ->
-	goal        [3]int //nur fürs testen
-	currentPath chan [3]int
-	maxSpeed    int
+	train       []TrainType //Alle müssen nebeneinander spawnen
+	schedule    Schedule
+	nextStop    Stop //nur fürs testen
+	currentPath [][3]int
+	name        string
+}
 
+func (t *Train) getPos() []int {
+	return t.train[0].position[:]
+}
+
+type TrainType struct {
+	position [3]int //x,y,track(1,2,3,4) ->
+	maxSpeed int
 	//
 	size  int
 	cargo int
 }
 
-func (t Train) move() {
+func (t *Train) move() {
+	if len(t.currentPath) == 0 {
+		t.nextStop = t.schedule.nextStop(t.nextStop)
+		fmt.Println("Next Stop:", t.nextStop.goal)
+		t.recalculatePath()
+	}
+	if len(t.currentPath) == 0 {
+		return
+	}
 
+	for i := len(t.train); i > 1; i-- {
+		t.train[i-1].position = t.train[i-2].position
+	}
+
+	t.train[0].position = t.currentPath[0]
+	t.currentPath = t.currentPath[1:]
 }
 
-func (t Train) recalculatePath() {
+func (t *Train) recalculatePath() {
 
 	type ToDo struct {
 		x          int
@@ -43,7 +65,7 @@ func (t Train) recalculatePath() {
 	visited := make(map[[3]int]Visit, 1) //ggf. als *Visit
 	var toVisit []ToDo
 
-	toVisit = append(toVisit, ToDo{t.position[0], t.position[1], t.position[2], 0, 0})
+	toVisit = append(toVisit, ToDo{t.train[0].position[0], t.train[0].position[1], t.train[0].position[2], 0, 0})
 	visited[[3]int{toVisit[0].x, toVisit[0].y, toVisit[0].sub}] = Visit{visited: true, gotNeighbours: true}
 
 	succesfull := false
@@ -56,7 +78,6 @@ func (t Train) recalculatePath() {
 		// fmt.Println("---------------------")
 
 		//sortieren der ToDos
-		// fmt.Println(toVisit)
 		slices.SortFunc(toVisit, func(a, b ToDo) int {
 			if a.value > b.value {
 				return 1
@@ -66,14 +87,12 @@ func (t Train) recalculatePath() {
 			}
 			return 0
 		})
-		// fmt.Println("")
-		// fmt.Println(toVisit)
 		//Auswählen des aktuellen tiles
 		visitingTile := [3]int{toVisit[0].x, toVisit[0].y, toVisit[0].sub}
 
 		visitingPathLength := toVisit[0].pathLength
 
-		if visitingTile == t.goal {
+		if visitingTile == t.nextStop.goal {
 			succesfull = true
 			break
 		}
@@ -98,7 +117,7 @@ func (t Train) recalculatePath() {
 					}
 				}
 				if !alreadyToDo {
-					newCost := visitingPathLength + 1 + Abs(t.goal[0]-n[0]) + Abs(t.goal[1]-n[1])
+					newCost := visitingPathLength + 1 + Abs(t.nextStop.goal[0]-n[0]) + Abs(t.nextStop.goal[1]-n[1])
 					//fmt.Println(visitingTile[0], visitingTile[1], visitingTile[2], "|", n, Abs(t.goal[0]-n[0])-Abs(t.goal[1]-n[1]))
 					toVisit = append(toVisit, ToDo{x: n[0], y: n[1], sub: n[2], pathLength: visitingPathLength + 1, value: newCost})
 				}
@@ -110,19 +129,16 @@ func (t Train) recalculatePath() {
 	if succesfull {
 
 		var path [][3]int
-		for current := t.goal; current != t.position; {
+		for current := t.nextStop.goal; current != t.train[0].position; {
 			//path <- current
 			path = append(path, current)
 			v := visited[current]
 			current = [3]int{v.prevX, v.prevY, v.prevSub}
 		}
-		fmt.Println(path)
 
-		path2 := make(chan [3]int, 300) // wird falschrum reingeladen. Braucht first in, first out
-		for i := len(path); i > 0; i-- {
-			path2 <- path[i-1]
-		}
-		t.currentPath = path2
+		slices.Reverse(path)
+		fmt.Println(path)
+		t.currentPath = path
 	}
 
 	fmt.Println("Ende Dijkstra, Anzahl Schritte:", steps)

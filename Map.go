@@ -15,7 +15,7 @@ var (
 		 0.1.2.3.4.5.6.7.8.9*/
 		"-.+.-.-.+.+.-.-.-.-", //0
 		" .|. . .+.+. . . . ", //1
-		" . . . . .+.+. . . ", //2
+		" .|. . . .+.+. . . ", //2
 		" .|. . . . .|. . . ", //3
 		" .+.-.-.+.-.+. . . ", //4
 		" . . . .|. .|. . . ", //5
@@ -67,10 +67,13 @@ func initializeTiles() {
 	fmt.Println("Tiles initialised with a Map size of", sizeX, sizeY)
 }
 
-// nur fürs Testen
+// nur fürs Testen, inkl. Schedule
 func createTrains() {
-	//Zug eins
-	trains = append(trains, Train{position: [3]int{4, 4, 3}, goal: [3]int{6, 9, 4}})
+	//Zug eins mit Schedule
+	stops := []Stop{Stop{id: 1, goal: [3]int{6, 7, 3}}, Stop{id: 2, goal: [3]int{4, 0, 1}}, Stop{id: 3, goal: [3]int{1, 3, 4}}}
+	schedules = append(schedules, Schedule{stops: stops})
+	temp := []TrainType{TrainType{position: [3]int{4, 4, 3}}, TrainType{position: [3]int{4, 4, 1}}, TrainType{position: [3]int{3, 4, 3}}, TrainType{position: [3]int{3, 4, 1}}}
+	trains = append(trains, Train{train: temp, schedule: schedules[0]})
 }
 
 // nur fürs Testen
@@ -104,9 +107,12 @@ func printMap() {
 
 func isTrainAt(x int, y int) (bool, int) {
 	for i := range trains {
-		pos := trains[i].position
-		if pos[0] == x && pos[1] == y {
-			return true, pos[2]
+		waggons := trains[i].train
+		for o := range waggons {
+			pos := waggons[o].position
+			if pos[0] == x && pos[1] == y {
+				return true, pos[2]
+			}
 		}
 	}
 	return false, 0
