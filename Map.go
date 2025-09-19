@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"strings"
 )
 
 // nur testing
@@ -46,20 +45,20 @@ func initializeTiles() {
 
 	//Erstellung der Tiles
 	for i := range sizeY {
-		line := strings.Split(testMap[i], ".") //testing
+		// line := strings.Split(testMap[i], ".") //testing
 		for o := range sizeX {
 			//hier die Infos für das Tile laden
 
 			//testing
 			var tracks [4]bool
-			switch line[o] {
-			case "-":
-				tracks = [4]bool{true, false, true, false}
-			case "|":
-				tracks = [4]bool{false, true, false, true}
-			case "+":
-				tracks = [4]bool{true, true, true, true}
-			}
+			// switch line[o] {
+			// case "-":
+			// 	tracks = [4]bool{true, false, true, false}
+			// case "|":
+			// 	tracks = [4]bool{false, true, false, true}
+			// case "+":
+			// 	tracks = [4]bool{true, true, true, true}
+			// }
 			tiles[o][i] = Tile{IsPlattform: false, Tracks: tracks}
 		}
 	}
