@@ -70,10 +70,18 @@ func initializeTiles() {
 // nur fürs Testen, inkl. Schedule
 func createTrains() {
 	//Zug eins mit Schedule
-	stops := []Stop{Stop{id: 1, goal: [3]int{6, 7, 3}}, Stop{id: 2, goal: [3]int{4, 0, 1}}, Stop{id: 3, goal: [3]int{1, 3, 4}}}
+	stops := []Stop{Stop{id: 1, goal: [3]int{6, 8, 2}}, Stop{id: 2, goal: [3]int{4, 0, 1}}, Stop{id: 3, goal: [3]int{1, 3, 4}}}
 	schedules = append(schedules, Schedule{stops: stops})
 	temp := []TrainType{TrainType{position: [3]int{4, 4, 3}}, TrainType{position: [3]int{4, 4, 1}}, TrainType{position: [3]int{3, 4, 3}}, TrainType{position: [3]int{3, 4, 1}}}
 	trains = append(trains, Train{train: temp, schedule: schedules[0]})
+}
+
+// testing
+func printTrains() {
+	for i := range trains {
+		fmt.Println("Train", trains[i].name, trains[i].train)
+	}
+	fmt.Println("-----------------------")
 }
 
 // nur fürs Testen

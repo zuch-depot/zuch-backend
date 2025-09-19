@@ -20,5 +20,5 @@ func (s *Schedule) nextStop(currentStop Stop) Stop {
 // --------------------------------------------------
 type Stop struct {
 	id   int
-	goal [3]int //wirst Station, bei der man sich ein Tile abholt
+	goal [3]int //wird Station, bei der man sich ein Tile abholt
 }

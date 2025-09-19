@@ -52,8 +52,9 @@ func main() {
 		processClientInputs()
 
 		//Train move
-		if tick%30 == 0 {
+		if tick%20 == 0 {
 			moveTrains()
+			//printTrains()
 		}
 
 		//process factorys
@@ -66,7 +67,7 @@ func main() {
 		}
 
 		//anzeigen Testing
-		if tick%30 == 0 {
+		if tick%20 == 0 {
 			printMap()
 		}
 		<-ticker.C

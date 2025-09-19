@@ -13,10 +13,6 @@ type Train struct {
 	name        string
 }
 
-func (t *Train) getPos() []int {
-	return t.train[0].position[:]
-}
-
 type TrainType struct {
 	position [3]int //x,y,track(1,2,3,4) ->
 	maxSpeed int
@@ -25,6 +21,7 @@ type TrainType struct {
 	cargo int
 }
 
+// aktuell wählt er automatisch den nächsten Stop aus, wenn das Pathfinding nicht funktioniert hat
 func (t *Train) move() {
 	if len(t.currentPath) == 0 {
 		t.nextStop = t.schedule.nextStop(t.nextStop)
@@ -62,87 +59,140 @@ func (t *Train) recalculatePath() {
 		gotNeighbours bool //false is only looked at at least once
 	}
 
-	visited := make(map[[3]int]Visit, 1) //ggf. als *Visit
-	var toVisit []ToDo
+	test := func(firstIteration bool) bool {
 
-	toVisit = append(toVisit, ToDo{t.train[0].position[0], t.train[0].position[1], t.train[0].position[2], 0, 0})
-	visited[[3]int{toVisit[0].x, toVisit[0].y, toVisit[0].sub}] = Visit{visited: true, gotNeighbours: true}
+		visited := make(map[[3]int]Visit, 1) //ggf. als *Visit
+		var toVisit []ToDo
 
-	succesfull := false
-	steps := 0
-	for len(toVisit) > 0 {
-
-		// fmt.Println(toVisit)
-		// fmt.Println("")
-		// fmt.Println(visited)
-		// fmt.Println("---------------------")
-
-		//sortieren der ToDos
-		slices.SortFunc(toVisit, func(a, b ToDo) int {
-			if a.value > b.value {
-				return 1
-			}
-			if a.value < b.value {
-				return -1
-			}
-			return 0
-		})
-		//Auswählen des aktuellen tiles
-		visitingTile := [3]int{toVisit[0].x, toVisit[0].y, toVisit[0].sub}
-
-		visitingPathLength := toVisit[0].pathLength
-
-		if visitingTile == t.nextStop.goal {
-			succesfull = true
-			break
+		//Zug wird umgedreht, wenn kein Weg nach vorne zu finden ist
+		if !firstIteration {
+			t.reverseTrain()
+			fmt.Println("Reversed Train:", t.train)
+			// reverseTrain(t.train)
 		}
 
-		//Nachbarn bestimmen
-		neighbours := neighbourTracks(visitingTile[0], visitingTile[1], visitingTile[2])
-		v := visited[visitingTile]
-		visited[visitingTile] = Visit{prevX: v.prevX, prevY: v.prevY, prevSub: v.prevSub, visited: v.visited, gotNeighbours: true}
-		//visited[visitingTile].gotNeighbours = true
+		toVisit = append(toVisit, ToDo{t.train[0].position[0], t.train[0].position[1], t.train[0].position[2], 0, 0})
+		visited[[3]int{toVisit[0].x, toVisit[0].y, toVisit[0].sub}] = Visit{visited: true, gotNeighbours: true}
 
-		for i := range neighbours {
+		fmt.Println("Dijkstra Start ToDo:", toVisit[0])
 
-			n := neighbours[i]
-			if !visited[n].visited {
-				visited[n] = Visit{prevX: visitingTile[0], prevY: visitingTile[1], prevSub: visitingTile[2], value: visitingPathLength + 1, visited: true, gotNeighbours: false}
+		succesfull := false
+		for len(toVisit) > 0 {
+
+			//sortieren der ToDos
+			slices.SortFunc(toVisit, func(a, b ToDo) int {
+				if a.value > b.value {
+					return 1
+				}
+				if a.value < b.value {
+					return -1
+				}
+				return 0
+			})
+			//Auswählen des aktuellen tiles
+			visitingTile := [3]int{toVisit[0].x, toVisit[0].y, toVisit[0].sub}
+
+			//Läge des Weges zu dem Tile
+			visitingPathLength := toVisit[0].pathLength
+
+			//ist man angekommen?
+			if visitingTile == t.nextStop.goal {
+				succesfull = true
+				break
 			}
-			if !visited[n].gotNeighbours {
-				alreadyToDo := false
-				for o := range toVisit {
-					if [3]int{toVisit[o].x, toVisit[o].y, toVisit[o].sub} == n {
-						alreadyToDo = true
+
+			//Nachbarn bestimmen
+			neighbours := neighbourTracks(visitingTile[0], visitingTile[1], visitingTile[2])
+
+			//Visit neu erstellen um gotNeighbours auf true zu stellen. Besser wenn das als []*Visit ist und nicht neu erstellt werden muss
+			v := visited[visitingTile]
+			visited[visitingTile] = Visit{prevX: v.prevX, prevY: v.prevY, prevSub: v.prevSub, visited: v.visited, gotNeighbours: true}
+
+			for i := range neighbours {
+				n := neighbours[i]
+
+				//wenn 1. Waggon im selben Tile, nicht im selben Tile weiter gucken
+				//wenn 1. Waggon nicht im selben Tile, nicht im anderen Tile gucken
+				// gibt es einen 1. Waggon, sonst fahre frei
+				if len(t.train) > 1 {
+					//ist der 1. Waggon im selben Tile wie Lokomotive?
+					//if t.train[1].position[0] == t.train[0].position[0] && t.train[1].position[1] == t.train[0].position[1] {
+					//ist der Nachbar im Tile der Lokomotive und Wagen?, dann nicht angucken, weil kann nicht befahren werden
+					if n[0] == t.train[1].position[0] && n[1] == t.train[1].position[1] {
+						fmt.Println("Angeguckt", visitingTile, "Skip Nachbar:", n)
+						continue
+					}
+					//} else {
+					/*
+						if n[0] == t.train[1].position[0] || n[1] != t.train[1].position[1] {
+							fmt.Println("Angeguckt", visitingTile, "Skip Nachbar2:", n)
+							continue
+						}*/
+					//}
+				}
+
+				//war man schonmal da?
+				if !visited[n].visited {
+					//wenn nicht, Erstellung eines neuen Visit
+					visited[n] = Visit{prevX: visitingTile[0], prevY: visitingTile[1], prevSub: visitingTile[2], value: visitingPathLength + 1, visited: true, gotNeighbours: false}
+				}
+				//hat man sich schonmal die Nachbarn angeguckt?, sonst
+				if !visited[n].gotNeighbours {
+					// gibt es das SubTile schon in der Todo?
+					alreadyToDo := false
+					for o := range toVisit {
+						if [3]int{toVisit[o].x, toVisit[o].y, toVisit[o].sub} == n {
+							alreadyToDo = true
+						}
+					}
+					//sonst füge in ToDo ein, dass man sich den mal angucken sollte
+					if !alreadyToDo {
+						newCost := visitingPathLength + 1 + Abs(t.nextStop.goal[0]-n[0]) + Abs(t.nextStop.goal[1]-n[1])
+						toVisit = append(toVisit, ToDo{x: n[0], y: n[1], sub: n[2], pathLength: visitingPathLength + 1, value: newCost})
 					}
 				}
-				if !alreadyToDo {
-					newCost := visitingPathLength + 1 + Abs(t.nextStop.goal[0]-n[0]) + Abs(t.nextStop.goal[1]-n[1])
-					//fmt.Println(visitingTile[0], visitingTile[1], visitingTile[2], "|", n, Abs(t.goal[0]-n[0])-Abs(t.goal[1]-n[1]))
-					toVisit = append(toVisit, ToDo{x: n[0], y: n[1], sub: n[2], pathLength: visitingPathLength + 1, value: newCost})
-				}
 			}
-		}
-		toVisit = toVisit[1:]
-		steps++
-	}
-	if succesfull {
-
-		var path [][3]int
-		for current := t.nextStop.goal; current != t.train[0].position; {
-			//path <- current
-			path = append(path, current)
-			v := visited[current]
-			current = [3]int{v.prevX, v.prevY, v.prevSub}
+			//rauslöschen des ersten Elementes, damit Rest nachrücken kann
+			toVisit = toVisit[1:]
 		}
 
-		slices.Reverse(path)
-		fmt.Println(path)
-		t.currentPath = path
+		//hat man das Ziel gefunden?
+		if succesfull {
+			//rausschreibend es Weges, vom Ziel zum Start
+			var path [][3]int
+			for current := t.nextStop.goal; current != t.train[0].position; {
+				path = append(path, current)
+				v := visited[current]
+				current = [3]int{v.prevX, v.prevY, v.prevSub}
+			}
+
+			//Umdrehen Weg, damit der vom Start zum Ziel
+			slices.Reverse(path)
+			fmt.Println(path)
+			t.currentPath = path
+			return true
+		}
+		return false
 	}
 
-	fmt.Println("Ende Dijkstra, Anzahl Schritte:", steps)
+	if !test(true) {
+		fmt.Println("Second Iteration")
+		//testet nochmal, dieses mal wird der Zug umggedreht um zu prüfen, ob dann ein Weg zu finden ist
+		if !test(false) {
+			fmt.Println("No Path found")
+		}
+	}
+	fmt.Println("----------------------")
 
+}
+
+// func reverseTrain(train []*TrainType) {
+func (t *Train) reverseTrain() {
+	prevTrain := t.train
+	slices.Reverse(prevTrain)
+	for i := range t.train {
+		t.train[i].position = prevTrain[i].position
+	}
 }
 
 /* erst auf dauerhaft blocked prüfen
