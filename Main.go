@@ -28,6 +28,7 @@ func main() {
 	// Map erstellen
 	initializeTiles()
 	createTrains()
+	trains[0].recalculatePath()
 	// sich merken wer wer ist
 	// wenn wer rausfliegt sollten die sachen noch da sein
 
