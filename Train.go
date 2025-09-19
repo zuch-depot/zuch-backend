@@ -129,7 +129,7 @@ func neighbourTracks(x int, y int, sub int) [][3]int {
 	appending := func(a [3]int) {
 		for i := range 3 {
 			o := a[i]
-			if tiles[x][y].tracks[o-1] {
+			if tiles[x][y].Tracks[o-1] {
 				r = append(r, [3]int{x, y, o})
 			}
 		}
@@ -138,28 +138,28 @@ func neighbourTracks(x int, y int, sub int) [][3]int {
 	switch sub {
 	case 1:
 		if x > 0 {
-			if tiles[x-1][y].tracks[2] {
+			if tiles[x-1][y].Tracks[2] {
 				r = append(r, [3]int{x - 1, y, 3})
 			}
 		}
 		appending([3]int{2, 3, 4})
 	case 2:
 		if y > 0 {
-			if tiles[x][y-1].tracks[3] {
+			if tiles[x][y-1].Tracks[3] {
 				r = append(r, [3]int{x, y - 1, 4})
 			}
 		}
 		appending([3]int{1, 3, 4})
 	case 3:
 		if x != len(tiles)-1 {
-			if tiles[x+1][y].tracks[0] {
+			if tiles[x+1][y].Tracks[0] {
 				r = append(r, [3]int{x + 1, y, 1})
 			}
 		}
 		appending([3]int{1, 2, 4})
 	case 4:
 		if y != len(tiles[0])-1 {
-			if tiles[x][y+1].tracks[1] {
+			if tiles[x][y+1].Tracks[1] {
 				r = append(r, [3]int{x, y + 1, 2})
 			}
 		}
