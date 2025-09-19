@@ -60,13 +60,15 @@ func main() {
 
 		//entblocken
 		for i := range tilesToUnblock {
-			tilesToUnblock[i].isBlocked = false
+			tilesToUnblock[i].IsBlocked = false
 		}
 
 		//anzeigen Testing
 		if tick%50 == 0 {
 			// printMap()
 		}
+		// das wartet hier bis ein tick ausgelöst wird,
+
 		<-ticker.C
 	}
 }

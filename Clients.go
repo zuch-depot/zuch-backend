@@ -17,7 +17,7 @@ type User struct {
 type UserInput struct {
 	action    string
 	username  string
-	parameter interface{}
+	parameter any
 }
 
 // Wird genutzt um HTTP anfragen zu Websockets zu upgraden
@@ -29,9 +29,15 @@ var upgrader = websocket.Upgrader{
 func startServer() {
 
 	http.HandleFunc("/ws", acceptNewClient)
+	http.HandleFunc("/save", handleSaveRequest)
 
 	logger.Error("error running Webserver", slog.String("Error", http.ListenAndServe("localhost:"+os.Getenv("PORT"), nil).Error()))
 
+}
+
+func handleSaveRequest(w http.ResponseWriter, r *http.Request) {
+	saveGame(users, schedules, stations, tiles, trains)
+	w.WriteHeader(202)
 }
 
 func acceptNewClient(w http.ResponseWriter, r *http.Request) {
@@ -41,7 +47,6 @@ func acceptNewClient(w http.ResponseWriter, r *http.Request) {
 		if v.username == username { // Username has already connected at some point
 			userExists = true
 			if !v.isConnected { // reconnect user
-
 				logger.Info("Reconnecting previously disconnected User", slog.String("Username", v.username))
 				conn, err := upgrader.Upgrade(w, r, nil)
 				if err != nil {
@@ -73,7 +78,6 @@ func acceptNewClient(w http.ResponseWriter, r *http.Request) {
 		user := User{username: username, isConnected: true, connection: conn}
 		users = append(users, &user)
 
-		//Überprüfung, ob username doppelt ist
 		initializeClient(&user)
 		go checkForClientInput(&user)
 	}
@@ -94,6 +98,7 @@ func checkForClientInput(user *User) {
 			return
 		}
 
+		v.username = user.username
 		userInputs <- v
 	}
 }

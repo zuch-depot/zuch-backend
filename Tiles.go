@@ -2,10 +2,10 @@ package main
 
 // --------------------------------------------------
 type Tile struct {
-	tracks      [4]bool
-	signals     [4]bool
-	isPlattform bool
-	isBlocked   bool
+	Tracks      [4]bool
+	Signals     [4]bool
+	IsPlattform bool
+	IsBlocked   bool
 }
 
 func (t Tile) addTrack(i int) {

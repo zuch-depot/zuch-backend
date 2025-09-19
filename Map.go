@@ -60,7 +60,7 @@ func initializeTiles() {
 			case "+":
 				tracks = [4]bool{true, true, true, true}
 			}
-			tiles[o][i] = Tile{isPlattform: false, tracks: tracks}
+			tiles[o][i] = Tile{IsPlattform: false, Tracks: tracks}
 		}
 	}
 
@@ -84,7 +84,7 @@ func printMap() {
 			if isTrain {
 				fmt.Print(t)
 			} else {
-				switch tiles[o][i].tracks {
+				switch tiles[o][i].Tracks {
 				case [4]bool{true, true, true, true}:
 					fmt.Print("+")
 				case [4]bool{true, false, true, false}:
