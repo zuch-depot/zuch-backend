@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 	"strconv"
@@ -19,6 +20,8 @@ var (
 )
 var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true}))
 var userInputs = make(chan UserInput, 300) //Queue, die die UserInputs bis zum Start des nächsten Ticks speichert
+var unpause = make(chan bool)
+var isPaused = false
 
 func main() {
 	godotenv.Load("main.env")
@@ -45,6 +48,12 @@ func main() {
 
 	//jeder Tick
 	for tick := 0; ; tick++ {
+		// Wenn pausiert wurde, warten bis entpausiert signal kommt
+		if isPaused {
+			<-unpause
+			isPaused = false
+			logger.Info("continuing after Pause")
+		}
 
 		//Speichern, welche Tiles am Ende des Threads entblocked werden muss
 		var tilesToUnblock []Tile
@@ -67,6 +76,7 @@ func main() {
 		//anzeigen Testing
 		if tick%50 == 0 {
 			// printMap()
+			fmt.Println("tick", tick)
 		}
 		// das wartet hier bis ein tick ausgelöst wird,
 

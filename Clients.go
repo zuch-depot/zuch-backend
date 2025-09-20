@@ -29,7 +29,10 @@ var upgrader = websocket.Upgrader{
 func startServer() {
 
 	http.HandleFunc("/ws", acceptNewClient)
+	// die werden später noch als teil des WS umgesetzt (denke ich mal), aber zum testen erstmal so
 	http.HandleFunc("/save", handleSaveRequest)
+	http.HandleFunc("/pause", handlePauseGame)
+	http.HandleFunc("/unpause", handleUnpauseGame)
 
 	logger.Error("error running Webserver", slog.String("Error", http.ListenAndServe("localhost:"+os.Getenv("PORT"), nil).Error()))
 
@@ -38,6 +41,15 @@ func startServer() {
 func handleSaveRequest(w http.ResponseWriter, r *http.Request) {
 	saveGame(users, schedules, stations, tiles, trains)
 	w.WriteHeader(202)
+}
+func handlePauseGame(w http.ResponseWriter, r *http.Request) {
+	isPaused = true
+	logger.Info("Paused Game")
+}
+
+func handleUnpauseGame(w http.ResponseWriter, r *http.Request) {
+	unpause <- true
+	logger.Info("Unpaused Game")
 }
 
 func acceptNewClient(w http.ResponseWriter, r *http.Request) {
