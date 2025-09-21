@@ -30,6 +30,8 @@ func saveGame(users []*User,
 	// 	trains []Train,
 	// }
 
+	pauseGame()
+
 	// Einzelnes Object das hoffentlich den ganzen status des Spiels darstellt
 	state := gamestate{Users: users, Schedules: schedules, Stations: stations, Tiles: tiles, Trains: trains}
 	// Die Objekte werden in einer netten JSON verpackt

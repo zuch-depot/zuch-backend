@@ -43,13 +43,30 @@ func handleSaveRequest(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(202)
 }
 func handlePauseGame(w http.ResponseWriter, r *http.Request) {
-	isPaused = true
-	logger.Info("Paused Game")
+	pauseGame()
+	w.WriteHeader(202)
+
 }
 
 func handleUnpauseGame(w http.ResponseWriter, r *http.Request) {
-	unpause <- true
+	unPauseGame()
+	w.WriteHeader(202)
+
+}
+
+// Benutzt um rückmeldung zuu geben das der aktuelle tick vorbei ist und vorm nächsten pausiert wurde
+var confirmPause = make(chan bool)
+
+func pauseGame() {
+	isPaused = true
+	<-confirmPause
+	logger.Info("Paused Game")
+}
+
+func unPauseGame() {
+	unPause <- true
 	logger.Info("Unpaused Game")
+
 }
 
 func acceptNewClient(w http.ResponseWriter, r *http.Request) {

@@ -1,0 +1,628 @@
+{
+  "Users": null,
+  "Schedules": null,
+  "Stations": null,
+  "Tiles": [
+    [
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      }
+    ],
+    [
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      }
+    ],
+    [
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      }
+    ],
+    [
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      }
+    ],
+    [
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      }
+    ],
+    [
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      }
+    ],
+    [
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      }
+    ],
+    [
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      }
+    ],
+    [
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      }
+    ],
+    [
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      },
+      {
+        "Tracks": [false, false, false, false],
+        "Signals": [false, false, false, false],
+        "IsPlattform": false,
+        "IsBlocked": false
+      }
+    ]
+  ],
+  "Trains": [{}]
+}

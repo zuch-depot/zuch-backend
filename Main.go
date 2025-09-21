@@ -20,7 +20,8 @@ var (
 )
 var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true}))
 var userInputs = make(chan UserInput, 300) //Queue, die die UserInputs bis zum Start des nächsten Ticks speichert
-var unpause = make(chan bool)
+var unPause = make(chan bool)
+
 var isPaused = false
 
 func main() {
@@ -50,7 +51,8 @@ func main() {
 	for tick := 0; ; tick++ {
 		// Wenn pausiert wurde, warten bis entpausiert signal kommt
 		if isPaused {
-			<-unpause
+			confirmPause <- true
+			<-unPause
 			isPaused = false
 			logger.Info("continuing after Pause")
 		}
