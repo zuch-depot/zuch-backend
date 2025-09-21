@@ -57,14 +57,14 @@ func (t *Train) move() {
 		// (es wird immer auch das letzte Tile überprüft, da man über ein sub tile ohne signal fahren muss, um zu einem zu kommen)
 		// --> wichtig für Stationen, immer letzte Subtile ansteuern
 		for i := 0; (newGenNoSignal && path[i] != signals[0]) || !newGenNoSignal && path[i] != signals[1] && i < len(path); i++ {
-			if tiles[path[i][0]][path[i][1]].isBlocked {
+			if tiles[path[i][0]][path[i][1]].IsBlocked {
 				fmt.Println("Zug", t.name, ": Blocked Tile found:", path[i], ". Waiting")
 				return
 			}
 		}
 		//da nichts geblocked war, blockt dieser Zug jetzt die Strecke zum nächsten Signal
 		for i := 0; newGenNoSignal && path[i] != signals[0] || !newGenNoSignal && path[i] != signals[1] && i < len(path); i++ {
-			tiles[path[i][0]][path[i][1]].isBlocked = true
+			tiles[path[i][0]][path[i][1]].IsBlocked = true
 		}
 		//nun wird das Signal aus der Queue rausgenommen, da der Zug über das Signal fährt
 		t.currentPathSignals = t.currentPathSignals[1:]
@@ -73,7 +73,7 @@ func (t *Train) move() {
 	//entblocken des letzten Tiles, wenn letzter Waggon sich rausbewegt (x oder y vom letzten unterschiedlich ist zum 2. letzten)
 	if len(t.train) == 1 ||
 		(t.train[len(t.train)-1].position[0] != t.train[len(t.train)-2].position[0] || t.train[len(t.train)-1].position[1] != t.train[len(t.train)-2].position[1]) {
-		tiles[t.train[len(t.train)-1].position[0]][t.train[len(t.train)-1].position[1]].isBlocked = false
+		tiles[t.train[len(t.train)-1].position[0]][t.train[len(t.train)-1].position[1]].IsBlocked = false
 	}
 
 	//Bewegung der Waggons
@@ -152,8 +152,8 @@ func (t *Train) recalculatePath() {
 				n := neighbours[i]
 
 				//Nur durchkommen, wenn Signal richtig rum ist
-				nTileSig := tiles[n[0]][n[1]].signals
-				vTileSig := tiles[visitingTile[0]][visitingTile[1]].signals
+				nTileSig := tiles[n[0]][n[1]].Signals
+				vTileSig := tiles[visitingTile[0]][visitingTile[1]].Signals
 				//wenn man sich sub3 anguckt und auf dem rechten Tile ein Signal steht und nicht auf sub 3 auch eins steht, dann nicht den Nachbarn wählen
 				if (visitingTile[2] == 3 && n[0] > visitingTile[0] && n[2] == 1 && nTileSig[0] && !vTileSig[2]) ||
 					(visitingTile[2] == 4 && n[1] > visitingTile[1] && n[2] == 2 && nTileSig[1] && !vTileSig[3]) ||
@@ -207,7 +207,7 @@ func (t *Train) recalculatePath() {
 				//hinzufügen des aktuell betrachteten sub Tiles in Weg List
 				path = append(path, current)
 				//Bestimmung, ob beim aktuellen sub Tile ein Signal ist, dann füge das hinzu
-				if tiles[current[0]][current[1]].signals[current[2]-1] {
+				if tiles[current[0]][current[1]].Signals[current[2]-1] {
 					pathSignals = append(pathSignals, current)
 				}
 				//Bestimmung des nächsten zu betrachtenen sub Tile

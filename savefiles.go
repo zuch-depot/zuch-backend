@@ -15,7 +15,7 @@ import (
 func saveGame(users []*User,
 	schedules []Schedule,
 	stations []Station,
-	tiles [][]Tile,
+	tiles [][]*Tile,
 	trains []Train,
 ) {
 	// ich will den ganzen bums hier eigentlich ja nur speichern
@@ -26,7 +26,7 @@ func saveGame(users []*User,
 	//  users []*User,
 	// 	schedules []Schedule,
 	// 	stations []Station,
-	// 	tiles [][]Tile,
+	// 	tiles [][]*Tile,
 	// 	trains []Train,
 	// }
 
@@ -73,6 +73,6 @@ type gamestate struct {
 	Users     []*User
 	Schedules []Schedule
 	Stations  []Station
-	Tiles     [][]Tile
+	Tiles     [][]*Tile
 	Trains    []Train
 }

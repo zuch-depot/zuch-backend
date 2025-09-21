@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 )
 
 // nur testing
@@ -97,7 +98,7 @@ func initializeTiles() {
 
 	//Erstellung der Tiles
 	for i := range sizeY {
-		// line := strings.Split(testMap[i], ".") //testing
+		line := strings.Split(testMap[i], ".") //testing
 		for o := range sizeX {
 			//hier die Infos für das Tile laden
 
@@ -120,7 +121,7 @@ func initializeTiles() {
 				}
 			}
 
-			tiles[o][i] = &Tile{isPlattform: false, tracks: tracks, signals: signals}
+			tiles[o][i] = &Tile{IsPlattform: false, Tracks: tracks, Signals: signals}
 		}
 	}
 
@@ -183,7 +184,7 @@ func isTrainAt(x int, y int) (bool, int) {
 
 // nur 1 Signal pro Tile anzeigen
 func isSignalAt(x int, y int) (bool, int) {
-	signals := tiles[x][y].signals
+	signals := tiles[x][y].Signals
 	for i := range signals {
 		if signals[i] {
 			return true, i + 1
