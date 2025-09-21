@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log/slog"
 	"os"
 	"strconv"
@@ -15,7 +14,7 @@ var (
 	users     []*User
 	schedules []Schedule
 	stations  []Station
-	tiles     [][]Tile
+	tiles     [][]*Tile
 	trains    []Train
 )
 var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true}))
@@ -32,7 +31,6 @@ func main() {
 	// Map erstellen
 	initializeTiles()
 	createTrains()
-	trains[0].recalculatePath()
 	// sich merken wer wer ist
 	// wenn wer rausfliegt sollten die sachen noch da sein
 
@@ -58,13 +56,16 @@ func main() {
 		}
 
 		//Speichern, welche Tiles am Ende des Threads entblocked werden muss
-		var tilesToUnblock []Tile
+		var tilesToUnblock []*Tile
 
 		//Client Inputs
 		processClientInputs()
 
 		//Train move
-		moveTrains()
+		if tick%10 == 0 {
+			moveTrains()
+			printTrains()
+		}
 
 		//process factorys
 
@@ -76,9 +77,9 @@ func main() {
 		}
 
 		//anzeigen Testing
-		if tick%50 == 0 {
-			// printMap()
-			fmt.Println("tick", tick)
+		if tick%10 == 0 {
+			printMap()
+			// fmt.Println("tick", tick)
 		}
 		// das wartet hier bis ein tick ausgelöst wird,
 

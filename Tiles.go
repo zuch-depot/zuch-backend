@@ -5,7 +5,7 @@ type Tile struct {
 	Tracks      [4]bool
 	Signals     [4]bool
 	IsPlattform bool
-	IsBlocked   bool
+	IsBlocked   bool //nur für tracks
 }
 
 func (t Tile) addTrack(i int) {
