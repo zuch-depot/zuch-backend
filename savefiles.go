@@ -65,6 +65,8 @@ func saveGame(users []*User,
 	if err != nil {
 		logger.Error("Failure while writing File", slog.String("Error", err.Error()))
 	}
+
+	unPauseGame()
 }
 
 type gamestate struct {
