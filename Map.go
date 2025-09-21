@@ -18,21 +18,45 @@ var (
 		" .|. . . .+.+. . . ", //2
 		" .|. . . . .|. . . ", //3
 		" .+.-.-.+.-.+. . . ", //4
-		" . . .+.+. .|. . . ", //5
-		" . . .|. . .|. . . ", //6
-		" . .-.+.-.-.+.-.-. ", //7
+		" . .+.-.+. .|. . . ", //5
+		" . .|. . . .|. . . ", //6
+		" . .+.-.-.-.+.-.-. ", //7
 		" . . . . . .|. . . ", //8
 		" . . . . . .|. . . ", //9
 	}
 	testSignals = [][3]int{
 		[3]int{3, 4, 3},
-		[3]int{4, 5, 2},
+		[3]int{4, 5, 1},
 		//[3]int{5, 7, 3},
-		[3]int{6, 6, 4},
+		[3]int{6, 6, 2},
 		[3]int{5, 2, 2},
 	}
 )
 
+// nur fürs Testen, inkl. Schedule
+func createTrains() {
+	//Zug eins mit Schedule
+	stops := []Stop{
+		Stop{id: 1, goal: [3]int{6, 7, 2}},
+		Stop{id: 2, goal: [3]int{4, 0, 1}},
+		Stop{id: 3, goal: [3]int{1, 3, 4}}}
+	schedules = append(schedules, Schedule{stops: stops})
+	temp := []TrainType{
+		TrainType{position: [3]int{4, 4, 1}},
+		TrainType{position: [3]int{3, 4, 3}},
+		TrainType{position: [3]int{3, 4, 1}},
+		TrainType{position: [3]int{2, 4, 3}}}
+	trains = append(trains, Train{train: temp, schedule: schedules[0], name: "1"})
+	stops = []Stop{
+		Stop{id: 1, goal: [3]int{6, 7, 2}},
+		Stop{id: 2, goal: [3]int{5, 4, 1}}}
+	schedules = append(schedules, Schedule{stops: stops})
+	temp = []TrainType{
+		TrainType{position: [3]int{3, 7, 3}},
+		TrainType{position: [3]int{3, 7, 1}},
+		TrainType{position: [3]int{2, 7, 3}}}
+	trains = append(trains, Train{train: temp, schedule: schedules[1], name: "2"})
+}
 func initializeTiles() {
 	//Map Größe aus config laden
 	sizeX, err := strconv.ParseInt(os.Getenv("XSIZE"), 10, 64)
@@ -46,9 +70,9 @@ func initializeTiles() {
 	}
 
 	//initalising 2d slice
-	tiles = make([][]Tile, sizeX)
+	tiles = make([][]*Tile, sizeX)
 	for i := range tiles {
-		tiles[i] = make([]Tile, sizeY)
+		tiles[i] = make([]*Tile, sizeY)
 	}
 
 	//Erstellung der Tiles
@@ -76,27 +100,11 @@ func initializeTiles() {
 				}
 			}
 
-			tiles[o][i] = Tile{isPlattform: false, tracks: tracks, signals: signals}
+			tiles[o][i] = &Tile{isPlattform: false, tracks: tracks, signals: signals}
 		}
 	}
 
 	fmt.Println("Tiles initialised with a Map size of", sizeX, sizeY)
-}
-
-// nur fürs Testen, inkl. Schedule
-func createTrains() {
-	//Zug eins mit Schedule
-	stops := []Stop{
-		Stop{id: 1, goal: [3]int{6, 7, 2}},
-		Stop{id: 2, goal: [3]int{4, 0, 1}},
-		Stop{id: 3, goal: [3]int{1, 3, 4}}}
-	schedules = append(schedules, Schedule{stops: stops})
-	temp := []TrainType{
-		TrainType{position: [3]int{4, 4, 3}},
-		TrainType{position: [3]int{4, 4, 1}},
-		TrainType{position: [3]int{3, 4, 3}},
-		TrainType{position: [3]int{3, 4, 1}}}
-	trains = append(trains, Train{train: temp, schedule: schedules[0]})
 }
 
 // testing

@@ -14,7 +14,7 @@ var (
 	users     []*User
 	schedules []Schedule
 	stations  []Station
-	tiles     [][]Tile
+	tiles     [][]*Tile
 	trains    []Train
 )
 var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true}))
@@ -52,7 +52,7 @@ func main() {
 		processClientInputs()
 
 		//Train move
-		if tick%20 == 0 {
+		if tick%10 == 0 {
 			moveTrains()
 			//printTrains()
 		}
@@ -67,7 +67,7 @@ func main() {
 		}
 
 		//anzeigen Testing
-		if tick%20 == 0 {
+		if tick%10 == 0 {
 			printMap()
 		}
 		<-ticker.C

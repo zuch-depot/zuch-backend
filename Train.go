@@ -6,11 +6,12 @@ import (
 )
 
 type Train struct {
-	train       []TrainType //Alle müssen nebeneinander spawnen
-	schedule    Schedule
-	nextStop    Stop //nur fürs testen
-	currentPath [][3]int
-	name        string
+	train              []TrainType //Alle müssen nebeneinander spawnen
+	schedule           Schedule
+	nextStop           Stop //nur fürs testen
+	currentPath        [][3]int
+	currentPathSignals [][3]int
+	name               string
 }
 
 type TrainType struct {
@@ -22,21 +23,67 @@ type TrainType struct {
 }
 
 // aktuell wählt er automatisch den nächsten Stop aus, wenn das Pathfinding nicht funktioniert hat
+// für 2 Wege Signale muss geprüft werden, ob nicht schon ein Zug zum Signal auf der anderen Seite fährt
 func (t *Train) move() {
+	newGenNoSignal := false
+
+	//Auswahl des nächsten Stops wenn man am Ziel angekommen ist (oder das Pathfinding nicht funktioniert hat)
 	if len(t.currentPath) == 0 {
 		t.nextStop = t.schedule.nextStop(t.nextStop)
 		fmt.Println("Next Stop:", t.nextStop.goal)
 		t.recalculatePath()
-	}
-	if len(t.currentPath) == 0 {
-		return
+		newGenNoSignal = true
+		//wenn das Pathfinding (immer noch) nicht funktioniert hat
+		if len(t.currentPath) == 0 {
+			return
+		}
 	}
 
+	path := t.currentPath
+	signals := t.currentPathSignals
+
+	if newGenNoSignal && len(signals) > 1 {
+		newGenNoSignal = false
+	}
+	//ist man bei einem Signal oder wurde neu generiert?
+	// wenn es kein nächstes Signal gibt, wird bis zum Ziel geguckt
+	// -----------> Ähnliche logik muss irgendwo Signale auf rot/grün/?gelb schalten
+	// (vielleicht der Zug, wenn er sich merkt, bei welchem Signal er war und das umschaltet, wenn er aus block rausgefahren ist.
+	// wird dann überschrieben, wenn der nächste zug nicht weiterfahren kann)
+	// fmt.Println("newGenNoSignal", newGenNoSignal, "Signale:", signals, "Weg:", path)
+
+	if newGenNoSignal || len(signals) > 1 && t.train[0].position == signals[0] {
+		//gucken, ob bis zum nächsten Signal alle Tiles unblocked sind, sonst fahre nicht weiter
+		// (es wird immer auch das letzte Tile überprüft, da man über ein sub tile ohne signal fahren muss, um zu einem zu kommen)
+		// --> wichtig für Stationen, immer letzte Subtile ansteuern
+		for i := 0; (newGenNoSignal && path[i] != signals[0]) || !newGenNoSignal && path[i] != signals[1] && i < len(path); i++ {
+			if tiles[path[i][0]][path[i][1]].isBlocked {
+				fmt.Println("Zug", t.name, ": Blocked Tile found:", path[i], ". Waiting")
+				return
+			}
+		}
+		//da nichts geblocked war, blockt dieser Zug jetzt die Strecke zum nächsten Signal
+		for i := 0; newGenNoSignal && path[i] != signals[0] || !newGenNoSignal && path[i] != signals[1] && i < len(path); i++ {
+			tiles[path[i][0]][path[i][1]].isBlocked = true
+		}
+		//nun wird das Signal aus der Queue rausgenommen, da der Zug über das Signal fährt
+		t.currentPathSignals = t.currentPathSignals[1:]
+	}
+
+	//entblocken des letzten Tiles, wenn letzter Waggon sich rausbewegt (x oder y vom letzten unterschiedlich ist zum 2. letzten)
+	if len(t.train) == 1 ||
+		(t.train[len(t.train)-1].position[0] != t.train[len(t.train)-2].position[0] || t.train[len(t.train)-1].position[1] != t.train[len(t.train)-2].position[1]) {
+		tiles[t.train[len(t.train)-1].position[0]][t.train[len(t.train)-1].position[1]].isBlocked = false //funkitoniert nicht
+	}
+
+	//Bewegung der Waggons
 	for i := len(t.train); i > 1; i-- {
 		t.train[i-1].position = t.train[i-2].position
 	}
 
+	//Bewegung der Lokomotive
 	t.train[0].position = t.currentPath[0]
+	//rausschmeißen des Tiles, wo die Lok sich hinbewegt hat aus der Queue
 	t.currentPath = t.currentPath[1:]
 }
 
@@ -121,7 +168,6 @@ func (t *Train) recalculatePath() {
 					//ist der 1. Waggon im selben Tile wie Lokomotive?
 					//ist der Nachbar im Tile der Lokomotive und Wagen?, dann nicht angucken, weil kann nicht befahren werden
 					if n[0] == t.train[1].position[0] && n[1] == t.train[1].position[1] {
-						fmt.Println("Angeguckt", visitingTile, "Skip Nachbar:", n)
 						continue
 					}
 				}
@@ -154,10 +200,17 @@ func (t *Train) recalculatePath() {
 
 		//hat man das Ziel gefunden?
 		if succesfull {
-			//rausschreibend es Weges, vom Ziel zum Start
+			//rausschreiben des Weges, vom Ziel zum Start. Ebenfalls speichern, wo es Signale gibt
 			var path [][3]int
+			pathSignals := [][3]int{t.nextStop.goal} //Ziel wird als Signal hinzugefügt, da es (eigentlich) sich wie eins verhält
 			for current := t.nextStop.goal; current != t.train[0].position; {
+				//hinzufügen des aktuell betrachteten sub Tiles in Weg List
 				path = append(path, current)
+				//Bestimmung, ob beim aktuellen sub Tile ein Signal ist, dann füge das hinzu
+				if tiles[current[0]][current[1]].signals[current[2]-1] {
+					pathSignals = append(pathSignals, current)
+				}
+				//Bestimmung des nächsten zu betrachtenen sub Tile
 				v := visited[current]
 				current = [3]int{v.prevX, v.prevY, v.prevSub}
 			}
@@ -166,6 +219,10 @@ func (t *Train) recalculatePath() {
 			slices.Reverse(path)
 			fmt.Println(path)
 			t.currentPath = path
+			//das gleiche mit den Signalen
+			slices.Reverse(pathSignals)
+			fmt.Println(pathSignals)
+			t.currentPathSignals = pathSignals
 			return true
 		}
 		return false
