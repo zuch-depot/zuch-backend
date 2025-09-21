@@ -3,18 +3,18 @@ package main
 import "slices"
 
 type Schedule struct {
-	name  string
-	user  User
-	stops []Stop
+	Name  string
+	User  User
+	Stops []Stop
 }
 
 // returnt nächsten Stop
 func (s *Schedule) nextStop(currentStop Stop) Stop {
-	index := slices.Index(s.stops, currentStop)
-	if index == len(s.stops)-1 {
-		return s.stops[0]
+	index := slices.Index(s.Stops, currentStop)
+	if index == len(s.Stops)-1 {
+		return s.Stops[0]
 	}
-	return s.stops[index+1]
+	return s.Stops[index+1]
 }
 
 // --------------------------------------------------
