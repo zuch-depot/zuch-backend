@@ -13,15 +13,15 @@ var (
 	testMap = []string{
 		/*
 		 0.1.2.3.4.5.6.7.8.9*/
-		"-.+.-.-.+.+.-.-.-.-", //0
-		" .|. . .+.+. . . . ", //1
-		" .|. . . .+.+. . . ", //2
-		" .|. . . . .|. . . ", //3
-		" .+.-.-.+.-.+. . . ", //4
-		" . .+.-.+. .|. . . ", //5
-		" . .|. . . .|. . . ", //6
-		" . .+.-.-.-.+.-.-. ", //7
-		" . . . . . .|. . . ", //8
+		"-.+.-.-.+.+.-. . .|", //0
+		" .|. . .+.+. . . .|", //1
+		" .|. . . .+.+. . .|", //2
+		" .|. . . . .|. .+.+", //3
+		" .+.-.-.+.-.+. .|.|", //4
+		" . .+.-.+. .|. .|.|", //5
+		" . .|. . . .|. .+.+", //6
+		" . .+.-.-.-.+. . .|", //7
+		" . . . . . .|. . .|", //8
 		" . . . . . .|. . . ", //9
 	}
 	testSignals = [][3]int{
@@ -30,6 +30,9 @@ var (
 		//[3]int{5, 7, 3},
 		[3]int{6, 6, 2},
 		[3]int{5, 2, 2},
+
+		[3]int{9, 4, 2},
+		[3]int{8, 6, 3},
 	}
 )
 
@@ -47,6 +50,7 @@ func createTrains() {
 		TrainType{position: [3]int{3, 4, 1}},
 		TrainType{position: [3]int{2, 4, 3}}}
 	trains = append(trains, Train{train: temp, schedule: schedules[0], name: "1"})
+	//Zug zwei, 2. Schedule
 	stops = []Stop{
 		Stop{id: 1, goal: [3]int{6, 7, 2}},
 		Stop{id: 2, goal: [3]int{5, 4, 1}}}
@@ -56,6 +60,23 @@ func createTrains() {
 		TrainType{position: [3]int{3, 7, 1}},
 		TrainType{position: [3]int{2, 7, 3}}}
 	trains = append(trains, Train{train: temp, schedule: schedules[1], name: "2"})
+	//zug 3
+	stops = []Stop{
+		Stop{id: 1, goal: [3]int{9, 0, 2}},
+		Stop{id: 2, goal: [3]int{9, 8, 4}}}
+	schedules = append(schedules, Schedule{stops: stops})
+	temp = []TrainType{
+		TrainType{position: [3]int{9, 2, 4}},
+		TrainType{position: [3]int{9, 2, 2}},
+		TrainType{position: [3]int{9, 1, 4}}}
+	trains = append(trains, Train{train: temp, schedule: schedules[2], name: "3"})
+	trains[2].nextStop = schedules[2].stops[1]
+	// Zug 4
+	temp = []TrainType{
+		TrainType{position: [3]int{9, 7, 2}},
+		TrainType{position: [3]int{9, 7, 4}},
+		TrainType{position: [3]int{9, 8, 2}}}
+	trains = append(trains, Train{train: temp, schedule: schedules[2], name: "4"})
 }
 func initializeTiles() {
 	//Map Größe aus config laden

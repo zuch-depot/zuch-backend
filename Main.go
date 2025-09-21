@@ -54,7 +54,7 @@ func main() {
 		//Train move
 		if tick%10 == 0 {
 			moveTrains()
-			//printTrains()
+			printTrains()
 		}
 
 		//process factorys

@@ -73,7 +73,7 @@ func (t *Train) move() {
 	//entblocken des letzten Tiles, wenn letzter Waggon sich rausbewegt (x oder y vom letzten unterschiedlich ist zum 2. letzten)
 	if len(t.train) == 1 ||
 		(t.train[len(t.train)-1].position[0] != t.train[len(t.train)-2].position[0] || t.train[len(t.train)-1].position[1] != t.train[len(t.train)-2].position[1]) {
-		tiles[t.train[len(t.train)-1].position[0]][t.train[len(t.train)-1].position[1]].isBlocked = false //funkitoniert nicht
+		tiles[t.train[len(t.train)-1].position[0]][t.train[len(t.train)-1].position[1]].isBlocked = false
 	}
 
 	//Bewegung der Waggons
