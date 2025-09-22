@@ -23,6 +23,11 @@ var unPause = make(chan bool)
 
 var isPaused = false
 
+type wsEnvelope struct {
+	Type string
+	Msg  any
+}
+
 func main() {
 	godotenv.Load("main.env")
 

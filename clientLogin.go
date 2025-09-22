@@ -38,37 +38,6 @@ func startServer() {
 
 }
 
-func handleSaveRequest(w http.ResponseWriter, r *http.Request) {
-	saveGame(users, schedules, stations, tiles, trains)
-	w.WriteHeader(202)
-}
-func handlePauseGame(w http.ResponseWriter, r *http.Request) {
-	pauseGame()
-	w.WriteHeader(202)
-
-}
-
-func handleUnpauseGame(w http.ResponseWriter, r *http.Request) {
-	unPauseGame()
-	w.WriteHeader(202)
-
-}
-
-// Benutzt um rückmeldung zuu geben das der aktuelle tick vorbei ist und vorm nächsten pausiert wurde
-var confirmPause = make(chan bool)
-
-func pauseGame() {
-	isPaused = true
-	<-confirmPause
-	logger.Info("Paused Game")
-}
-
-func unPauseGame() {
-	unPause <- true
-	logger.Info("Unpaused Game")
-
-}
-
 func acceptNewClient(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
 	userExists := false
@@ -83,7 +52,8 @@ func acceptNewClient(w http.ResponseWriter, r *http.Request) {
 				}
 				v.connection = conn
 				v.isConnected = true
-				initializeClient(v)
+				initializeClient(v, &gamestateTemp{Users: users, Schedules: []*Schedule{}, Stations: []*Station{}, Tiles: tiles, Trains: []*Train{}})
+
 				go checkForClientInput(v)
 
 			} else { // Deny User
@@ -107,13 +77,33 @@ func acceptNewClient(w http.ResponseWriter, r *http.Request) {
 		user := User{username: username, isConnected: true, connection: conn}
 		users = append(users, &user)
 
-		initializeClient(&user)
+		initializeClient(&user, &gamestateTemp{Users: users, Schedules: []*Schedule{}, Stations: []*Station{}, Tiles: tiles, Trains: []*Train{}})
 		go checkForClientInput(&user)
 	}
 }
 
-func initializeClient(user *User) {
-	user.connection.WriteJSON("Hier kommt sicherlich bald eine nette funktion hin die einem alles für den anfang schickt :)")
+type gamestateTemp struct {
+	Users     []*User
+	Schedules []*Schedule
+	Stations  []*Station
+	Tiles     [][]*Tile
+	Trains    []*Train
+}
+
+func initializeClient(user *User, state *gamestateTemp) {
+	pauseGame()
+
+	// Hier muss ich erstmal alles am stück einmal rüber senden
+	// Der Kriegt quasi einmal den Savefile zugeschickt und danach nur noch die änderungen
+
+	logger.Info("Sending Client Gamestate", slog.String("Username", user.username))
+
+	envelope := wsEnvelope{Type: "initial_map", Msg: state}
+	err := user.connection.WriteJSON(envelope)
+	if err != nil {
+		logger.Error("Failes parsing state to JSON", slog.String("Error", err.Error()))
+	}
+	unPauseGame()
 }
 
 func checkForClientInput(user *User) {
