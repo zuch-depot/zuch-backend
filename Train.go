@@ -16,7 +16,7 @@ type Train struct {
 }
 
 type TrainType struct {
-	position [3]int //x,y,track(1,2,3,4) ->
+	position [3]int //x,y,sub
 	maxSpeed int
 	//
 	size  int
@@ -91,6 +91,8 @@ func (t *Train) move() {
 	t.Waggons[0].position = t.currentPath[0]
 	//rausschmeißen des Tiles, wo die Lok sich hinbewegt hat aus der Queue
 	t.currentPath = t.currentPath[1:]
+
+	// for alle waggons {clients.schickeNachtricht(waggong x,y, hat sich bewegt)}
 }
 
 func (t *Train) recalculatePath() {
@@ -113,7 +115,7 @@ func (t *Train) recalculatePath() {
 	}
 
 	//Paths sind in falscher Reihenfolge
-	dijkstra := func(goal [3]int, prevLength int) ([][3]int, [][3]int) {
+	dijkstra := func(goal [3]int) ([][3]int, [][3]int) {
 
 		visited := make(map[[3]int]Visit, 1) //ggf. als *Visit
 		var toVisit []ToDo
@@ -234,23 +236,49 @@ func (t *Train) recalculatePath() {
 	goals := t.NextStop.getGoals()
 	var paths, pathsSignals [2][][3]int
 	paths[0] = make([][3]int, 0)
-	for i := range goals {
-		paths[i], pathsSignals[i] = dijkstra(goals[i], len(paths[0]))
-		if len(paths[i]) == 0 {
+
+	channelPath := [2]chan [][3]int{
+		make(chan [][3]int, 1),
+		make(chan [][3]int, 1),
+	}
+	channelPathSignals := [2]chan [][3]int{
+		make(chan [][3]int, 1),
+		make(chan [][3]int, 1),
+	}
+
+	sub := func(i int, goal [3]int, outPath chan<- [][3]int, outPathSignals chan<- [][3]int) {
+
+		path, pathSignals := dijkstra(goal)
+		if len(paths) == 0 {
 			//testet nochmal, dieses mal wird der Zug umggedreht um zu prüfen, ob dann ein Weg zu finden ist
 			fmt.Println("Teste reverse")
 			t.reverseTrain()
-			paths[i], pathsSignals[i] = dijkstra(goals[i], len(paths[0]))
-			if len(paths[i]) == 0 {
+			path, pathSignals = dijkstra(goal)
+			if len(path) == 0 {
 				//wenn umgedreht auch kein Weg zu finden war, wieder zurück drehen
 				t.reverseTrain()
 			}
 		}
+		outPath <- path
+		outPathSignals <- pathSignals
 	}
+
+	//Start der go routinen
+	for i := range goals {
+		go sub(i, goals[i], channelPath[i], channelPathSignals[i])
+	}
+	//auslesen aus dem Buffer
+	for i := range goals {
+		paths[i] = <-channelPath[i]
+		pathsSignals[i] = <-channelPathSignals[i]
+	}
+
+	//gibt es einen Weg?
 	if len(paths[0])+len(paths[1]) == 0 {
 		fmt.Println("No Path found for", t.Name)
 		return
 	}
+	//wenn nur ein Weg, dann der, sonst der bessere
 	var i int
 	if len(paths[0]) >= len(paths[1]) && len(paths[1]) > 0 {
 		i = 1
