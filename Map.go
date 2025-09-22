@@ -45,8 +45,9 @@ func createTrains() {
 
 	//Zug eins mit Schedule
 	Stops := []Stop{
-		Stop{Id: 1, Plattform: &plattforms[0]},
-		Stop{Id: 2, Plattform: &plattforms[1]}}
+		Stop{Id: 1, Plattform: &plattforms[0], IsPlattform: true},
+		Stop{Id: 2, Goal: [3]int{1, 3, 4}, Name: "Wegpunkt 1"},
+		Stop{Id: 3, Plattform: &plattforms[1], IsPlattform: true}}
 	schedules = append(schedules, &Schedule{Stops: Stops})
 	temp := []TrainType{
 		TrainType{position: [3]int{4, 4, 1}},

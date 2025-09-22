@@ -12,6 +12,7 @@ type Train struct {
 	currentPath        [][3]int //neu berechnen bei laden
 	currentPathSignals [][3]int
 	Name               string
+	waiting            bool
 }
 
 type TrainType struct {
@@ -25,12 +26,12 @@ type TrainType struct {
 // aktuell wählt er automatisch den nächsten Stop aus, wenn das Pathfinding nicht funktioniert hat
 // für 2 Wege Signale muss geprüft werden, ob nicht schon ein Zug zum Signal auf der anderen Seite fährt
 func (t *Train) move() {
-	newGenNoSignal := false
+	newGenNoSignal := t.waiting //neu generiert und kein Signal, oder er hat letzte mal gewartet, dann gucken, ob immer noch
 
 	//Auswahl des nächsten Stops wenn man am Ziel angekommen ist (oder das Pathfinding nicht funktioniert hat)
 	if len(t.currentPath) == 0 {
 		t.NextStop = t.Schedule.nextStop(t.NextStop)
-		fmt.Println("Next Stop:", t.NextStop.Plattform.station.name, t.NextStop.Plattform.name)
+		fmt.Println("Next Stop:", t.NextStop.getName())
 		t.recalculatePath()
 		newGenNoSignal = true
 		//wenn das Pathfinding (immer noch) nicht funktioniert hat
@@ -51,8 +52,8 @@ func (t *Train) move() {
 	// (vielleicht der Zug, wenn er sich merkt, bei welchem Signal er war und das umschaltet, wenn er aus block rausgefahren ist.
 	// wird dann überschrieben, wenn der nächste zug nicht weiterfahren kann)
 	// fmt.Println("newGenNoSignal", newGenNoSignal, "Signale:", signals, "Weg:", path)
-
 	if newGenNoSignal || len(signals) > 1 && t.Waggons[0].position == signals[0] {
+		fmt.Println("Suche nach Blockierungen bei Zug", t.Name)
 		//gucken, ob bis zum nächsten Signal alle Tiles unblocked sind, sonst fahre nicht weiter
 		// (es wird immer auch das letzte Tile überprüft, da man über ein sub tile ohne signal fahren muss, um zu einem zu kommen)
 		// --> wichtig für Stationen, immer letzte Subtile ansteuern
@@ -60,6 +61,7 @@ func (t *Train) move() {
 			!newGenNoSignal && path[i] != signals[1] && i < len(path); i++ {
 			if tiles[path[i][0]][path[i][1]].IsBlocked {
 				fmt.Println("Zug", t.Name, ": Blocked Tile found:", path[i], ". Waiting")
+				t.waiting = true
 				return
 			}
 		}
@@ -69,6 +71,8 @@ func (t *Train) move() {
 		}
 		//nun wird das Signal aus der Queue rausgenommen, da der Zug über das Signal fährt
 		t.currentPathSignals = t.currentPathSignals[1:]
+
+		t.waiting = false
 	}
 
 	//entblocken des letzten Tiles, wenn letzter Waggon sich rausbewegt (x oder y vom letzten unterschiedlich ist zum 2. letzten)
@@ -227,10 +231,10 @@ func (t *Train) recalculatePath() {
 	//sucht einen Weg zu beiden Enden der Zielplattform und nimmt den kürzeren
 	// (Optimierung: brich ab, wenn der Weg sicher länger als der andere ist
 	// ODER paralelles Pathfinding)
-	goals := t.NextStop.Plattform.getFirstLast()
+	goals := t.NextStop.getGoals()
 	var paths, pathsSignals [2][][3]int
 	paths[0] = make([][3]int, 0)
-	for i := range 2 {
+	for i := range goals {
 		paths[i], pathsSignals[i] = dijkstra(goals[i], len(paths[0]))
 		if len(paths[i]) == 0 {
 			//testet nochmal, dieses mal wird der Zug umggedreht um zu prüfen, ob dann ein Weg zu finden ist
@@ -248,14 +252,16 @@ func (t *Train) recalculatePath() {
 		return
 	}
 	var i int
-	if len(paths[0]) >= len(paths[1]) {
+	if len(paths[0]) >= len(paths[1]) && len(paths[1]) > 0 {
 		i = 1
 	} else {
 		i = 0
 	}
 	slices.Reverse(paths[i])
-	//Hinzufügen der Tiles der Station ans Ende, damit der Zug bis nach Hinten einfährt
-	paths[i] = append(paths[i], t.NextStop.Plattform.getPathToOpposite(goals[i])...)
+	//Hinzufügen der Tiles der Station ans Ende, damit der Zug bis nach Hinten einfährt, wenn das Ziel eine Plattform ist
+	if t.NextStop.IsPlattform {
+		paths[i] = append(paths[i], t.NextStop.Plattform.getPathToOpposite(goals[i])...)
+	}
 	t.currentPath = paths[i]
 
 	//Umdrehen Weg, damit der vom Start zum Ziel, war bis jetzt umgedreht
