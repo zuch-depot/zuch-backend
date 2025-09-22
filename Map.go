@@ -13,7 +13,7 @@ var (
 	testMap = []string{
 		/*
 		 0.1.2.3.4.5.6.7.8.9*/
-		"-.+.-.-.+.+.-. . .|", //0
+		" .+.-.-.+.+.-. . .|", //0
 		" .|. . .+.+. . . .|", //1
 		" .|. . . .+.+. . .|", //2
 		" .|. . . . .|. .+.+", //3
@@ -25,58 +25,61 @@ var (
 		" . . . . . .|. . . ", //9
 	}
 	testSignals = [][3]int{
-		[3]int{3, 4, 3},
-		[3]int{4, 5, 1},
-		//[3]int{5, 7, 3},
-		[3]int{6, 6, 2},
-		[3]int{5, 2, 2},
+		[3]int{1, 3, 4},
+		// [3]int{4, 5, 1},
+		// [3]int{6, 6, 2},
+		// [3]int{5, 2, 2},
 
-		[3]int{9, 4, 2},
-		[3]int{8, 6, 3},
+		// [3]int{9, 4, 2},
+		// [3]int{8, 6, 3},
 	}
 )
 
 // nur fürs Testen, inkl. Schedule
 func createTrains() {
+	//stations
+	stations = append(stations, &Station{name: "Station Nord", CargoStorage: []*CargoStorage{
+		{capacity: 100, filled: 50, CargoType: Potatos}}})
+	plattforms := []Plattform{{name: "Gleis 1", Tiles: [][2]int{{2, 0}, {3, 0}}}}
+	stations = append(stations, &Station{name: "Station Süd"})
+	plattforms = append(plattforms, Plattform{name: "Gleis 31", Tiles: [][2]int{{3, 7}, {4, 7}, {5, 7}}})
+
 	//Zug eins mit Schedule
 	Stops := []Stop{
-		Stop{id: 1, goal: [3]int{6, 7, 2}},
-		Stop{id: 2, goal: [3]int{4, 0, 1}},
-		Stop{id: 3, goal: [3]int{1, 3, 4}}}
+		{Id: 1, Plattform: &plattforms[0], IsPlattform: true},
+		{Id: 2, Goal: [3]int{1, 3, 4}, Name: "Wegpunkt 1"},
+		{Id: 3, Plattform: &plattforms[1], IsPlattform: true}}
 	schedules = append(schedules, &Schedule{Stops: Stops})
 	temp := []TrainType{
-		TrainType{position: [3]int{4, 4, 1}},
-		TrainType{position: [3]int{3, 4, 3}},
-		TrainType{position: [3]int{3, 4, 1}},
-		TrainType{position: [3]int{2, 4, 3}}}
-	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "1"})
-	//Zug zwei, 2. Schedule
-	Stops = []Stop{
-		Stop{id: 1, goal: [3]int{6, 7, 2}},
-		Stop{id: 2, goal: [3]int{5, 4, 1}}}
+		{position: [3]int{4, 4, 1}},
+		{position: [3]int{3, 4, 3}},
+		{position: [3]int{3, 4, 1}},
+		{position: [3]int{2, 4, 3}}}
+	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE1"})
+	// Zug zwei
 	schedules = append(schedules, &Schedule{Stops: Stops})
 	temp = []TrainType{
-		TrainType{position: [3]int{3, 7, 3}},
-		TrainType{position: [3]int{3, 7, 1}},
-		TrainType{position: [3]int{2, 7, 3}}}
-	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[1], Name: "2"})
+		{position: [3]int{6, 6, 2}},
+		{position: [3]int{6, 5, 4}},
+		{position: [3]int{6, 5, 2}}}
+	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE2", NextStop: Stops[1]})
 	//zug 3
-	Stops = []Stop{
-		Stop{id: 1, goal: [3]int{9, 0, 2}},
-		Stop{id: 2, goal: [3]int{9, 8, 4}}}
-	schedules = append(schedules, &Schedule{Stops: Stops})
-	temp = []TrainType{
-		TrainType{position: [3]int{9, 2, 4}},
-		TrainType{position: [3]int{9, 2, 2}},
-		TrainType{position: [3]int{9, 1, 4}}}
-	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[2], Name: "3"})
-	trains[2].NextStop = schedules[2].Stops[1]
-	// Zug 4
-	temp = []TrainType{
-		TrainType{position: [3]int{9, 7, 2}},
-		TrainType{position: [3]int{9, 7, 4}},
-		TrainType{position: [3]int{9, 8, 2}}}
-	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[2], Name: "4"})
+	// Stops = []Stop{
+	// 	Stop{id: 1, goal: [3]int{9, 0, 2}},
+	// 	Stop{id: 2, goal: [3]int{9, 8, 4}}}
+	// schedules = append(schedules, &Schedule{Stops: Stops})
+	// temp = []TrainType{
+	// 	TrainType{position: [3]int{9, 2, 4}},
+	// 	TrainType{position: [3]int{9, 2, 2}},
+	// 	TrainType{position: [3]int{9, 1, 4}}}
+	// trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[2], Name: "3"})
+	// trains[2].NextStop = schedules[2].Stops[1]
+	// // Zug 4
+	// temp = []TrainType{
+	// 	TrainType{position: [3]int{9, 7, 2}},
+	// 	TrainType{position: [3]int{9, 7, 4}},
+	// 	TrainType{position: [3]int{9, 8, 2}}}
+	// trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[2], Name: "4"})
 }
 func initializeTiles() {
 	//Map Größe aus config laden
