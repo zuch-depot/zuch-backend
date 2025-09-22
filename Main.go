@@ -12,10 +12,10 @@ import (
 
 var (
 	users     []*User
-	schedules []Schedule
-	stations  []Station
+	schedules []*Schedule
+	stations  []*Station
 	tiles     [][]*Tile
-	trains    []Train
+	trains    []*Train
 )
 var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true}))
 var userInputs = make(chan UserInput, 300) //Queue, die die UserInputs bis zum Start des nächsten Ticks speichert

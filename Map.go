@@ -39,44 +39,44 @@ var (
 // nur fürs Testen, inkl. Schedule
 func createTrains() {
 	//Zug eins mit Schedule
-	stops := []Stop{
+	Stops := []Stop{
 		Stop{id: 1, goal: [3]int{6, 7, 2}},
 		Stop{id: 2, goal: [3]int{4, 0, 1}},
 		Stop{id: 3, goal: [3]int{1, 3, 4}}}
-	schedules = append(schedules, Schedule{stops: stops})
+	schedules = append(schedules, &Schedule{Stops: Stops})
 	temp := []TrainType{
 		TrainType{position: [3]int{4, 4, 1}},
 		TrainType{position: [3]int{3, 4, 3}},
 		TrainType{position: [3]int{3, 4, 1}},
 		TrainType{position: [3]int{2, 4, 3}}}
-	trains = append(trains, Train{train: temp, schedule: schedules[0], name: "1"})
+	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "1"})
 	//Zug zwei, 2. Schedule
-	stops = []Stop{
+	Stops = []Stop{
 		Stop{id: 1, goal: [3]int{6, 7, 2}},
 		Stop{id: 2, goal: [3]int{5, 4, 1}}}
-	schedules = append(schedules, Schedule{stops: stops})
+	schedules = append(schedules, &Schedule{Stops: Stops})
 	temp = []TrainType{
 		TrainType{position: [3]int{3, 7, 3}},
 		TrainType{position: [3]int{3, 7, 1}},
 		TrainType{position: [3]int{2, 7, 3}}}
-	trains = append(trains, Train{train: temp, schedule: schedules[1], name: "2"})
+	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[1], Name: "2"})
 	//zug 3
-	stops = []Stop{
+	Stops = []Stop{
 		Stop{id: 1, goal: [3]int{9, 0, 2}},
 		Stop{id: 2, goal: [3]int{9, 8, 4}}}
-	schedules = append(schedules, Schedule{stops: stops})
+	schedules = append(schedules, &Schedule{Stops: Stops})
 	temp = []TrainType{
 		TrainType{position: [3]int{9, 2, 4}},
 		TrainType{position: [3]int{9, 2, 2}},
 		TrainType{position: [3]int{9, 1, 4}}}
-	trains = append(trains, Train{train: temp, schedule: schedules[2], name: "3"})
-	trains[2].nextStop = schedules[2].stops[1]
+	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[2], Name: "3"})
+	trains[2].NextStop = schedules[2].Stops[1]
 	// Zug 4
 	temp = []TrainType{
 		TrainType{position: [3]int{9, 7, 2}},
 		TrainType{position: [3]int{9, 7, 4}},
 		TrainType{position: [3]int{9, 8, 2}}}
-	trains = append(trains, Train{train: temp, schedule: schedules[2], name: "4"})
+	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[2], Name: "4"})
 }
 func initializeTiles() {
 	//Map Größe aus config laden
@@ -131,7 +131,7 @@ func initializeTiles() {
 // testing
 func printTrains() {
 	for i := range trains {
-		fmt.Println("Train", trains[i].name, trains[i].train)
+		fmt.Println("Train", trains[i].Name, trains[i].Waggons)
 	}
 	fmt.Println("-----------------------")
 }
@@ -171,7 +171,7 @@ func printMap() {
 
 func isTrainAt(x int, y int) (bool, int) {
 	for i := range trains {
-		waggons := trains[i].train
+		waggons := trains[i].Waggons
 		for o := range waggons {
 			pos := waggons[o].position
 			if pos[0] == x && pos[1] == y {

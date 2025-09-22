@@ -1,10 +1,12 @@
 package main
 
 type Station struct {
-	plattforms []Plattform
+	Plattforms []Plattform
 }
 
 // --------------------------------------------------
 type Plattform struct {
-	tiles []Tile
+	Tiles [][3]int
 }
+
+//immer zum nähesten Pathfinden und dann doch bis ans Ende fahren

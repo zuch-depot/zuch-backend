@@ -13,10 +13,10 @@ import (
 // ist aber bisher pass-by-value, dunno ob reference hier vielleicht mehr sinn macht
 // Die ticks sollte man noch anhalten
 func saveGame(users []*User,
-	schedules []Schedule,
-	stations []Station,
+	schedules []*Schedule,
+	stations []*Station,
 	tiles [][]*Tile,
-	trains []Train,
+	trains []*Train,
 ) {
 	// ich will den ganzen bums hier eigentlich ja nur speichern
 	// Alles soll gerne in eine Json datei
@@ -71,8 +71,8 @@ func saveGame(users []*User,
 
 type gamestate struct {
 	Users     []*User
-	Schedules []Schedule
-	Stations  []Station
+	Schedules []*Schedule
+	Stations  []*Station
 	Tiles     [][]*Tile
-	Trains    []Train
+	Trains    []*Train
 }
