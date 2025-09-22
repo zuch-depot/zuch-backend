@@ -22,7 +22,7 @@ func (s *Schedule) nextStop(currentStop Stop) Stop {
 type Stop struct {
 	Id          int
 	Plattform   *Plattform
-	Goal        [3]int //Signal als Wegpunkt
+	Goal        [3]int //(?Signal als) Wegpunkt
 	IsPlattform bool
 	Name        string
 }

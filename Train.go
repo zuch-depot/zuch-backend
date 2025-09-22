@@ -19,13 +19,13 @@ type TrainType struct {
 	position [3]int //x,y,sub
 	maxSpeed int
 	//
-	size  int
-	cargo int
+	CargoStorage *CargoStorage
 }
 
 // aktuell wählt er automatisch den nächsten Stop aus, wenn das Pathfinding nicht funktioniert hat
 // für 2 Wege Signale muss geprüft werden, ob nicht schon ein Zug zum Signal auf der anderen Seite fährt
-func (t *Train) move() {
+func (t *Train) move() [2]int {
+	var entblocken [2]int
 	newGenNoSignal := t.waiting //neu generiert und kein Signal, oder er hat letzte mal gewartet, dann gucken, ob immer noch
 
 	//Auswahl des nächsten Stops wenn man am Ziel angekommen ist (oder das Pathfinding nicht funktioniert hat)
@@ -36,7 +36,7 @@ func (t *Train) move() {
 		newGenNoSignal = true
 		//wenn das Pathfinding (immer noch) nicht funktioniert hat
 		if len(t.currentPath) == 0 {
-			return
+			return [2]int{-1, -1}
 		}
 	}
 
@@ -53,7 +53,6 @@ func (t *Train) move() {
 	// wird dann überschrieben, wenn der nächste zug nicht weiterfahren kann)
 	// fmt.Println("newGenNoSignal", newGenNoSignal, "Signale:", signals, "Weg:", path)
 	if newGenNoSignal || len(signals) > 1 && t.Waggons[0].position == signals[0] {
-		fmt.Println("Suche nach Blockierungen bei Zug", t.Name)
 		//gucken, ob bis zum nächsten Signal alle Tiles unblocked sind, sonst fahre nicht weiter
 		// (es wird immer auch das letzte Tile überprüft, da man über ein sub tile ohne signal fahren muss, um zu einem zu kommen)
 		// --> wichtig für Stationen, immer letzte Subtile ansteuern
@@ -62,7 +61,7 @@ func (t *Train) move() {
 			if tiles[path[i][0]][path[i][1]].IsBlocked {
 				fmt.Println("Zug", t.Name, ": Blocked Tile found:", path[i], ". Waiting")
 				t.waiting = true
-				return
+				return [2]int{-1, -1}
 			}
 		}
 		//da nichts geblocked war, blockt dieser Zug jetzt die Strecke zum nächsten Signal
@@ -76,10 +75,11 @@ func (t *Train) move() {
 	}
 
 	//entblocken des letzten Tiles, wenn letzter Waggon sich rausbewegt (x oder y vom letzten unterschiedlich ist zum 2. letzten)
+	// in die Queue schreiben, da entblocken nur am Ende des Ticks
 	if len(t.Waggons) == 1 ||
 		(t.Waggons[len(t.Waggons)-1].position[0] != t.Waggons[len(t.Waggons)-2].position[0] ||
 			t.Waggons[len(t.Waggons)-1].position[1] != t.Waggons[len(t.Waggons)-2].position[1]) {
-		tiles[t.Waggons[len(t.Waggons)-1].position[0]][t.Waggons[len(t.Waggons)-1].position[1]].IsBlocked = false
+		entblocken = [2]int{t.Waggons[len(t.Waggons)-1].position[0], t.Waggons[len(t.Waggons)-1].position[1]}
 	}
 
 	//Bewegung der Waggons
@@ -93,6 +93,8 @@ func (t *Train) move() {
 	t.currentPath = t.currentPath[1:]
 
 	// for alle waggons {clients.schickeNachtricht(waggong x,y, hat sich bewegt)}
+
+	return entblocken
 }
 
 func (t *Train) recalculatePath() {
@@ -319,7 +321,6 @@ func (t *Train) reverseTrain() {
  */
 // verified
 func neighbourTracks(x int, y int, sub int) [][3]int {
-
 	var r [][3]int
 
 	appending := func(a [3]int) {
@@ -364,13 +365,11 @@ func neighbourTracks(x int, y int, sub int) [][3]int {
 	return r
 }
 
-// --------------------------------------------------
-type CargoType int
+type WaggonModdel int
 
 const (
-	Coal CargoType = iota //all following are increasing int
-	Iron
-	Potatos
+	Dampflokomotive WaggonModdel = iota
+	SchüttgutWagen
 )
 
 func Abs(x int) int {

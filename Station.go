@@ -5,8 +5,15 @@ import (
 )
 
 type Station struct {
-	name string
+	name         string
+	CargoStorage []*CargoStorage
 }
+
+func (s *Station) initStation() {
+
+}
+
+//-------------------------------------------------------------------------------------
 
 // ist einzigartig durch station & name zusammen (ggf. id?)
 type Plattform struct {
@@ -101,5 +108,3 @@ func (p *Plattform) getPathToOpposite(initial [3]int) [][3]int {
 
 	return r
 }
-
-//immer zum nähesten Pathfinden und dann doch bis ans Ende fahren

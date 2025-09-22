@@ -38,29 +38,30 @@ var (
 // nur fürs Testen, inkl. Schedule
 func createTrains() {
 	//stations
-	stations = append(stations, &Station{name: "Station Nord"})
-	plattforms := []Plattform{Plattform{name: "Gleis 1", Tiles: [][2]int{[2]int{2, 0}, [2]int{3, 0}}}}
+	stations = append(stations, &Station{name: "Station Nord", CargoStorage: []*CargoStorage{
+		{capacity: 100, filled: 50, CargoType: Potatos}}})
+	plattforms := []Plattform{{name: "Gleis 1", Tiles: [][2]int{{2, 0}, {3, 0}}}}
 	stations = append(stations, &Station{name: "Station Süd"})
-	plattforms = append(plattforms, Plattform{name: "Gleis 31", Tiles: [][2]int{[2]int{3, 7}, [2]int{4, 7}, [2]int{5, 7}}})
+	plattforms = append(plattforms, Plattform{name: "Gleis 31", Tiles: [][2]int{{3, 7}, {4, 7}, {5, 7}}})
 
 	//Zug eins mit Schedule
 	Stops := []Stop{
-		Stop{Id: 1, Plattform: &plattforms[0], IsPlattform: true},
-		Stop{Id: 2, Goal: [3]int{1, 3, 4}, Name: "Wegpunkt 1"},
-		Stop{Id: 3, Plattform: &plattforms[1], IsPlattform: true}}
+		{Id: 1, Plattform: &plattforms[0], IsPlattform: true},
+		{Id: 2, Goal: [3]int{1, 3, 4}, Name: "Wegpunkt 1"},
+		{Id: 3, Plattform: &plattforms[1], IsPlattform: true}}
 	schedules = append(schedules, &Schedule{Stops: Stops})
 	temp := []TrainType{
-		TrainType{position: [3]int{4, 4, 1}},
-		TrainType{position: [3]int{3, 4, 3}},
-		TrainType{position: [3]int{3, 4, 1}},
-		TrainType{position: [3]int{2, 4, 3}}}
+		{position: [3]int{4, 4, 1}},
+		{position: [3]int{3, 4, 3}},
+		{position: [3]int{3, 4, 1}},
+		{position: [3]int{2, 4, 3}}}
 	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE1"})
 	// Zug zwei
 	schedules = append(schedules, &Schedule{Stops: Stops})
 	temp = []TrainType{
-		TrainType{position: [3]int{6, 6, 2}},
-		TrainType{position: [3]int{6, 5, 4}},
-		TrainType{position: [3]int{6, 5, 2}}}
+		{position: [3]int{6, 6, 2}},
+		{position: [3]int{6, 5, 4}},
+		{position: [3]int{6, 5, 2}}}
 	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE2", NextStop: Stops[1]})
 	//zug 3
 	// Stops = []Stop{
