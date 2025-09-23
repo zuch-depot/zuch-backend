@@ -77,7 +77,7 @@ func acceptNewClient(w http.ResponseWriter, r *http.Request) {
 		user := User{username: username, isConnected: true, connection: conn}
 		users = append(users, &user)
 
-		initializeClient(&user, &gamestateTemp{Users: users, Schedules: []*Schedule{}, Stations: []*Station{}, Tiles: tiles, Trains: []*Train{}})
+		initializeClient(&user, &gamestateTemp{Users: users, Schedules: schedules, Stations: stations, Tiles: tiles, Trains: trains})
 		go checkForClientInput(&user)
 	}
 }
@@ -98,7 +98,7 @@ func initializeClient(user *User, state *gamestateTemp) {
 
 	logger.Info("Sending Client Gamestate", slog.String("Username", user.username))
 
-	envelope := wsEnvelope{Type: "initial_map", Msg: state}
+	envelope := wsEnvelope{Type: "game.initialLoad", Msg: state}
 	err := user.connection.WriteJSON(envelope)
 	if err != nil {
 		logger.Error("Failes parsing state to JSON", slog.String("Error", err.Error()))
@@ -108,16 +108,17 @@ func initializeClient(user *User, state *gamestateTemp) {
 
 func checkForClientInput(user *User) {
 	for {
-		var v UserInput
+		var v recieveWSEnvelope
 		err := user.connection.ReadJSON(&v)
 		if err != nil {
 			logger.Warn(user.username+": Error while checking for input, Closing Connection", slog.String("Error", err.Error())) //logger or log?
 			user.isConnected = false
+			user.connection.Close()
 			user.connection = nil
 			return
 		}
 
-		v.username = user.username
+		v.Username = user.username
 		userInputs <- v
 	}
 }

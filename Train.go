@@ -18,8 +18,9 @@ type Train struct {
 type TrainType struct {
 	position [3]int //x,y,sub
 	maxSpeed int
-	//
-	CargoStorage *CargoStorage
+	id       int
+	size     int
+	cargo    int
 }
 
 // aktuell wählt er automatisch den nächsten Stop aus, wenn das Pathfinding nicht funktioniert hat
@@ -79,7 +80,8 @@ func (t *Train) move() [2]int {
 	if len(t.Waggons) == 1 ||
 		(t.Waggons[len(t.Waggons)-1].position[0] != t.Waggons[len(t.Waggons)-2].position[0] ||
 			t.Waggons[len(t.Waggons)-1].position[1] != t.Waggons[len(t.Waggons)-2].position[1]) {
-		entblocken = [2]int{t.Waggons[len(t.Waggons)-1].position[0], t.Waggons[len(t.Waggons)-1].position[1]}
+		letzterWagON := t.Waggons[len(t.Waggons)-1]
+		tiles[letzterWagON.position[0]][letzterWagON.position[1]].IsBlocked = false
 	}
 
 	//Bewegung der Waggons
@@ -321,13 +323,15 @@ func (t *Train) reverseTrain() {
  */
 // verified
 func neighbourTracks(x int, y int, sub int) [][3]int {
-	var r [][3]int
 
-	appending := func(a [3]int) {
+	var connectedNeigbours [][3]int // [3]int identifiziert mit x y und subtile ein exaktes Subtile,
+	// Alle Koordinaten von Subtiles zurückgeben die angrenzen die können im gleichem subtile oder im angrenzendem
+
+	appending := func(subtilesToCheck [3]int) {
 		for i := range 3 {
-			o := a[i]
+			o := subtilesToCheck[i]
 			if tiles[x][y].Tracks[o-1] {
-				r = append(r, [3]int{x, y, o})
+				connectedNeigbours = append(connectedNeigbours, [3]int{x, y, o})
 			}
 		}
 	}
@@ -336,33 +340,33 @@ func neighbourTracks(x int, y int, sub int) [][3]int {
 	case 1:
 		if x > 0 {
 			if tiles[x-1][y].Tracks[2] {
-				r = append(r, [3]int{x - 1, y, 3})
+				connectedNeigbours = append(connectedNeigbours, [3]int{x - 1, y, 3})
 			}
 		}
 		appending([3]int{2, 3, 4})
 	case 2:
 		if y > 0 {
 			if tiles[x][y-1].Tracks[3] {
-				r = append(r, [3]int{x, y - 1, 4})
+				connectedNeigbours = append(connectedNeigbours, [3]int{x, y - 1, 4})
 			}
 		}
 		appending([3]int{1, 3, 4})
 	case 3:
 		if x != len(tiles)-1 {
 			if tiles[x+1][y].Tracks[0] {
-				r = append(r, [3]int{x + 1, y, 1})
+				connectedNeigbours = append(connectedNeigbours, [3]int{x + 1, y, 1})
 			}
 		}
 		appending([3]int{1, 2, 4})
 	case 4:
 		if y != len(tiles[0])-1 {
 			if tiles[x][y+1].Tracks[1] {
-				r = append(r, [3]int{x, y + 1, 2})
+				connectedNeigbours = append(connectedNeigbours, [3]int{x, y + 1, 2})
 			}
 		}
 		appending([3]int{1, 2, 3})
 	}
-	return r
+	return connectedNeigbours
 }
 
 type WaggonModdel int

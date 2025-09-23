@@ -18,16 +18,11 @@ var (
 	trains    []*Train
 	//Plattform
 )
-var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true}))
-var userInputs = make(chan UserInput, 300) //Queue, die die UserInputs bis zum Start des nächsten Ticks speichert
+var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true, Level: slog.LevelDebug}))
+var userInputs = make(chan recieveWSEnvelope, 300) //Queue, die die UserInputs bis zum Start des nächsten Ticks speichert
 var unPause = make(chan bool)
 
 var isPaused = false
-
-type wsEnvelope struct {
-	Type string
-	Msg  any
-}
 
 func main() {
 	godotenv.Load("main.env")
@@ -71,11 +66,10 @@ func main() {
 		}
 
 		//process factorys
-
 		//load/unload
 
 		//anzeigen Testing
-		if tick%10 == 0 {
+		if tick%100 == 0 {
 			printMap()
 			// fmt.Println("tick", tick)
 		}
@@ -89,8 +83,9 @@ func processClientInputs() {
 	for len(userInputs) > 0 {
 		input := <-userInputs
 
-		switch input.action {
-		case "":
+		switch input.Type {
+		case "tile.update":
+			handleTileUpdate(input, tiles)
 
 		}
 	}

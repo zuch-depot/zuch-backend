@@ -8,6 +8,26 @@ type Tile struct {
 	IsBlocked   bool //nur für tracks
 }
 
+func (t *Tile) addTrack(i int) {
+	t.Tracks[i-1] = true
+}
+
+func (t Tile) removeTracks() {
+
+}
+
+func (t Tile) addSignal(i int) {
+
+}
+
+func (t Tile) removeSignals() {
+
+}
+
+func (t Tile) removePlattform() {
+
+}
+
 // --------------------------------------------------
 
 type CargoStorage struct {

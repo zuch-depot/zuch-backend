@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"strconv"
 	"strings"
@@ -21,8 +23,8 @@ var (
 		" . .+.-.+. .|. .|.|", //5
 		" . .|. . . .|. .+.+", //6
 		" . .+.-.-.-.+. . .|", //7
-		" . . . . . .|. . .|", //8
-		" . . . . . .|. . . ", //9
+		" .+.+. . . .|. . .|", //8
+		" .+.+. . . .|. . . ", //9
 	}
 	testSignals = [][3]int{
 		[3]int{1, 3, 4},
@@ -81,6 +83,10 @@ func createTrains() {
 	// 	TrainType{position: [3]int{9, 8, 2}}}
 	// trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[2], Name: "4"})
 }
+
+var sizeX int
+var sizeY int
+
 func initializeTiles() {
 	//Map Größe aus config laden
 	sizeX, err := strconv.ParseInt(os.Getenv("XSIZE"), 10, 64)
@@ -194,4 +200,25 @@ func isSignalAt(x int, y int) (bool, int) {
 		}
 	}
 	return false, 0
+}
+
+func handleTileUpdate(envelope recieveWSEnvelope, tiles [][]*Tile) {
+	var update tileUpdateMSG
+	err := json.Unmarshal(envelope.Msg, &update)
+	if err != nil {
+		fmt.Println("EROOR", err)
+	}
+	if !(0 <= update.X && update.X <= sizeX) && (0 <= update.Y && update.Y <= sizeY) && (1 <= update.Subtile && update.Subtile <= 4) {
+		logger.Error("Invalid coordinates in wsEnvolope, ignoring this envolpe and continuing", slog.String("username", envelope.Username))
+		return
+	}
+
+	switch update.Action {
+	case "build":
+		switch update.Subject {
+		case "rail":
+			tiles[update.X][update.Y].addTrack(update.Subtile)
+		}
+	}
+
 }
