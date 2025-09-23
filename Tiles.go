@@ -1,19 +1,10 @@
 package main
 
-// --------------------------------------------------
 type Tile struct {
 	Tracks      [4]bool
 	Signals     [4]bool
 	IsPlattform bool
 	IsBlocked   bool //nur für tracks
-}
-
-// --------------------------------------------------
-
-type CargoStorage struct {
-	capacity  int
-	filled    int
-	CargoType CargoType
 }
 
 type AtiveTileType int
@@ -25,19 +16,20 @@ const (
 	ChipShop
 )
 
-type CargoType int
+// konkrete Güter, wie z.B. Kohle, Eisen, etc...
+type CargoType string
 
 const (
-	Coal CargoType = iota //all following are increasing int
-	Iron
-	Potatos
+	Coal    CargoType = "Kohle"
+	Iron    CargoType = "Eisen"
+	Potatos CargoType = "Kartoffeln"
 )
 
-type TestType string
+// Güterarten zusammengefasst, wie z.B. Schüttgut oder Flüssigkeiten
+type CargoCategory string
 
 const (
-	Morgen TestType = "Morgen"
-	Abend  TestType = "Abend"
+	Food      CargoCategory = "Lebensmittel"
+	BulkGoods CargoCategory = "Schüttgut"
+	Liquid    CargoCategory = "Flüssigkeiten"
 )
-
-type TestTypeType []TestType

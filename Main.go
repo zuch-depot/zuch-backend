@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"log/slog"
 	"os"
 	"strconv"
@@ -16,9 +17,12 @@ var (
 	stations  []*Station
 	tiles     [][]*Tile
 	trains    []*Train
-	//Plattform
+
+	loadUnloadSpeed   int
+	minLoadUloadTicks int
+	//Plattforms
 )
-var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true}))
+var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true, Level: slog.LevelDebug}))
 var userInputs = make(chan UserInput, 300) //Queue, die die UserInputs bis zum Start des nächsten Ticks speichert
 var unPause = make(chan bool)
 
@@ -31,6 +35,18 @@ type wsEnvelope struct {
 
 func main() {
 	godotenv.Load("main.env")
+
+	temp, err := strconv.ParseInt(os.Getenv("LOADUNLOADSPEED"), 10, 64)
+	if err != nil {
+		log.Println("Error while loading LoadUnloadSpeed", err)
+	}
+	loadUnloadSpeed = int(temp)
+
+	temp, err = strconv.ParseInt(os.Getenv("MINLOADUNLOADTICKS"), 10, 64)
+	if err != nil {
+		log.Println("Error while loading minLoadUloadTicks", err)
+	}
+	minLoadUloadTicks = int(temp)
 
 	// Ablauf
 	// beim ersten start (eventuell probieren Dateien einzulesen) sonst defaults setzen
@@ -64,15 +80,13 @@ func main() {
 		//Client Inputs
 		processClientInputs()
 
-		//Train move
+		//Train calculate (Läd/Entläd oder bewegt) und entblocken
 		if tick%10 == 0 {
-			moveTrains()
-			//printTrains()
+			// printTrains()
+			calculateTrains()
 		}
 
 		//process factorys
-
-		//load/unload
 
 		//anzeigen Testing
 		if tick%10 == 0 {
@@ -96,12 +110,12 @@ func processClientInputs() {
 	}
 }
 
-func moveTrains() {
+func calculateTrains() {
 	//Speichern, welche Tiles am Ende des Threads entblocked werden muss
 	var tilesToUnblock [][2]int
 
 	for i := range trains {
-		temp := trains[i].move()
+		temp := trains[i].calculateTrain()
 		if temp[0] >= 0 {
 			tilesToUnblock = append(tilesToUnblock, temp)
 		}

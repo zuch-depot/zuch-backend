@@ -26,60 +26,37 @@ var (
 	}
 	testSignals = [][3]int{
 		[3]int{1, 3, 4},
-		// [3]int{4, 5, 1},
-		// [3]int{6, 6, 2},
-		// [3]int{5, 2, 2},
-
-		// [3]int{9, 4, 2},
-		// [3]int{8, 6, 3},
 	}
 )
 
 // nur fürs Testen, inkl. Schedule
 func createTrains() {
 	//stations
-	stations = append(stations, &Station{name: "Station Nord", CargoStorage: []*CargoStorage{
-		{capacity: 100, filled: 50, CargoType: Potatos}}})
-	plattforms := []Plattform{{name: "Gleis 1", Tiles: [][2]int{{2, 0}, {3, 0}}}}
-	stations = append(stations, &Station{name: "Station Süd"})
-	plattforms = append(plattforms, Plattform{name: "Gleis 31", Tiles: [][2]int{{3, 7}, {4, 7}, {5, 7}}})
+	stations = append(stations, &Station{Name: "Station Nord", capacity: 100, Storage: map[CargoType]int{Potatos: 100}})
+	plattforms := []Plattform{{Name: "Gleis 1", Tiles: [][2]int{{2, 0}, {3, 0}}, station: stations[0]}}
+	stations = append(stations, &Station{Name: "Station Süd", capacity: 150, Storage: map[CargoType]int{Coal: 50}})
+	plattforms = append(plattforms, Plattform{Name: "Gleis 31", Tiles: [][2]int{{3, 7}, {4, 7}, {5, 7}}, station: stations[1]})
 
 	//Zug eins mit Schedule
 	Stops := []Stop{
-		{Id: 1, Plattform: &plattforms[0], IsPlattform: true},
+		{Id: 1, Plattform: &plattforms[0], IsPlattform: true, LoadUnloadCommand: [2]LoadUnloadCommand{
+			LoadUnloadCommand{Loading: true, CargoType: []CargoType{Potatos}}}},
 		{Id: 2, Goal: [3]int{1, 3, 4}, Name: "Wegpunkt 1"},
-		{Id: 3, Plattform: &plattforms[1], IsPlattform: true}}
+		{Id: 3, Plattform: &plattforms[1], IsPlattform: true, LoadUnloadCommand: [2]LoadUnloadCommand{
+			LoadUnloadCommand{CargoType: []CargoType{Potatos}}}}}
 	schedules = append(schedules, &Schedule{Stops: Stops})
-	temp := []TrainType{
+	temp := []*TrainType{
 		{position: [3]int{4, 4, 1}},
-		{position: [3]int{3, 4, 3}},
-		{position: [3]int{3, 4, 1}},
-		{position: [3]int{2, 4, 3}}}
-	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE1"})
+		{position: [3]int{3, 4, 3}, CargoStorage: &CargoStorage{capacity: 30, filledCargoType: Potatos}},
+		{position: [3]int{3, 4, 1}, CargoStorage: &CargoStorage{capacity: 30, filledCargoType: Potatos}},
+		{position: [3]int{2, 4, 3}, CargoStorage: &CargoStorage{capacity: 30, filledCargoType: Potatos}}}
+	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE1", NextStop: Stops[0]})
 	// Zug zwei
-	schedules = append(schedules, &Schedule{Stops: Stops})
-	temp = []TrainType{
+	temp = []*TrainType{
 		{position: [3]int{6, 6, 2}},
 		{position: [3]int{6, 5, 4}},
 		{position: [3]int{6, 5, 2}}}
-	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE2", NextStop: Stops[1]})
-	//zug 3
-	// Stops = []Stop{
-	// 	Stop{id: 1, goal: [3]int{9, 0, 2}},
-	// 	Stop{id: 2, goal: [3]int{9, 8, 4}}}
-	// schedules = append(schedules, &Schedule{Stops: Stops})
-	// temp = []TrainType{
-	// 	TrainType{position: [3]int{9, 2, 4}},
-	// 	TrainType{position: [3]int{9, 2, 2}},
-	// 	TrainType{position: [3]int{9, 1, 4}}}
-	// trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[2], Name: "3"})
-	// trains[2].NextStop = schedules[2].Stops[1]
-	// // Zug 4
-	// temp = []TrainType{
-	// 	TrainType{position: [3]int{9, 7, 2}},
-	// 	TrainType{position: [3]int{9, 7, 4}},
-	// 	TrainType{position: [3]int{9, 8, 2}}}
-	// trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[2], Name: "4"})
+	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE2", NextStop: Stops[2]})
 }
 func initializeTiles() {
 	//Map Größe aus config laden
@@ -133,8 +110,12 @@ func initializeTiles() {
 
 // testing
 func printTrains() {
-	for i := range trains {
-		fmt.Println("Train", trains[i].Name, trains[i].Waggons)
+	for _, i := range trains {
+		fmt.Print("Train", i.Name)
+		for _, waggon := range i.Waggons {
+			fmt.Print(waggon.CargoStorage, "")
+		}
+		fmt.Println("")
 	}
 	fmt.Println("-----------------------")
 }
@@ -194,4 +175,56 @@ func isSignalAt(x int, y int) (bool, int) {
 		}
 	}
 	return false, 0
+}
+
+/* erst auf dauerhaft blocked prüfen
+*to visit (außer, da wo man hergekommen ist):
+*	1 [x][y][2,3,4], [x-1][y][3]
+*	2 [x][y][1,3,4], [x][y+1][4]
+*	3 [x][y][1,2,4], [x+1][y][1]
+*	4 [x][y][1,2,3], [x][y+1][2]
+ */
+func neighbourTracks(x int, y int, sub int) [][3]int {
+	var r [][3]int
+
+	appending := func(a [3]int) {
+		for i := range 3 {
+			o := a[i]
+			if tiles[x][y].Tracks[o-1] {
+				r = append(r, [3]int{x, y, o})
+			}
+		}
+	}
+
+	switch sub {
+	case 1:
+		if x > 0 {
+			if tiles[x-1][y].Tracks[2] {
+				r = append(r, [3]int{x - 1, y, 3})
+			}
+		}
+		appending([3]int{2, 3, 4})
+	case 2:
+		if y > 0 {
+			if tiles[x][y-1].Tracks[3] {
+				r = append(r, [3]int{x, y - 1, 4})
+			}
+		}
+		appending([3]int{1, 3, 4})
+	case 3:
+		if x != len(tiles)-1 {
+			if tiles[x+1][y].Tracks[0] {
+				r = append(r, [3]int{x + 1, y, 1})
+			}
+		}
+		appending([3]int{1, 2, 4})
+	case 4:
+		if y != len(tiles[0])-1 {
+			if tiles[x][y+1].Tracks[1] {
+				r = append(r, [3]int{x, y + 1, 2})
+			}
+		}
+		appending([3]int{1, 2, 3})
+	}
+	return r
 }
