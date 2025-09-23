@@ -16,6 +16,7 @@ var (
 	stations  []*Station
 	tiles     [][]*Tile
 	trains    []*Train
+	//Plattform
 )
 var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true}))
 var userInputs = make(chan UserInput, 300) //Queue, die die UserInputs bis zum Start des nächsten Ticks speichert
@@ -60,26 +61,18 @@ func main() {
 			logger.Info("continuing after Pause")
 		}
 
-		//Speichern, welche Tiles am Ende des Threads entblocked werden muss
-		var tilesToUnblock []*Tile
-
 		//Client Inputs
 		processClientInputs()
 
 		//Train move
 		if tick%10 == 0 {
 			moveTrains()
-			printTrains()
+			//printTrains()
 		}
 
 		//process factorys
 
 		//load/unload
-
-		//entblocken
-		for i := range tilesToUnblock {
-			tilesToUnblock[i].IsBlocked = false
-		}
 
 		//anzeigen Testing
 		if tick%10 == 0 {
@@ -104,7 +97,18 @@ func processClientInputs() {
 }
 
 func moveTrains() {
+	//Speichern, welche Tiles am Ende des Threads entblocked werden muss
+	var tilesToUnblock [][2]int
+
 	for i := range trains {
-		trains[i].move()
+		temp := trains[i].move()
+		if temp[0] >= 0 {
+			tilesToUnblock = append(tilesToUnblock, temp)
+		}
+	}
+
+	//entblocken
+	for _, i := range tilesToUnblock {
+		tiles[i[0]][i[1]].IsBlocked = false
 	}
 }

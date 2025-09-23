@@ -12,30 +12,31 @@ type Train struct {
 	currentPath        [][3]int //neu berechnen bei laden
 	currentPathSignals [][3]int
 	Name               string
+	waiting            bool
 }
 
 type TrainType struct {
-	position [3]int //x,y,track(1,2,3,4) ->
+	position [3]int //x,y,sub
 	maxSpeed int
 	//
-	size  int
-	cargo int
+	CargoStorage *CargoStorage
 }
 
 // aktuell wählt er automatisch den nächsten Stop aus, wenn das Pathfinding nicht funktioniert hat
 // für 2 Wege Signale muss geprüft werden, ob nicht schon ein Zug zum Signal auf der anderen Seite fährt
-func (t *Train) move() {
-	newGenNoSignal := false
+func (t *Train) move() [2]int {
+	var entblocken [2]int
+	newGenNoSignal := t.waiting //neu generiert und kein Signal, oder er hat letzte mal gewartet, dann gucken, ob immer noch
 
 	//Auswahl des nächsten Stops wenn man am Ziel angekommen ist (oder das Pathfinding nicht funktioniert hat)
 	if len(t.currentPath) == 0 {
 		t.NextStop = t.Schedule.nextStop(t.NextStop)
-		fmt.Println("Next Stop:", t.NextStop.goal)
+		fmt.Println("Next Stop:", t.NextStop.getName())
 		t.recalculatePath()
 		newGenNoSignal = true
 		//wenn das Pathfinding (immer noch) nicht funktioniert hat
 		if len(t.currentPath) == 0 {
-			return
+			return [2]int{-1, -1}
 		}
 	}
 
@@ -51,15 +52,16 @@ func (t *Train) move() {
 	// (vielleicht der Zug, wenn er sich merkt, bei welchem Signal er war und das umschaltet, wenn er aus block rausgefahren ist.
 	// wird dann überschrieben, wenn der nächste zug nicht weiterfahren kann)
 	// fmt.Println("newGenNoSignal", newGenNoSignal, "Signale:", signals, "Weg:", path)
-
 	if newGenNoSignal || len(signals) > 1 && t.Waggons[0].position == signals[0] {
 		//gucken, ob bis zum nächsten Signal alle Tiles unblocked sind, sonst fahre nicht weiter
 		// (es wird immer auch das letzte Tile überprüft, da man über ein sub tile ohne signal fahren muss, um zu einem zu kommen)
 		// --> wichtig für Stationen, immer letzte Subtile ansteuern
-		for i := 0; (newGenNoSignal && path[i] != signals[0]) || !newGenNoSignal && path[i] != signals[1] && i < len(path); i++ {
+		for i := 0; (newGenNoSignal && path[i] != signals[0]) ||
+			!newGenNoSignal && path[i] != signals[1] && i < len(path); i++ {
 			if tiles[path[i][0]][path[i][1]].IsBlocked {
 				fmt.Println("Zug", t.Name, ": Blocked Tile found:", path[i], ". Waiting")
-				return
+				t.waiting = true
+				return [2]int{-1, -1}
 			}
 		}
 		//da nichts geblocked war, blockt dieser Zug jetzt die Strecke zum nächsten Signal
@@ -68,13 +70,16 @@ func (t *Train) move() {
 		}
 		//nun wird das Signal aus der Queue rausgenommen, da der Zug über das Signal fährt
 		t.currentPathSignals = t.currentPathSignals[1:]
+
+		t.waiting = false
 	}
 
 	//entblocken des letzten Tiles, wenn letzter Waggon sich rausbewegt (x oder y vom letzten unterschiedlich ist zum 2. letzten)
+	// in die Queue schreiben, da entblocken nur am Ende des Ticks
 	if len(t.Waggons) == 1 ||
 		(t.Waggons[len(t.Waggons)-1].position[0] != t.Waggons[len(t.Waggons)-2].position[0] ||
 			t.Waggons[len(t.Waggons)-1].position[1] != t.Waggons[len(t.Waggons)-2].position[1]) {
-		tiles[t.Waggons[len(t.Waggons)-1].position[0]][t.Waggons[len(t.Waggons)-1].position[1]].IsBlocked = false
+		entblocken = [2]int{t.Waggons[len(t.Waggons)-1].position[0], t.Waggons[len(t.Waggons)-1].position[1]}
 	}
 
 	//Bewegung der Waggons
@@ -86,6 +91,10 @@ func (t *Train) move() {
 	t.Waggons[0].position = t.currentPath[0]
 	//rausschmeißen des Tiles, wo die Lok sich hinbewegt hat aus der Queue
 	t.currentPath = t.currentPath[1:]
+
+	// for alle waggons {clients.schickeNachtricht(waggong x,y, hat sich bewegt)}
+
+	return entblocken
 }
 
 func (t *Train) recalculatePath() {
@@ -107,7 +116,8 @@ func (t *Train) recalculatePath() {
 		gotNeighbours bool //false is only looked at at least once
 	}
 
-	dijkstra := func() bool {
+	//Paths sind in falscher Reihenfolge
+	dijkstra := func(goal [3]int) ([][3]int, [][3]int) {
 
 		visited := make(map[[3]int]Visit, 1) //ggf. als *Visit
 		var toVisit []ToDo
@@ -115,7 +125,7 @@ func (t *Train) recalculatePath() {
 		toVisit = append(toVisit, ToDo{t.Waggons[0].position[0], t.Waggons[0].position[1], t.Waggons[0].position[2], 0, 0})
 		visited[[3]int{toVisit[0].x, toVisit[0].y, toVisit[0].sub}] = Visit{visited: true, gotNeighbours: true}
 
-		fmt.Println("Dijkstra Start ToDo:", toVisit[0])
+		fmt.Println("Train", t.Name, "Dijkstra Start ToDo:", toVisit[0], "Goal:", goal)
 
 		succesfull := false
 		for len(toVisit) > 0 {
@@ -137,7 +147,7 @@ func (t *Train) recalculatePath() {
 			visitingPathLength := toVisit[0].pathLength
 
 			//ist man angekommen?
-			if visitingTile == t.NextStop.goal {
+			if visitingTile == goal {
 				succesfull = true
 				break
 			}
@@ -168,7 +178,8 @@ func (t *Train) recalculatePath() {
 				if len(t.Waggons) > 1 {
 					//ist der 1. Waggon im selben Tile wie Lokomotive?
 					//ist der Nachbar im Tile der Lokomotive und Wagen?, dann nicht angucken, weil kann nicht befahren werden
-					if n[0] == t.Waggons[1].position[0] && n[1] == t.Waggons[1].position[1] {
+					if (n[0] == t.Waggons[1].position[0] && n[1] == t.Waggons[1].position[1]) ||
+						n == t.Waggons[1].position {
 						continue
 					}
 				}
@@ -190,7 +201,7 @@ func (t *Train) recalculatePath() {
 					//sonst füge in ToDo ein, dass man sich den mal angucken sollte
 					if !alreadyToDo {
 						//optimierung nach A*
-						newCost := visitingPathLength + 1 + Abs(t.NextStop.goal[0]-n[0]) + Abs(t.NextStop.goal[1]-n[1])
+						newCost := visitingPathLength + 1 + Abs(goal[0]-n[0]) + Abs(goal[1]-n[1])
 						toVisit = append(toVisit, ToDo{x: n[0], y: n[1], sub: n[2], pathLength: visitingPathLength + 1, value: newCost})
 					}
 				}
@@ -203,8 +214,8 @@ func (t *Train) recalculatePath() {
 		if succesfull {
 			//rausschreiben des Weges, vom Ziel zum Start. Ebenfalls speichern, wo es Signale gibt
 			var path [][3]int
-			pathSignals := [][3]int{t.NextStop.goal} //Ziel wird als Signal hinzugefügt, da es (eigentlich) sich wie eins verhält
-			for current := t.NextStop.goal; current != t.Waggons[0].position; {
+			var pathSignals [][3]int
+			for current := goal; current != t.Waggons[0].position; {
 				//hinzufügen des aktuell betrachteten sub Tiles in Weg List
 				path = append(path, current)
 				//Bestimmung, ob beim aktuellen sub Tile ein Signal ist, dann füge das hinzu
@@ -216,26 +227,78 @@ func (t *Train) recalculatePath() {
 				current = [3]int{v.prevX, v.prevY, v.prevSub}
 			}
 
-			//Umdrehen Weg, damit der vom Start zum Ziel
-			slices.Reverse(path)
-			fmt.Println(path)
-			t.currentPath = path
-			//das gleiche mit den Signalen
-			slices.Reverse(pathSignals)
-			fmt.Println(pathSignals)
-			t.currentPathSignals = pathSignals
-			return true
+			return path, pathSignals
 		}
-		return false
+		return make([][3]int, 0), make([][3]int, 0)
 	}
 
-	if !dijkstra() {
-		//testet nochmal, dieses mal wird der Zug umggedreht um zu prüfen, ob dann ein Weg zu finden ist
-		t.reverseTrain()
-		if !dijkstra() {
-			fmt.Println("No Path found")
-		}
+	//sucht einen Weg zu beiden Enden der Zielplattform und nimmt den kürzeren
+	// (Optimierung: brich ab, wenn der Weg sicher länger als der andere ist
+	// ODER paralelles Pathfinding)
+	goals := t.NextStop.getGoals()
+	var paths, pathsSignals [2][][3]int
+	paths[0] = make([][3]int, 0)
+
+	channelPath := [2]chan [][3]int{
+		make(chan [][3]int, 1),
+		make(chan [][3]int, 1),
 	}
+	channelPathSignals := [2]chan [][3]int{
+		make(chan [][3]int, 1),
+		make(chan [][3]int, 1),
+	}
+
+	sub := func(i int, goal [3]int, outPath chan<- [][3]int, outPathSignals chan<- [][3]int) {
+
+		path, pathSignals := dijkstra(goal)
+		if len(paths) == 0 {
+			//testet nochmal, dieses mal wird der Zug umggedreht um zu prüfen, ob dann ein Weg zu finden ist
+			fmt.Println("Teste reverse")
+			t.reverseTrain()
+			path, pathSignals = dijkstra(goal)
+			if len(path) == 0 {
+				//wenn umgedreht auch kein Weg zu finden war, wieder zurück drehen
+				t.reverseTrain()
+			}
+		}
+		outPath <- path
+		outPathSignals <- pathSignals
+	}
+
+	//Start der go routinen
+	for i := range goals {
+		go sub(i, goals[i], channelPath[i], channelPathSignals[i])
+	}
+	//auslesen aus dem Buffer
+	for i := range goals {
+		paths[i] = <-channelPath[i]
+		pathsSignals[i] = <-channelPathSignals[i]
+	}
+
+	//gibt es einen Weg?
+	if len(paths[0])+len(paths[1]) == 0 {
+		fmt.Println("No Path found for", t.Name)
+		return
+	}
+	//wenn nur ein Weg, dann der, sonst der bessere
+	var i int
+	if len(paths[0]) >= len(paths[1]) && len(paths[1]) > 0 {
+		i = 1
+	} else {
+		i = 0
+	}
+	slices.Reverse(paths[i])
+	//Hinzufügen der Tiles der Station ans Ende, damit der Zug bis nach Hinten einfährt, wenn das Ziel eine Plattform ist
+	if t.NextStop.IsPlattform {
+		paths[i] = append(paths[i], t.NextStop.Plattform.getPathToOpposite(goals[i])...)
+	}
+	t.currentPath = paths[i]
+
+	//Umdrehen Weg, damit der vom Start zum Ziel, war bis jetzt umgedreht
+	slices.Reverse(pathsSignals[i])
+	//Ziel wird als Signal hinzugefügt, da es (eigentlich) sich wie eins verhält
+	pathsSignals[i] = append(pathsSignals[i], [][3]int{paths[i][len(paths[i])-1]}...)
+	t.currentPathSignals = pathsSignals[i]
 	fmt.Println("----------------------")
 
 }
@@ -258,7 +321,6 @@ func (t *Train) reverseTrain() {
  */
 // verified
 func neighbourTracks(x int, y int, sub int) [][3]int {
-
 	var r [][3]int
 
 	appending := func(a [3]int) {
@@ -303,13 +365,11 @@ func neighbourTracks(x int, y int, sub int) [][3]int {
 	return r
 }
 
-// --------------------------------------------------
-type CargoType int
+type WaggonModdel int
 
 const (
-	Coal CargoType = iota //all following are increasing int
-	Iron
-	Potatos
+	Dampflokomotive WaggonModdel = iota
+	SchüttgutWagen
 )
 
 func Abs(x int) int {
