@@ -108,63 +108,87 @@ func (t *Train) calculateTrain() [2]int {
 
 // returnt ob der Zug voll ist oder nichts mehr zu laden ist, also abfahrtsbereit ist
 func (t *Train) loadUndload() bool {
+	var r bool
 
 	//station, in die der Zug steht
 	sta := t.CurrentStop.Plattform.station
 
+	//es wird durch die Reihenfolge der Commands zuerst geladen, dann entladen.
+	// Dabei wird nur beladen, wenn entladen fertig ist, bzw. noch kapazität von Gütern bewegt pro Tick über gelassen hat
+	avaliableLoadUnloadSpeed := loadUnloadSpeed //misst, wie viel noch geladen und entladen werden darf
 	for _, command := range t.CurrentStop.LoadUnloadCommand {
+		//wenn man nichts mehr verladen darf, dann kann man noch nicht fertig sein
+		if avaliableLoadUnloadSpeed == 0 {
+			return false
+		}
 		if command.Loading {
 			//loading the train
 			for _, cargo := range command.CargoType {
-				loaded := sta.Storage[cargo] - t.loadCargo(cargo, sta.Storage[cargo]) //hinzufügen in den Zug
-				sta.Storage[cargo] -= loaded                                          //Entfernen aus der Station
+				var loaded int
+				//Berücksichtigung, dass max LoadUnloadSpeed pro Vorgang verladen wird
+				if sta.Storage[cargo] >= avaliableLoadUnloadSpeed {
+					loaded = avaliableLoadUnloadSpeed - t.loadCargo(cargo, avaliableLoadUnloadSpeed) //hinzufügen in den Zug
+				} else {
+					loaded = sta.Storage[cargo] - t.loadCargo(cargo, sta.Storage[cargo])
+				}
+				sta.Storage[cargo] -= loaded //Entfernen aus der Station
+				avaliableLoadUnloadSpeed -= loaded
 
 				if loaded > 0 {
 					logger.Debug("Zug: " + t.Name + " hat " + strconv.Itoa(loaded) + " Tonnen " + string(cargo) + " geladen")
 				}
 
 				//wenn man nicht bis Voll wartet und nichts verladen wurde, ist man fertig
-				if !command.WaitTillFull && loaded <= 0 {
-					return true
+				if !command.WaitTillFull && loaded <= 0 && avaliableLoadUnloadSpeed != 0 {
+					r = true
+					continue
 				}
 				//ist fertig, wenn warten auf voll sein und zug voll ist ------------------> EINGÜGEN!
-				if loaded <= 0 {
-					return true
+				if loaded <= 0 && avaliableLoadUnloadSpeed != 0 {
+					r = true
+					continue
 				}
+				r = false
 			}
 		} else {
 			//unloading the train
 			for _, cargo := range command.CargoType {
-				removed := t.unloadCargo(cargo, sta.getFillLevel())
-
-				logger.Debug("Zug: " + t.Name + " hat " + strconv.Itoa(removed) + " Tonnen " + string(cargo) + " entladen")
+				var removed int
+				//ausladen was geht aus den Züge, max LoadUnloadSpeed
+				if sta.capacity-sta.getFillLevel() >= avaliableLoadUnloadSpeed {
+					removed = t.unloadCargo(cargo, avaliableLoadUnloadSpeed)
+				} else {
+					removed = t.unloadCargo(cargo, sta.capacity-sta.getFillLevel())
+				}
+				avaliableLoadUnloadSpeed -= removed
 
 				sta.addCargo(cargo, removed)
+
+				if removed > 0 {
+					logger.Debug("Zug: " + t.Name + " hat " + strconv.Itoa(removed) + " Tonnen " + string(cargo) + " entladen")
+				}
 				//wenn nichts bewegt wurde und man nicht bis leer sein wartet, ist der Ladevorgang beendet
 				//(damit ist immer einmal überprüfen, ohne, dass was passiert -> eig. nicht schlimm)
-				if !command.WaitTillFull && removed <= 0 {
-					return true
+				if !command.WaitTillFull && removed <= 0 && avaliableLoadUnloadSpeed != 0 {
+					r = true
+					continue
 				}
 				//wenn man bis leer sein wartet, muss der Zug leer sein ---------------> bestimmung, ob der Leer ist nach CargoCategory EINFÜGEN!
-				if removed <= 0 {
-					return true
+				if removed <= 0 && avaliableLoadUnloadSpeed != 0 {
+					r = true
+					continue
 				}
+				r = false
 			}
 		}
 	}
 
-	return false
+	return r
 }
 
-// return nicht geladenen Cargo
+// return nicht geladenen Cargo. Geht davon aus, dass toLoad in Grenzen des LoadUnloadSpeedes ist
 func (t *Train) loadCargo(cargoType CargoType, toLoad int) int {
 	var r int
-
-	//nur max Menge pro Vorgang verladen, rest wieder zurück
-	if toLoad > loadUnloadSpeed {
-		r += toLoad - loadUnloadSpeed
-		toLoad = loadUnloadSpeed
-	}
 
 	for _, waggon := range t.Waggons {
 		//wenn nichts mehr zu laden ist, breche ab
@@ -190,15 +214,11 @@ func (t *Train) loadCargo(cargoType CargoType, toLoad int) int {
 	return r + toLoad
 }
 
-// returnt die Anzahl, die entfernt wurde. maxCargoRemoved ist dabei der Platz, der frei ist. Die max. Verladegeschw. wird berücksichtigt
+// returnt die Anzahl, die entfernt wurde. maxCargoRemoved ist dabei der Platz, der frei ist
+// geht davon aus, dass maxCargoRemoved den LoadUnloadSpeed berücksichtigt und prüft es nicht selber
 // -1, wenn kein passender Typ Waggon da ist -------------------> noch nicht!!!!!
 func (t *Train) unloadCargo(cargoType CargoType, maxCargoRemoved int) int {
 	cargoRemovedSoFar := 0
-
-	//maximale Entnahme in einem Tick ist der Speed
-	if maxCargoRemoved > loadUnloadSpeed {
-		maxCargoRemoved = loadUnloadSpeed
-	}
 
 	for _, waggon := range t.Waggons {
 		if cargoRemovedSoFar == maxCargoRemoved {

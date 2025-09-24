@@ -40,16 +40,18 @@ func createTrains() {
 	//Zug eins mit Schedule
 	Stops := []Stop{
 		{Id: 1, Plattform: &plattforms[0], IsPlattform: true, LoadUnloadCommand: [2]LoadUnloadCommand{
+			LoadUnloadCommand{CargoType: []CargoType{Coal}},
 			LoadUnloadCommand{Loading: true, CargoType: []CargoType{Potatos}}}},
 		{Id: 2, Goal: [3]int{1, 3, 4}, Name: "Wegpunkt 1"},
 		{Id: 3, Plattform: &plattforms[1], IsPlattform: true, LoadUnloadCommand: [2]LoadUnloadCommand{
-			LoadUnloadCommand{CargoType: []CargoType{Potatos}}}}}
+			LoadUnloadCommand{CargoType: []CargoType{Potatos}},
+			LoadUnloadCommand{Loading: true, CargoType: []CargoType{Coal}}}}}
 	schedules = append(schedules, &Schedule{Stops: Stops})
 	temp := []*TrainType{
 		{position: [3]int{4, 4, 1}},
 		{position: [3]int{3, 4, 3}, CargoStorage: &CargoStorage{capacity: 30, filledCargoType: Potatos}},
 		{position: [3]int{3, 4, 1}, CargoStorage: &CargoStorage{capacity: 30, filledCargoType: Potatos}},
-		{position: [3]int{2, 4, 3}, CargoStorage: &CargoStorage{capacity: 30, filledCargoType: Potatos}}}
+		{position: [3]int{2, 4, 3}, CargoStorage: &CargoStorage{capacity: 30, filledCargoType: Coal}}}
 	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE1", NextStop: Stops[0]})
 	// Zug zwei
 	temp = []*TrainType{
