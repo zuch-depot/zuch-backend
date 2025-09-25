@@ -21,6 +21,7 @@ var (
 var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true, Level: slog.LevelDebug}))
 var userInputs = make(chan recieveWSEnvelope, 300) //Queue, die die UserInputs bis zum Start des nächsten Ticks speichert
 var unPause = make(chan bool)
+var eventsInTick = make(chan wsEnvelope, 100)
 
 var isPaused = false
 
@@ -37,6 +38,7 @@ func main() {
 
 	// hier den Server starten
 	go startServer()
+	go startNotifiyingClientsOfChanges(&users, eventsInTick)
 
 	//Zeit pro Tick bestimmen
 	ticksMilisec, err := strconv.Atoi(os.Getenv("TICKTIMEMILISEC"))

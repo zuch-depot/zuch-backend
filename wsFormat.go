@@ -22,14 +22,6 @@ type tileUpdateMSG struct {
 	Action  string // remove, build
 }
 
-type trainMoveMSG struct {
-	id      int // Train ID
-	x       int
-	y       int
-	subtile int // 1 => links, 2 => oben, 3 => rechts, 4 => unten
-	// Wilken hat sich entschlossen immer wenn ein subtile als int gespeichert wird bei 1 anzufangen und wenn es ein bool[4] ist bei 0, also kann sein das es sich irgendwo verschiebt aber das kriegen wir sicher noch behoben Bei schienen auch analog
-}
-
 var (
 
 	// #region Map & Tiles
@@ -37,13 +29,23 @@ var (
 	// map.initialLoad
 	mapInitialLoad = wsEnvelope{Type: "game.initialLoad", Msg: &gamestate{}}
 	// Aktualisierung von genau einem Tile, bspw. Schiene oder Signal bauen
+	// 	{
+	//   "Type": "tile.update",
+	//   "Msg": {
+	//     "X": 0,
+	//     "Y": 0,
+	//     "Subtile": 3,  // geht von 1-4
+	//     "Subject": "rail",
+	//     "Action": "build"
+	//   }
+	//  }
 	mapUpdate = wsEnvelope{Type: "tile.update", Msg: &tileUpdateMSG{}}
+
 	// #endregion Map
 
 	// #region Trains
-	trainMove = wsEnvelope{Type: "train.move", Msg: trainMoveMSG{}}
+	trainMove = wsEnvelope{Type: "train.move", Msg: &Train{}}
 	// #endregion Trains
-
 // map.updateTile
 
 )

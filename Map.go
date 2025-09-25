@@ -53,18 +53,18 @@ func createTrains() {
 		{Id: 3, Plattform: &plattforms[1], IsPlattform: true}}
 	schedules = append(schedules, &Schedule{Stops: Stops})
 	temp := []TrainType{
-		{position: [3]int{4, 4, 1}},
-		{position: [3]int{3, 4, 3}},
-		{position: [3]int{3, 4, 1}},
-		{position: [3]int{2, 4, 3}}}
-	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE1"})
+		{Position: [3]int{4, 4, 1}},
+		{Position: [3]int{3, 4, 3}},
+		{Position: [3]int{3, 4, 1}},
+		{Position: [3]int{2, 4, 3}}}
+	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE1", Id: 0})
 	// Zug zwei
 	schedules = append(schedules, &Schedule{Stops: Stops})
 	temp = []TrainType{
-		{position: [3]int{6, 6, 2}},
-		{position: [3]int{6, 5, 4}},
-		{position: [3]int{6, 5, 2}}}
-	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE2", NextStop: Stops[1]})
+		{Position: [3]int{6, 6, 2}},
+		{Position: [3]int{6, 5, 4}},
+		{Position: [3]int{6, 5, 2}}}
+	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE2", NextStop: Stops[1], Id: 1})
 	//zug 3
 	// Stops = []Stop{
 	// 	Stop{id: 1, goal: [3]int{9, 0, 2}},
@@ -83,9 +83,6 @@ func createTrains() {
 	// 	TrainType{position: [3]int{9, 8, 2}}}
 	// trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[2], Name: "4"})
 }
-
-var sizeX int
-var sizeY int
 
 func initializeTiles() {
 	//Map Größe aus config laden
@@ -182,7 +179,7 @@ func isTrainAt(x int, y int) (bool, int) {
 	for i := range trains {
 		waggons := trains[i].Waggons
 		for o := range waggons {
-			pos := waggons[o].position
+			pos := waggons[o].Position
 			if pos[0] == x && pos[1] == y {
 				return true, pos[2]
 			}
@@ -208,7 +205,18 @@ func handleTileUpdate(envelope recieveWSEnvelope, tiles [][]*Tile) {
 	if err != nil {
 		fmt.Println("EROOR", err)
 	}
-	if !(0 <= update.X && update.X <= sizeX) && (0 <= update.Y && update.Y <= sizeY) && (1 <= update.Subtile && update.Subtile <= 4) {
+
+	sizeX, err := strconv.ParseInt(os.Getenv("XSIZE"), 10, 64)
+	if err != nil {
+		log.Println("Error while loading Size of Map in the x dimension", err)
+	}
+
+	sizeY, err := strconv.ParseInt(os.Getenv("YSIZE"), 10, 64)
+	if err != nil {
+		log.Println("Error while loading Size of Map in the y dimension", err)
+	}
+
+	if !((0 <= update.X && update.X < int(sizeX)) && (0 <= update.Y && update.Y < int(sizeY)) && (1 <= update.Subtile && update.Subtile <= 4)) {
 		logger.Error("Invalid coordinates in wsEnvolope, ignoring this envolpe and continuing", slog.String("username", envelope.Username))
 		return
 	}
@@ -218,6 +226,13 @@ func handleTileUpdate(envelope recieveWSEnvelope, tiles [][]*Tile) {
 		switch update.Subject {
 		case "rail":
 			tiles[update.X][update.Y].addTrack(update.Subtile)
+			eventsInTick <- wsEnvelope{Type: "tile.update", Username: "Server", Msg: &tileUpdateMSG{X: update.X, Y: update.Y, Subtile: update.Subtile, Subject: update.Subject, Action: update.Action}}
+		}
+	case "remove":
+		switch update.Subject {
+		case "rail":
+			tiles[update.X][update.Y].removeTracks(update.Subtile)
+			eventsInTick <- wsEnvelope{Type: "tile.update", Username: "Server", Msg: &tileUpdateMSG{X: update.X, Y: update.Y, Subtile: update.Subtile, Subject: update.Subject, Action: update.Action}}
 		}
 	}
 

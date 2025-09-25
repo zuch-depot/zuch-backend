@@ -12,8 +12,8 @@ func (t *Tile) addTrack(i int) {
 	t.Tracks[i-1] = true
 }
 
-func (t Tile) removeTracks() {
-
+func (t *Tile) removeTracks(i int) {
+	t.Tracks[i-1] = false
 }
 
 func (t Tile) addSignal(i int) {

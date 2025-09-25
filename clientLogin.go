@@ -52,7 +52,7 @@ func acceptNewClient(w http.ResponseWriter, r *http.Request) {
 				}
 				v.connection = conn
 				v.isConnected = true
-				initializeClient(v, &gamestateTemp{Users: users, Schedules: []*Schedule{}, Stations: []*Station{}, Tiles: tiles, Trains: []*Train{}})
+				initializeClient(v, &gamestateTemp{Users: users, Schedules: schedules, Stations: stations, Tiles: tiles, Trains: trains})
 
 				go checkForClientInput(v)
 
