@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strconv"
 )
 
@@ -29,7 +28,7 @@ type TrainType struct {
 	Id           int
 	Size         int
 	Cargo        int //was ist das?
-	CargoStorage CargoStorage
+	CargoStorage *CargoStorage
 }
 
 type CargoStorage struct {
@@ -130,7 +129,6 @@ func (t *Train) loadUndload() bool {
 			for _, cargo := range command.CargoType {
 				var loaded int
 				//Berücksichtigung, dass max LoadUnloadSpeed pro Vorgang verladen wird
-				fmt.Println("Load", cargo)
 				if sta.Storage[cargo] >= avaliableLoadUnloadSpeed {
 					loaded = avaliableLoadUnloadSpeed - t.loadCargo(cargo, avaliableLoadUnloadSpeed) //hinzufügen in den Zug
 				} else {
@@ -200,13 +198,9 @@ func (t *Train) loadCargo(cargoType string, toLoad int) int {
 		if toLoad == 0 {
 			break
 		}
+
 		//wenn Waggon richtigen CargoType hat, wenn er schon gefüllt ist, wird gefüllt, oder wenn leer ist, die passende Category hat
-
 		if waggon.CargoStorage != nil {
-
-			fmt.Println(waggon.CargoStorage)
-			fmt.Println(waggon.CargoStorage.filled, getCargoCategory(waggon.CargoStorage.filledCargoType), getCargoCategory(cargoType))
-			fmt.Println(cargoType, waggon.CargoStorage.filledCargoType)
 
 			if (waggon.CargoStorage.filled == 0 && waggon.CargoStorage.CargoCategory == getCargoCategory(cargoType)) ||
 				(cargoType == waggon.CargoStorage.filledCargoType) {
