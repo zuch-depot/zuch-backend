@@ -1,6 +1,5 @@
 package main
 
-// --------------------------------------------------
 type Tile struct {
 	Tracks      [4]bool
 	Signals     [4]bool
@@ -28,14 +27,6 @@ func (t Tile) removePlattform() {
 
 }
 
-// --------------------------------------------------
-
-type CargoStorage struct {
-	capacity  int
-	filled    int
-	CargoType CargoType
-}
-
 type AtiveTileType int
 
 const (
@@ -44,20 +35,3 @@ const (
 	PotatoFarm
 	ChipShop
 )
-
-type CargoType int
-
-const (
-	Coal CargoType = iota //all following are increasing int
-	Iron
-	Potatos
-)
-
-type TestType string
-
-const (
-	Morgen TestType = "Morgen"
-	Abend  TestType = "Abend"
-)
-
-type TestTypeType []TestType

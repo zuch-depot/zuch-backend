@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"log"
 	"log/slog"
 	"os"
 	"strconv"
@@ -16,7 +18,11 @@ var (
 	stations  []*Station
 	tiles     [][]*Tile
 	trains    []*Train
-	//Plattform
+
+	loadUnloadSpeed       int
+	minLoadUloadTicks     int
+	CargoCategoryAndTypes map[string][]string
+	//Plattforms
 )
 var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true, Level: slog.LevelDebug}))
 var userInputs = make(chan recieveWSEnvelope, 300) //Queue, die die UserInputs bis zum Start des nächsten Ticks speichert
@@ -27,6 +33,22 @@ var isPaused = false
 
 func main() {
 	godotenv.Load("main.env")
+
+	//loading global variables
+	tempVar, err := strconv.ParseInt(os.Getenv("LOADUNLOADSPEED"), 10, 64)
+	if err != nil {
+		log.Println("Error while loading LoadUnloadSpeed", err)
+	}
+	loadUnloadSpeed = int(tempVar)
+
+	tempVar, err = strconv.ParseInt(os.Getenv("MINLOADUNLOADTICKS"), 10, 64)
+	if err != nil {
+		log.Println("Error while loading minLoadUloadTicks", err)
+	}
+	minLoadUloadTicks = int(tempVar)
+
+	//wichtig als initialisierung, bevor Züge verarbeitet werden
+	loadConfig()
 
 	// Ablauf
 	// beim ersten start (eventuell probieren Dateien einzulesen) sonst defaults setzen
@@ -61,14 +83,13 @@ func main() {
 		//Client Inputs
 		processClientInputs()
 
-		//Train move
+		//Train calculate (Läd/Entläd oder bewegt) und entblocken
 		if tick%10 == 0 {
-			moveTrains()
-			//printTrains()
+			// printTrains()
+			calculateTrains()
 		}
 
 		//process factorys
-		//load/unload
 
 		//anzeigen Testing
 		if tick%100 == 0 {
@@ -93,12 +114,12 @@ func processClientInputs() {
 	}
 }
 
-func moveTrains() {
+func calculateTrains() {
 	//Speichern, welche Tiles am Ende des Threads entblocked werden muss
 	var tilesToUnblock [][2]int
 
 	for i := range trains {
-		temp := trains[i].move()
+		temp := trains[i].calculateTrain()
 		if temp[0] >= 0 {
 			tilesToUnblock = append(tilesToUnblock, temp)
 		}
@@ -107,5 +128,25 @@ func moveTrains() {
 	//entblocken
 	for _, i := range tilesToUnblock {
 		tiles[i[0]][i[1]].IsBlocked = false
+	}
+}
+
+func loadConfig() {
+	//einlesen der config
+	configFile, err := os.ReadFile("config.json")
+	if err != nil {
+		log.Println("Error while loading config.json", err)
+	}
+	raw := make(map[string][]map[string][]string)
+	if err := json.Unmarshal(configFile, &raw); err != nil {
+		panic(err)
+	}
+
+	// Zielmap aufbauen
+	CargoCategoryAndTypes = make(map[string][]string)
+	for _, entry := range raw["Train Categories"] {
+		for key, values := range entry {
+			CargoCategoryAndTypes[key] = values
+		}
 	}
 }

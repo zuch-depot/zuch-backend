@@ -2,42 +2,277 @@ package main
 
 import (
 	"fmt"
-	"slices"
+	"strconv"
 )
 
 type Train struct {
-	Waggons            []TrainType //Alle müssen nebeneinander spawnen
+	Name               string
+	Waggons            []*TrainType //Alle müssen nebeneinander spawnen
 	Schedule           Schedule
-	NextStop           Stop     //nur fürs testen
+	NextStop           Stop //nur fürs testen
+	nextGoal           [3]int
+	lastGoal           [3]int
+	CurrentStop        Stop     //wird überschrieben, wenn der Zug von der Zielstation ausfahren möchte und nur mit StaionsStops
 	currentPath        [][3]int //neu berechnen bei laden
 	currentPathSignals [][3]int
-	Name               string
-	Id                 int
-	waiting            bool
+	foundPathToNext    bool //ob das letzte Pathfinding nicht erfolgreich war, dann muss erneut veruscht werden, ohne neuen Stop auszuwählen
+
+	waiting         bool //hat letzten Tick ein geblockes Tile gefunden oder keinen Weg gefunden und wartet
+	loadingTime     int  //Wie lange ist der Zug schon am be-/entladen? 0 == nicht am laden. Zeiteinheit ist wie oft methode aufgerufen wurde
+	finishedLoading bool //wenn nichts mehr geladen wird true. Kann auch wieder zurückgenommen werden
+	Id              int
 }
 
 type TrainType struct {
-	Position [3]int //x,y,sub
-	MaxSpeed int
-	Id       int
-	Size     int
-	Cargo    int
+	Position     [3]int //x,y,sub
+	MaxSpeed     int
+	Id           int
+	Size         int
+	Cargo        int //was ist das?
+	CargoStorage CargoStorage
 }
 
-// aktuell wählt er automatisch den nächsten Stop aus, wenn das Pathfinding nicht funktioniert hat
+type CargoStorage struct {
+	capacity        int //statisch
+	filled          int
+	filledCargoType string
+	CargoCategory   string //statisch
+}
+
+// returned Tile zum entblcken
+// wenn fertig mit Laden/entladen passiert ein Tick nichts und dann fährt er los
+func (t *Train) calculateTrain() [2]int {
+
+	//bestimmt, ob man beim letzten Pathfining erfolgreich war. wenn ja und man den nächsten sucht, dann wird der nächste Stop ausgewählt
+	//sonst wird neu versucht
+	pathfindToNextAndMove := func() [2]int {
+		//wie in Variablennamen beschrieben
+		if t.foundPathToNext {
+			t.NextStop = t.Schedule.nextStop(t.NextStop)
+		}
+		t.recalculatePath()
+		//aktualisierung der Variable (siehe Variablenbeschreibung)
+		if len(t.currentPath) == 0 {
+			t.foundPathToNext = false
+		} else {
+			t.foundPathToNext = true
+			return t.move(true)
+		}
+		return [2]int{-1, -1}
+	}
+
+	var r [2]int
+
+	//ist gerade in die Staion eingefahren, also speichern der aktuellen Station. Nächste Station wird bei neuberechen überschrieben
+	if t.NextStop.IsPlattform && t.loadingTime == 0 && t.nextGoal == t.Waggons[0].Position {
+		t.CurrentStop = t.NextStop
+		t.lastGoal = t.nextGoal
+		logger.Debug("Zug " + t.Name + " in " + t.CurrentStop.Plattform.station.Name + " eingefahren.")
+	} else if !t.NextStop.IsPlattform && len(t.currentPath) == 0 {
+		//wenn das nächste Ziel ein Wegpunkt ist und man angekommen ist, braucht man einfach den nächsten Stop aussuchen und fahren
+		return pathfindToNextAndMove()
+	}
+
+	//wenn der aktuelle Stop eine Plattform ist und man an der an der Station steht
+	if t.CurrentStop.IsPlattform && t.lastGoal == t.Waggons[0].Position {
+		//wenn min Zeit erreicht ist überprüfen und man fertig mit laden ist, ob man fahren kann
+		if t.loadingTime >= minLoadUloadTicks && t.finishedLoading {
+			logger.Debug("Zug " + t.Name + " versucht aus " + t.CurrentStop.Plattform.station.Name + " auszufahren.")
+
+			if len(t.currentPath) == 0 {
+				r = pathfindToNextAndMove()
+			} else {
+				r = t.move(false)
+			}
+
+			//Ist Zug losgefahren, also Reset der Werte fürs nächste Laden
+			if !t.waiting {
+				logger.Debug("Zug " + t.Name + " aus " + t.CurrentStop.getName() + "ausgefahren.")
+				t.loadingTime = 0
+				t.finishedLoading = false
+				return r
+			}
+		}
+		//laden/entladen, wenn er noch warten muss oder noch laden muss
+		if t.waiting || t.loadingTime < minLoadUloadTicks || !t.finishedLoading {
+			t.finishedLoading = t.loadUndload()
+
+			printTrains()
+		}
+		t.loadingTime++
+
+		//wenn er sich nicht bewegt hat
+		return [2]int{-1, -1}
+	}
+	if len(t.currentPath) == 0 {
+		return pathfindToNextAndMove()
+	}
+	return t.move(false)
+}
+
+// returnt ob der Zug voll ist oder nichts mehr zu laden ist, also abfahrtsbereit ist
+func (t *Train) loadUndload() bool {
+	var r bool
+
+	//station, in die der Zug steht
+	sta := t.CurrentStop.Plattform.station
+
+	//es wird durch die Reihenfolge der Commands zuerst geladen, dann entladen.
+	// Dabei wird nur beladen, wenn entladen fertig ist, bzw. noch kapazität von Gütern bewegt pro Tick über gelassen hat
+	avaliableLoadUnloadSpeed := loadUnloadSpeed //misst, wie viel noch geladen und entladen werden darf
+	for _, command := range t.CurrentStop.LoadUnloadCommand {
+		//wenn man nichts mehr verladen darf, dann kann man noch nicht fertig sein
+		if avaliableLoadUnloadSpeed == 0 {
+			return false
+		}
+		if command.Loading {
+			//loading the train
+			for _, cargo := range command.CargoType {
+				var loaded int
+				//Berücksichtigung, dass max LoadUnloadSpeed pro Vorgang verladen wird
+				fmt.Println("Load", cargo)
+				if sta.Storage[cargo] >= avaliableLoadUnloadSpeed {
+					loaded = avaliableLoadUnloadSpeed - t.loadCargo(cargo, avaliableLoadUnloadSpeed) //hinzufügen in den Zug
+				} else {
+					loaded = sta.Storage[cargo] - t.loadCargo(cargo, sta.Storage[cargo])
+				}
+				sta.Storage[cargo] -= loaded //Entfernen aus der Station
+				avaliableLoadUnloadSpeed -= loaded
+
+				if loaded > 0 {
+					logger.Debug("Zug: " + t.Name + " hat " + strconv.Itoa(loaded) + " Tonnen " + string(cargo) + " geladen")
+				}
+
+				//wenn man nicht bis Voll wartet und nichts verladen wurde, ist man fertig
+				if !command.WaitTillFull && loaded <= 0 && avaliableLoadUnloadSpeed != 0 {
+					r = true
+					continue
+				}
+				//ist fertig, wenn warten auf voll sein und zug voll ist ------------------> EINGÜGEN!
+				if loaded <= 0 && avaliableLoadUnloadSpeed != 0 {
+					r = true
+					continue
+				}
+				r = false
+			}
+		} else {
+			//unloading the train
+			for _, cargo := range command.CargoType {
+				var removed int
+				//ausladen was geht aus den Züge, max LoadUnloadSpeed
+				if sta.capacity-sta.getFillLevel() >= avaliableLoadUnloadSpeed {
+					removed = t.unloadCargo(cargo, avaliableLoadUnloadSpeed)
+				} else {
+					removed = t.unloadCargo(cargo, sta.capacity-sta.getFillLevel())
+				}
+				avaliableLoadUnloadSpeed -= removed
+
+				sta.addCargo(cargo, removed)
+
+				if removed > 0 {
+					logger.Debug("Zug: " + t.Name + " hat " + strconv.Itoa(removed) + " Tonnen " + string(cargo) + " entladen")
+				}
+				//wenn nichts bewegt wurde und man nicht bis leer sein wartet, ist der Ladevorgang beendet
+				//(damit ist immer einmal überprüfen, ohne, dass was passiert -> eig. nicht schlimm)
+				if !command.WaitTillFull && removed <= 0 && avaliableLoadUnloadSpeed != 0 {
+					r = true
+					continue
+				}
+				//wenn man bis leer sein wartet, muss der Zug leer sein ---------------> bestimmung, ob der Leer ist nach CargoCategory EINFÜGEN!
+				if removed <= 0 && avaliableLoadUnloadSpeed != 0 {
+					r = true
+					continue
+				}
+				r = false
+			}
+		}
+	}
+
+	return r
+}
+
+// return nicht geladenen Cargo. Geht davon aus, dass toLoad in Grenzen des LoadUnloadSpeedes ist
+func (t *Train) loadCargo(cargoType string, toLoad int) int {
+	var r int
+
+	for _, waggon := range t.Waggons {
+		//wenn nichts mehr zu laden ist, breche ab
+		if toLoad == 0 {
+			break
+		}
+		//wenn Waggon richtigen CargoType hat, wenn er schon gefüllt ist, wird gefüllt, oder wenn leer ist, die passende Category hat
+
+		if waggon.CargoStorage != nil {
+
+			fmt.Println(waggon.CargoStorage)
+			fmt.Println(waggon.CargoStorage.filled, getCargoCategory(waggon.CargoStorage.filledCargoType), getCargoCategory(cargoType))
+			fmt.Println(cargoType, waggon.CargoStorage.filledCargoType)
+
+			if (waggon.CargoStorage.filled == 0 && waggon.CargoStorage.CargoCategory == getCargoCategory(cargoType)) ||
+				(cargoType == waggon.CargoStorage.filledCargoType) {
+				emptySpace := waggon.CargoStorage.capacity - waggon.CargoStorage.filled
+				//wenn Waggon voll ist oder gefüllter wert, wenn was gefüllt ist, nächsten nehmen
+				if emptySpace == 0 {
+					continue
+				}
+				if emptySpace >= toLoad {
+					waggon.CargoStorage.filled += toLoad //auffüllen mit Rest zum Laden
+					toLoad = 0                           //alles ist verladen
+				} else {
+					waggon.CargoStorage.filled += emptySpace //auffüllen, bis voll
+					toLoad -= emptySpace                     //aufgefüllte Menge aus der, die Aufzufüllen ist, entfernen
+				}
+				waggon.CargoStorage.filledCargoType = cargoType
+			}
+		}
+	}
+	return r + toLoad
+}
+
+// returnt die Anzahl, die entfernt wurde. maxCargoRemoved ist dabei der Platz, der frei ist
+// geht davon aus, dass maxCargoRemoved den LoadUnloadSpeed berücksichtigt und prüft es nicht selber
+// -1, wenn kein passender Typ Waggon da ist -------------------> noch nicht!!!!!
+func (t *Train) unloadCargo(cargoType string, maxCargoRemoved int) int {
+	cargoRemovedSoFar := 0
+
+	for _, waggon := range t.Waggons {
+		if cargoRemovedSoFar == maxCargoRemoved {
+			return cargoRemovedSoFar
+		}
+		//wenn richtiger CargoType gefunden wurde
+		if waggon.CargoStorage != nil && waggon.CargoStorage.filledCargoType == cargoType {
+			cargoInWaggon := waggon.CargoStorage.filled
+			if cargoInWaggon > 0 {
+				//wenn der noch zu entnehmende Platz größer oder gleich groß ist, als die Menge, die im Wagen ist, nehme einfach alles
+				if maxCargoRemoved-cargoRemovedSoFar >= cargoInWaggon {
+					cargoRemovedSoFar += waggon.CargoStorage.filled
+					waggon.CargoStorage.filled = 0
+				} else {
+					//wenn nicht mehr alles rauszunehmen ist, nehme den Rest Platz aus Waggon raus und dann ist maxRemoved die Menge, die entfernt wurde
+					waggon.CargoStorage.filled -= maxCargoRemoved - cargoRemovedSoFar
+					return maxCargoRemoved
+				}
+			}
+		}
+	}
+
+	return cargoRemovedSoFar
+}
+
 // für 2 Wege Signale muss geprüft werden, ob nicht schon ein Zug zum Signal auf der anderen Seite fährt
-func (t *Train) move() [2]int {
+// returnt Tile zum unblocken
+func (t *Train) move(wasRecalculated bool) [2]int {
 	var entblocken [2]int
 	newGenNoSignal := t.waiting //neu generiert und kein Signal, oder er hat letzte mal gewartet, dann gucken, ob immer noch
 
-	//Auswahl des nächsten Stops wenn man am Ziel angekommen ist (oder das Pathfinding nicht funktioniert hat)
-	if len(t.currentPath) == 0 {
-		t.NextStop = t.Schedule.nextStop(t.NextStop)
-		fmt.Println("Next Stop:", t.NextStop.getName())
-		t.recalculatePath()
+	//Wenn das neu generiert wurde
+	if wasRecalculated {
 		newGenNoSignal = true
-		//wenn das Pathfinding (immer noch) nicht funktioniert hat
+		//wenn das Pathfinding nicht funktioniert hat
 		if len(t.currentPath) == 0 {
+			t.waiting = true
+
+			logger.Debug("Zug " + t.Name + " konnte den Weg zu " + t.NextStop.getName() + " nicht finden.")
 			return [2]int{-1, -1}
 		}
 	}
@@ -53,7 +288,7 @@ func (t *Train) move() [2]int {
 	// -----------> Ähnliche logik muss irgendwo Signale auf rot/grün/?gelb schalten
 	// (vielleicht der Zug, wenn er sich merkt, bei welchem Signal er war und das umschaltet, wenn er aus block rausgefahren ist.
 	// wird dann überschrieben, wenn der nächste zug nicht weiterfahren kann)
-	// fmt.Println("newGenNoSignal", newGenNoSignal, "Signale:", signals, "Weg:", path)
+	// logger.Debug("newGenNoSignal", newGenNoSignal, "Signale:", signals, "Weg:", path)
 	if newGenNoSignal || len(signals) > 1 && t.Waggons[0].Position == signals[0] {
 		//gucken, ob bis zum nächsten Signal alle Tiles unblocked sind, sonst fahre nicht weiter
 		// (es wird immer auch das letzte Tile überprüft, da man über ein sub tile ohne signal fahren muss, um zu einem zu kommen)
@@ -61,7 +296,7 @@ func (t *Train) move() [2]int {
 		for i := 0; (newGenNoSignal && path[i] != signals[0]) ||
 			!newGenNoSignal && path[i] != signals[1] && i < len(path); i++ {
 			if tiles[path[i][0]][path[i][1]].IsBlocked {
-				fmt.Println("Zug", t.Name, ": Blocked Tile found:", path[i], ". Waiting")
+				logger.Debug("Zug " + t.Name + ": Blocked Tile found: []" + strconv.Itoa(path[i][0]) + ", " + strconv.Itoa(path[i][1]) + ", " + strconv.Itoa(path[i][2]) + ". Waiting")
 				t.waiting = true
 				return [2]int{-1, -1}
 			}
@@ -103,221 +338,6 @@ func (t *Train) move() [2]int {
 	return entblocken
 }
 
-func (t *Train) recalculatePath() {
-
-	type ToDo struct {
-		x          int
-		y          int
-		sub        int
-		value      int //to prioritize closness
-		pathLength int
-	}
-
-	type Visit struct {
-		prevX         int
-		prevY         int
-		prevSub       int
-		value         int //path length
-		visited       bool
-		gotNeighbours bool //false is only looked at at least once
-	}
-
-	//Paths sind in falscher Reihenfolge
-	dijkstra := func(goal [3]int) ([][3]int, [][3]int) {
-
-		visited := make(map[[3]int]Visit, 1) //ggf. als *Visit
-		var toVisit []ToDo
-
-		toVisit = append(toVisit, ToDo{t.Waggons[0].Position[0], t.Waggons[0].Position[1], t.Waggons[0].Position[2], 0, 0})
-		visited[[3]int{toVisit[0].x, toVisit[0].y, toVisit[0].sub}] = Visit{visited: true, gotNeighbours: true}
-
-		fmt.Println("Train", t.Name, "Dijkstra Start ToDo:", toVisit[0], "Goal:", goal)
-
-		succesfull := false
-		for len(toVisit) > 0 {
-
-			//sortieren der ToDos
-			slices.SortFunc(toVisit, func(a, b ToDo) int {
-				if a.value > b.value {
-					return 1
-				}
-				if a.value < b.value {
-					return -1
-				}
-				return 0
-			})
-			//Auswählen des aktuellen tiles
-			visitingTile := [3]int{toVisit[0].x, toVisit[0].y, toVisit[0].sub}
-
-			//Läge des Weges zu dem Tile
-			visitingPathLength := toVisit[0].pathLength
-
-			//ist man angekommen?
-			if visitingTile == goal {
-				succesfull = true
-				break
-			}
-
-			//Nachbarn bestimmen
-			neighbours := neighbourTracks(visitingTile[0], visitingTile[1], visitingTile[2])
-
-			//Visit neu erstellen um gotNeighbours auf true zu stellen. Besser wenn das als []*Visit ist und nicht neu erstellt werden muss
-			v := visited[visitingTile]
-			visited[visitingTile] = Visit{prevX: v.prevX, prevY: v.prevY, prevSub: v.prevSub, visited: v.visited, gotNeighbours: true}
-
-			for i := range neighbours {
-				n := neighbours[i]
-
-				//Nur durchkommen, wenn Signal richtig rum ist
-				nTileSig := tiles[n[0]][n[1]].Signals
-				vTileSig := tiles[visitingTile[0]][visitingTile[1]].Signals
-				//wenn man sich sub3 anguckt und auf dem rechten Tile ein Signal steht und nicht auf sub 3 auch eins steht, dann nicht den Nachbarn wählen
-				if (visitingTile[2] == 3 && n[0] > visitingTile[0] && n[2] == 1 && nTileSig[0] && !vTileSig[2]) ||
-					(visitingTile[2] == 4 && n[1] > visitingTile[1] && n[2] == 2 && nTileSig[1] && !vTileSig[3]) ||
-					(visitingTile[2] == 1 && n[0] < visitingTile[0] && n[2] == 3 && nTileSig[2] && !vTileSig[0]) ||
-					(visitingTile[2] == 2 && n[1] < visitingTile[1] && n[2] == 4 && nTileSig[3] && !vTileSig[1]) {
-					continue
-				}
-				//wenn 1. Waggon im selben Tile, nicht im selben Tile weiter gucken
-				//wenn 1. Waggon nicht im selben Tile, nicht im anderen Tile gucken
-				// gibt es einen 1. Waggon, sonst fahre frei
-				if len(t.Waggons) > 1 {
-					//ist der 1. Waggon im selben Tile wie Lokomotive?
-					//ist der Nachbar im Tile der Lokomotive und Wagen?, dann nicht angucken, weil kann nicht befahren werden
-					if (n[0] == t.Waggons[1].Position[0] && n[1] == t.Waggons[1].Position[1]) ||
-						n == t.Waggons[1].Position {
-						continue
-					}
-				}
-
-				//war man schonmal da?
-				if !visited[n].visited {
-					//wenn nicht, Erstellung eines neuen Visit
-					visited[n] = Visit{prevX: visitingTile[0], prevY: visitingTile[1], prevSub: visitingTile[2], value: visitingPathLength + 1, visited: true, gotNeighbours: false}
-				}
-				//hat man sich schonmal die Nachbarn angeguckt?, sonst
-				if !visited[n].gotNeighbours {
-					// gibt es das SubTile schon in der Todo?
-					alreadyToDo := false
-					for o := range toVisit {
-						if [3]int{toVisit[o].x, toVisit[o].y, toVisit[o].sub} == n {
-							alreadyToDo = true
-						}
-					}
-					//sonst füge in ToDo ein, dass man sich den mal angucken sollte
-					if !alreadyToDo {
-						//optimierung nach A*
-						newCost := visitingPathLength + 1 + Abs(goal[0]-n[0]) + Abs(goal[1]-n[1])
-						toVisit = append(toVisit, ToDo{x: n[0], y: n[1], sub: n[2], pathLength: visitingPathLength + 1, value: newCost})
-					}
-				}
-			}
-			//rauslöschen des ersten Elementes, damit Rest nachrücken kann
-			toVisit = toVisit[1:]
-		}
-
-		//hat man das Ziel gefunden?
-		if succesfull {
-			//rausschreiben des Weges, vom Ziel zum Start. Ebenfalls speichern, wo es Signale gibt
-			var path [][3]int
-			var pathSignals [][3]int
-			for current := goal; current != t.Waggons[0].Position; {
-				//hinzufügen des aktuell betrachteten sub Tiles in Weg List
-				path = append(path, current)
-				//Bestimmung, ob beim aktuellen sub Tile ein Signal ist, dann füge das hinzu
-				if tiles[current[0]][current[1]].Signals[current[2]-1] {
-					pathSignals = append(pathSignals, current)
-				}
-				//Bestimmung des nächsten zu betrachtenen sub Tile
-				v := visited[current]
-				current = [3]int{v.prevX, v.prevY, v.prevSub}
-			}
-
-			return path, pathSignals
-		}
-		return make([][3]int, 0), make([][3]int, 0)
-	}
-
-	//sucht einen Weg zu beiden Enden der Zielplattform und nimmt den kürzeren
-	// (Optimierung: brich ab, wenn der Weg sicher länger als der andere ist
-	// ODER paralelles Pathfinding)
-	goals := t.NextStop.getGoals()
-	var paths, pathsSignals [2][][3]int
-	paths[0] = make([][3]int, 0)
-
-	channelPath := [2]chan [][3]int{
-		make(chan [][3]int, 1),
-		make(chan [][3]int, 1),
-	}
-	channelPathSignals := [2]chan [][3]int{
-		make(chan [][3]int, 1),
-		make(chan [][3]int, 1),
-	}
-
-	sub := func(i int, goal [3]int, outPath chan<- [][3]int, outPathSignals chan<- [][3]int) {
-
-		path, pathSignals := dijkstra(goal)
-		if len(paths) == 0 {
-			//testet nochmal, dieses mal wird der Zug umggedreht um zu prüfen, ob dann ein Weg zu finden ist
-			fmt.Println("Teste reverse")
-			t.reverseTrain()
-			path, pathSignals = dijkstra(goal)
-			if len(path) == 0 {
-				//wenn umgedreht auch kein Weg zu finden war, wieder zurück drehen
-				t.reverseTrain()
-			}
-		}
-		outPath <- path
-		outPathSignals <- pathSignals
-	}
-
-	//Start der go routinen
-	for i := range goals {
-		go sub(i, goals[i], channelPath[i], channelPathSignals[i])
-	}
-	//auslesen aus dem Buffer
-	for i := range goals {
-		paths[i] = <-channelPath[i]
-		pathsSignals[i] = <-channelPathSignals[i]
-	}
-
-	//gibt es einen Weg?
-	if len(paths[0])+len(paths[1]) == 0 {
-		fmt.Println("No Path found for", t.Name)
-		return
-	}
-	//wenn nur ein Weg, dann der, sonst der bessere
-	var i int
-	if len(paths[0]) >= len(paths[1]) && len(paths[1]) > 0 {
-		i = 1
-	} else {
-		i = 0
-	}
-	slices.Reverse(paths[i])
-	//Hinzufügen der Tiles der Station ans Ende, damit der Zug bis nach Hinten einfährt, wenn das Ziel eine Plattform ist
-	if t.NextStop.IsPlattform {
-		paths[i] = append(paths[i], t.NextStop.Plattform.getPathToOpposite(goals[i])...)
-	}
-	t.currentPath = paths[i]
-
-	//Umdrehen Weg, damit der vom Start zum Ziel, war bis jetzt umgedreht
-	slices.Reverse(pathsSignals[i])
-	//Ziel wird als Signal hinzugefügt, da es (eigentlich) sich wie eins verhält
-	pathsSignals[i] = append(pathsSignals[i], [][3]int{paths[i][len(paths[i])-1]}...)
-	t.currentPathSignals = pathsSignals[i]
-	fmt.Println("----------------------")
-
-}
-
-// func reverseTrain(train []*TrainType) {
-func (t *Train) reverseTrain() {
-	prevTrain := t.Waggons
-	slices.Reverse(prevTrain)
-	for i := range t.Waggons {
-		t.Waggons[i].Position = prevTrain[i].Position
-	}
-}
-
 /* erst auf dauerhaft blocked prüfen
 *to visit (außer, da wo man hergekommen ist):
 *	1 [x][y][2,3,4], [x-1][y][3]
@@ -327,7 +347,6 @@ func (t *Train) reverseTrain() {
  */
 // verified
 func neighbourTracks(x int, y int, sub int) [][3]int {
-
 	var connectedNeigbours [][3]int // [3]int identifiziert mit x y und subtile ein exaktes Subtile,
 	// Alle Koordinaten von Subtiles zurückgeben die angrenzen die können im gleichem subtile oder im angrenzendem
 
@@ -385,4 +404,15 @@ func Abs(x int) int {
 		return -x
 	}
 	return x
+}
+
+func getCargoCategory(cargoType string) string {
+	for key, value := range CargoCategoryAndTypes {
+		for _, value2 := range value {
+			if value2 == cargoType {
+				return key
+			}
+		}
+	}
+	return ""
 }

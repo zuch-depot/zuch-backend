@@ -28,60 +28,39 @@ var (
 	}
 	testSignals = [][3]int{
 		[3]int{1, 3, 4},
-		// [3]int{4, 5, 1},
-		// [3]int{6, 6, 2},
-		// [3]int{5, 2, 2},
-
-		// [3]int{9, 4, 2},
-		// [3]int{8, 6, 3},
 	}
 )
 
 // nur fürs Testen, inkl. Schedule
 func createTrains() {
 	//stations
-	stations = append(stations, &Station{name: "Station Nord", CargoStorage: []*CargoStorage{
-		{capacity: 100, filled: 50, CargoType: Potatos}}})
-	plattforms := []Plattform{{name: "Gleis 1", Tiles: [][2]int{{2, 0}, {3, 0}}}}
-	stations = append(stations, &Station{name: "Station Süd"})
-	plattforms = append(plattforms, Plattform{name: "Gleis 31", Tiles: [][2]int{{3, 7}, {4, 7}, {5, 7}}})
+	stations = append(stations, &Station{Name: "Station Nord", capacity: 100, Storage: map[string]int{"Kartoffeln": 100, "Pommes": 50}})
+	plattforms := []Plattform{{Name: "Gleis 1", Tiles: [][2]int{{2, 0}, {3, 0}}, station: stations[0]}}
+	stations = append(stations, &Station{Name: "Station Süd", capacity: 150, Storage: map[string]int{}})
+	plattforms = append(plattforms, Plattform{Name: "Gleis 31", Tiles: [][2]int{{3, 7}, {4, 7}, {5, 7}}, station: stations[1]})
 
 	//Zug eins mit Schedule
 	Stops := []Stop{
-		{Id: 1, Plattform: &plattforms[0], IsPlattform: true},
+		{Id: 1, Plattform: &plattforms[0], IsPlattform: true, LoadUnloadCommand: [2]LoadUnloadCommand{
+			{CargoType: []string{"Kohle"}},
+			{Loading: true, CargoType: []string{"Kartoffeln", "Pommes"}}}},
 		{Id: 2, Goal: [3]int{1, 3, 4}, Name: "Wegpunkt 1"},
-		{Id: 3, Plattform: &plattforms[1], IsPlattform: true}}
+		{Id: 3, Plattform: &plattforms[1], IsPlattform: true, LoadUnloadCommand: [2]LoadUnloadCommand{
+			{CargoType: []string{"Kartoffeln", "Pommes"}},
+			{Loading: true, CargoType: []string{"Kohle"}}}}}
 	schedules = append(schedules, &Schedule{Stops: Stops})
-	temp := []TrainType{
+	temp := []*TrainType{
 		{Position: [3]int{4, 4, 1}},
-		{Position: [3]int{3, 4, 3}},
-		{Position: [3]int{3, 4, 1}},
-		{Position: [3]int{2, 4, 3}}}
-	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE1", Id: 0})
+		{Position: [3]int{3, 4, 3}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}},
+		{Position: [3]int{3, 4, 1}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}},
+		{Position: [3]int{2, 4, 3}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}}}
+	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE1", NextStop: Stops[0], Id: 0})
 	// Zug zwei
-	schedules = append(schedules, &Schedule{Stops: Stops})
-	temp = []TrainType{
+	temp = []*TrainType{
 		{Position: [3]int{6, 6, 2}},
 		{Position: [3]int{6, 5, 4}},
 		{Position: [3]int{6, 5, 2}}}
-	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE2", NextStop: Stops[1], Id: 1})
-	//zug 3
-	// Stops = []Stop{
-	// 	Stop{id: 1, goal: [3]int{9, 0, 2}},
-	// 	Stop{id: 2, goal: [3]int{9, 8, 4}}}
-	// schedules = append(schedules, &Schedule{Stops: Stops})
-	// temp = []TrainType{
-	// 	TrainType{position: [3]int{9, 2, 4}},
-	// 	TrainType{position: [3]int{9, 2, 2}},
-	// 	TrainType{position: [3]int{9, 1, 4}}}
-	// trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[2], Name: "3"})
-	// trains[2].NextStop = schedules[2].Stops[1]
-	// // Zug 4
-	// temp = []TrainType{
-	// 	TrainType{position: [3]int{9, 7, 2}},
-	// 	TrainType{position: [3]int{9, 7, 4}},
-	// 	TrainType{position: [3]int{9, 8, 2}}}
-	// trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[2], Name: "4"})
+	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE2", NextStop: Stops[2], Id: 1})
 }
 
 func initializeTiles() {
@@ -136,8 +115,12 @@ func initializeTiles() {
 
 // testing
 func printTrains() {
-	for i := range trains {
-		fmt.Println("Train", trains[i].Name, trains[i].Waggons)
+	for _, i := range trains {
+		fmt.Print("Train", i.Name)
+		for _, waggon := range i.Waggons {
+			fmt.Print(waggon.CargoStorage, "")
+		}
+		fmt.Println("")
 	}
 	fmt.Println("-----------------------")
 }
@@ -175,6 +158,7 @@ func printMap() {
 	fmt.Println("----------------------")
 }
 
+// fürs testen (printMap)
 func isTrainAt(x int, y int) (bool, int) {
 	for i := range trains {
 		waggons := trains[i].Waggons
