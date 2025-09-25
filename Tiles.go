@@ -19,9 +19,10 @@ func (t *Tile) addTrack(i int) (bool, string) {
 
 // Entfernt bei i ein gleis, wenn da eins ist
 // returnt true bei erfolg und false bei error
-func (t *Tile) removeTracks(i int) (bool, string) {
-	if t.Tracks[i-1] || t.IsBlocked {
+func (t *Tile) removeTrack(i int) (bool, string) {
+	if t.Tracks[i-1] && !t.IsBlocked {
 		t.Tracks[i-1] = false
+		t.Signals = [4]bool{false, false, false, false}
 		return true, ""
 	}
 	return false, "There is no Track to Remove, or the Tile may be blocked by a Train, if so try again later"
@@ -40,7 +41,7 @@ func (t *Tile) addSignal(i int) (bool, string) {
 
 // Fügt bei i ein Signal hinzu, wenn da keins ist
 // returnt true bei erfolg und false bei error
-func (t Tile) removeSignal(i int) (bool, string) {
+func (t *Tile) removeSignal(i int) (bool, string) {
 	if t.Signals[i-1] {
 		t.Signals[i-1] = false
 		return true, ""

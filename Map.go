@@ -217,7 +217,7 @@ func handleTileUpdate(envelope recieveWSEnvelope, tiles [][]*Tile) {
 	case "remove":
 		switch update.Subject {
 		case "rail":
-			executeAndReply(tiles[update.X][update.Y].removeTracks, &envelope, &update)
+			executeAndReply(tiles[update.X][update.Y].removeTrack, &envelope, &update)
 		case "signal":
 			executeAndReply(tiles[update.X][update.Y].removeSignal, &envelope, &update)
 

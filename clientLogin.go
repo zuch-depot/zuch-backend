@@ -37,12 +37,6 @@ func (user *User) startNotifiyingSingleClient() {
 	}
 }
 
-type UserInput struct {
-	action    string
-	username  string
-	parameter any
-}
-
 // Wird genutzt um HTTP anfragen zu Websockets zu upgraden
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
