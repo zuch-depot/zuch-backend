@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
 )
 
@@ -31,8 +32,8 @@ type TrainType struct {
 type CargoStorage struct {
 	capacity        int //statisch
 	filled          int
-	filledCargoType CargoType
-	CargoCategory   CargoCategory //statisch
+	filledCargoType string
+	CargoCategory   string //statisch
 }
 
 // returned Tile zum entblcken
@@ -126,6 +127,7 @@ func (t *Train) loadUndload() bool {
 			for _, cargo := range command.CargoType {
 				var loaded int
 				//Berücksichtigung, dass max LoadUnloadSpeed pro Vorgang verladen wird
+				fmt.Println("Load", cargo)
 				if sta.Storage[cargo] >= avaliableLoadUnloadSpeed {
 					loaded = avaliableLoadUnloadSpeed - t.loadCargo(cargo, avaliableLoadUnloadSpeed) //hinzufügen in den Zug
 				} else {
@@ -187,7 +189,7 @@ func (t *Train) loadUndload() bool {
 }
 
 // return nicht geladenen Cargo. Geht davon aus, dass toLoad in Grenzen des LoadUnloadSpeedes ist
-func (t *Train) loadCargo(cargoType CargoType, toLoad int) int {
+func (t *Train) loadCargo(cargoType string, toLoad int) int {
 	var r int
 
 	for _, waggon := range t.Waggons {
@@ -195,19 +197,29 @@ func (t *Train) loadCargo(cargoType CargoType, toLoad int) int {
 		if toLoad == 0 {
 			break
 		}
-		//wenn Waggon richtigen CargoType hat
-		if waggon.CargoStorage != nil && waggon.CargoStorage.filledCargoType == cargoType {
-			emptySpace := waggon.CargoStorage.capacity - waggon.CargoStorage.filled
-			//wenn Waggon voll ist, nächsten nehmen
-			if emptySpace == 0 {
-				continue
-			}
-			if emptySpace >= toLoad {
-				waggon.CargoStorage.filled += toLoad //auffüllen mit Rest zum Laden
-				toLoad = 0                           //alles ist verladen
-			} else {
-				waggon.CargoStorage.filled += emptySpace //auffüllen, bis voll
-				toLoad -= emptySpace                     //aufgefüllte Menge aus der, die Aufzufüllen ist, entfernen
+		//wenn Waggon richtigen CargoType hat, wenn er schon gefüllt ist, wird gefüllt, oder wenn leer ist, die passende Category hat
+
+		if waggon.CargoStorage != nil {
+
+			fmt.Println(waggon.CargoStorage)
+			fmt.Println(waggon.CargoStorage.filled, getCargoCategory(waggon.CargoStorage.filledCargoType), getCargoCategory(cargoType))
+			fmt.Println(cargoType, waggon.CargoStorage.filledCargoType)
+
+			if (waggon.CargoStorage.filled == 0 && waggon.CargoStorage.CargoCategory == getCargoCategory(cargoType)) ||
+				(cargoType == waggon.CargoStorage.filledCargoType) {
+				emptySpace := waggon.CargoStorage.capacity - waggon.CargoStorage.filled
+				//wenn Waggon voll ist oder gefüllter wert, wenn was gefüllt ist, nächsten nehmen
+				if emptySpace == 0 {
+					continue
+				}
+				if emptySpace >= toLoad {
+					waggon.CargoStorage.filled += toLoad //auffüllen mit Rest zum Laden
+					toLoad = 0                           //alles ist verladen
+				} else {
+					waggon.CargoStorage.filled += emptySpace //auffüllen, bis voll
+					toLoad -= emptySpace                     //aufgefüllte Menge aus der, die Aufzufüllen ist, entfernen
+				}
+				waggon.CargoStorage.filledCargoType = cargoType
 			}
 		}
 	}
@@ -217,7 +229,7 @@ func (t *Train) loadCargo(cargoType CargoType, toLoad int) int {
 // returnt die Anzahl, die entfernt wurde. maxCargoRemoved ist dabei der Platz, der frei ist
 // geht davon aus, dass maxCargoRemoved den LoadUnloadSpeed berücksichtigt und prüft es nicht selber
 // -1, wenn kein passender Typ Waggon da ist -------------------> noch nicht!!!!!
-func (t *Train) unloadCargo(cargoType CargoType, maxCargoRemoved int) int {
+func (t *Train) unloadCargo(cargoType string, maxCargoRemoved int) int {
 	cargoRemovedSoFar := 0
 
 	for _, waggon := range t.Waggons {
@@ -331,4 +343,15 @@ func Abs(x int) int {
 		return -x
 	}
 	return x
+}
+
+func getCargoCategory(cargoType string) string {
+	for key, value := range CargoCategoryAndTypes {
+		for _, value2 := range value {
+			if value2 == cargoType {
+				return key
+			}
+		}
+	}
+	return ""
 }

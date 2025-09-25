@@ -32,26 +32,26 @@ var (
 // nur fürs Testen, inkl. Schedule
 func createTrains() {
 	//stations
-	stations = append(stations, &Station{Name: "Station Nord", capacity: 100, Storage: map[CargoType]int{Potatos: 100}})
+	stations = append(stations, &Station{Name: "Station Nord", capacity: 100, Storage: map[string]int{"Kartoffeln": 100, "Pommes": 50}})
 	plattforms := []Plattform{{Name: "Gleis 1", Tiles: [][2]int{{2, 0}, {3, 0}}, station: stations[0]}}
-	stations = append(stations, &Station{Name: "Station Süd", capacity: 150, Storage: map[CargoType]int{Coal: 50}})
+	stations = append(stations, &Station{Name: "Station Süd", capacity: 150, Storage: map[string]int{}})
 	plattforms = append(plattforms, Plattform{Name: "Gleis 31", Tiles: [][2]int{{3, 7}, {4, 7}, {5, 7}}, station: stations[1]})
 
 	//Zug eins mit Schedule
 	Stops := []Stop{
 		{Id: 1, Plattform: &plattforms[0], IsPlattform: true, LoadUnloadCommand: [2]LoadUnloadCommand{
-			LoadUnloadCommand{CargoType: []CargoType{Coal}},
-			LoadUnloadCommand{Loading: true, CargoType: []CargoType{Potatos}}}},
+			{CargoType: []string{"Kohle"}},
+			{Loading: true, CargoType: []string{"Kartoffeln", "Pommes"}}}},
 		{Id: 2, Goal: [3]int{1, 3, 4}, Name: "Wegpunkt 1"},
 		{Id: 3, Plattform: &plattforms[1], IsPlattform: true, LoadUnloadCommand: [2]LoadUnloadCommand{
-			LoadUnloadCommand{CargoType: []CargoType{Potatos}},
-			LoadUnloadCommand{Loading: true, CargoType: []CargoType{Coal}}}}}
+			{CargoType: []string{"Kartoffeln", "Pommes"}},
+			{Loading: true, CargoType: []string{"Kohle"}}}}}
 	schedules = append(schedules, &Schedule{Stops: Stops})
 	temp := []*TrainType{
 		{position: [3]int{4, 4, 1}},
-		{position: [3]int{3, 4, 3}, CargoStorage: &CargoStorage{capacity: 30, filledCargoType: Potatos}},
-		{position: [3]int{3, 4, 1}, CargoStorage: &CargoStorage{capacity: 30, filledCargoType: Potatos}},
-		{position: [3]int{2, 4, 3}, CargoStorage: &CargoStorage{capacity: 30, filledCargoType: Coal}}}
+		{position: [3]int{3, 4, 3}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}},
+		{position: [3]int{3, 4, 1}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}},
+		{position: [3]int{2, 4, 3}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}}}
 	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE1", NextStop: Stops[0]})
 	// Zug zwei
 	temp = []*TrainType{
@@ -155,6 +155,7 @@ func printMap() {
 	fmt.Println("----------------------")
 }
 
+// fürs testen (printMap)
 func isTrainAt(x int, y int) (bool, int) {
 	for i := range trains {
 		waggons := trains[i].Waggons

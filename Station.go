@@ -6,12 +6,12 @@ import (
 
 type Station struct {
 	Name     string
-	Storage  map[CargoType]int //von was ist wieviel gelagert? Hinzufügen nur mit Methode, rausnehmen direkt. MUSS mit make komplett initiiert werden
-	capacity int               //was ist die maximale Kapazität
+	Storage  map[string]int //von was ist wieviel gelagert: CargoType? Hinzufügen nur mit Methode, rausnehmen direkt. MUSS mit make komplett initiiert werden
+	capacity int            //was ist die maximale Kapazität
 }
 
 // return Restwert, der keinen Platz gefunden hat
-func (s *Station) addCargo(cargoType CargoType, quantity int) int {
+func (s *Station) addCargo(cargoType string, quantity int) int {
 	filled := s.getFillLevel()
 	//ist noch platz?
 	if filled < s.capacity {

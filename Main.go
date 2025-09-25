@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"log/slog"
 	"os"
@@ -18,8 +19,9 @@ var (
 	tiles     [][]*Tile
 	trains    []*Train
 
-	loadUnloadSpeed   int
-	minLoadUloadTicks int
+	loadUnloadSpeed       int
+	minLoadUloadTicks     int
+	CargoCategoryAndTypes map[string][]string
 	//Plattforms
 )
 var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true, Level: slog.LevelDebug}))
@@ -36,17 +38,21 @@ type wsEnvelope struct {
 func main() {
 	godotenv.Load("main.env")
 
-	temp, err := strconv.ParseInt(os.Getenv("LOADUNLOADSPEED"), 10, 64)
+	//loading global variables
+	tempVar, err := strconv.ParseInt(os.Getenv("LOADUNLOADSPEED"), 10, 64)
 	if err != nil {
 		log.Println("Error while loading LoadUnloadSpeed", err)
 	}
-	loadUnloadSpeed = int(temp)
+	loadUnloadSpeed = int(tempVar)
 
-	temp, err = strconv.ParseInt(os.Getenv("MINLOADUNLOADTICKS"), 10, 64)
+	tempVar, err = strconv.ParseInt(os.Getenv("MINLOADUNLOADTICKS"), 10, 64)
 	if err != nil {
 		log.Println("Error while loading minLoadUloadTicks", err)
 	}
-	minLoadUloadTicks = int(temp)
+	minLoadUloadTicks = int(tempVar)
+
+	//wichtig als initialisierung, bevor Züge verarbeitet werden
+	loadConfig()
 
 	// Ablauf
 	// beim ersten start (eventuell probieren Dateien einzulesen) sonst defaults setzen
@@ -124,5 +130,25 @@ func calculateTrains() {
 	//entblocken
 	for _, i := range tilesToUnblock {
 		tiles[i[0]][i[1]].IsBlocked = false
+	}
+}
+
+func loadConfig() {
+	//einlesen der config
+	configFile, err := os.ReadFile("config.json")
+	if err != nil {
+		log.Println("Error while loading config.json", err)
+	}
+	raw := make(map[string][]map[string][]string)
+	if err := json.Unmarshal(configFile, &raw); err != nil {
+		panic(err)
+	}
+
+	// Zielmap aufbauen
+	CargoCategoryAndTypes = make(map[string][]string)
+	for _, entry := range raw["Train Categories"] {
+		for key, values := range entry {
+			CargoCategoryAndTypes[key] = values
+		}
 	}
 }

@@ -48,6 +48,6 @@ type LoadUnloadCommand struct {
 	//wenn Loading, wenn false, dann kurz warten und auch wenn nicht voll trotzdem fahren
 	//wenn Unloading, wenn false, dann "WaitTillEmpty", also warten, bis alles entladen werden kann, oder einfach weiterfahren
 	WaitTillFull bool
-	Loading      bool        //wenn false, dann unloading
-	CargoType    []CargoType //welche Güter abgeladen/aufgeladen werden dürfen
+	Loading      bool     //wenn false, dann unloading
+	CargoType    []string //welche Güter abgeladen/aufgeladen werden dürfen
 }
