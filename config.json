@@ -1,0 +1,12 @@
+{
+    "Train Categories" : [{
+        "Schüttgut": [
+            "Kohle", "Eisenerz"
+        ],
+        "Lebensmittel": [
+            "Kartoffeln", "Pommes"
+        ],
+        "Flüssigkeiten": [
+            "Erdöl", "Treibstoff"
+        ]
+}]}

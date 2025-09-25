@@ -5,21 +5,46 @@ import (
 )
 
 type Station struct {
-	name         string
-	CargoStorage []*CargoStorage
+	Name     string
+	Storage  map[string]int //von was ist wieviel gelagert: CargoType? Hinzufügen nur mit Methode, rausnehmen direkt. MUSS mit make komplett initiiert werden
+	capacity int            //was ist die maximale Kapazität
 }
 
-func (s *Station) initStation() {
+// return Restwert, der keinen Platz gefunden hat
+func (s *Station) addCargo(cargoType string, quantity int) int {
+	filled := s.getFillLevel()
+	//ist noch platz?
+	if filled < s.capacity {
+		//wie viel Platz?
+		emtySpace := s.capacity - filled
+		overflow := quantity - emtySpace
+		//reicht der Platz?, dann gibt es keinen Overflow
+		if overflow < 0 {
+			overflow = 0
+		}
+		//fülle auf
+		s.Storage[cargoType] += quantity - overflow
+		return overflow
+	}
+	return quantity
+}
 
+// returnt den Füllstand der Station
+func (s Station) getFillLevel() int {
+	var filled int //aktueller gefüllter Wert
+	for _, i := range s.Storage {
+		filled += i
+	}
+	return filled
 }
 
 //-------------------------------------------------------------------------------------
 
 // ist einzigartig durch station & name zusammen (ggf. id?)
 type Plattform struct {
-	name    string
+	Name    string
 	Tiles   [][2]int // nur x & y, muss in Order sein. KEIN DIREKTER ZUGRIFF?
-	station Station
+	station *Station
 }
 
 // returns die erste und letzte Sub-Tile Koordinate
