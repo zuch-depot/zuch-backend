@@ -9,9 +9,32 @@ import (
 )
 
 type User struct {
-	username    string
-	isConnected bool
-	connection  *websocket.Conn
+	username       string
+	isConnected    bool
+	connection     *websocket.Conn
+	webSocketQueue chan wsEnvelope
+}
+
+// Folgendes Problem, ich hab 2 Channel aus denen nachrichten für diesen Client kommen können, einmal der Broadcast Channel auf dem alle clients sind und der channel der nur für den einzelnen Client ist
+// hier werden beide zusammengefügt und dann abgearbeitet
+
+func (user *User) startNotifiyingSingleClient() {
+	// Kombiniert den Broadcast und den einzelnen Channel, damit der client über die gleiche verbindung beides erhält
+	for {
+		if user.isConnected {
+
+			envelope := <-user.webSocketQueue
+
+			logger.Debug("Notifying client of event", slog.String("user", user.username), slog.String("Event Type", envelope.Type))
+			err := user.connection.WriteJSON(envelope)
+			if err != nil {
+				logger.Error("Could not Write to client", slog.String("Error", err.Error()), slog.String("Username", user.username))
+			}
+		} else {
+			break
+		}
+
+	}
 }
 
 type UserInput struct {
@@ -51,6 +74,7 @@ func acceptNewClient(w http.ResponseWriter, r *http.Request) {
 					logger.Error("Failed to Upgrade connection")
 				}
 				v.connection = conn
+				v.webSocketQueue = make(chan wsEnvelope, 100)
 				v.isConnected = true
 				initializeClient(v, &gamestateTemp{Users: users, Schedules: schedules, Stations: stations, Tiles: tiles, Trains: trains})
 
@@ -74,7 +98,7 @@ func acceptNewClient(w http.ResponseWriter, r *http.Request) {
 
 		logger.Info("Accepted new Client, with username "+username, slog.String("Username", username))
 
-		user := User{username: username, isConnected: true, connection: conn}
+		user := User{username: username, isConnected: true, connection: conn, webSocketQueue: make(chan wsEnvelope, 100)}
 		users = append(users, &user)
 
 		initializeClient(&user, &gamestateTemp{Users: users, Schedules: schedules, Stations: stations, Tiles: tiles, Trains: trains})
@@ -103,22 +127,28 @@ func initializeClient(user *User, state *gamestateTemp) {
 	if err != nil {
 		logger.Error("Failes parsing state to JSON", slog.String("Error", err.Error()))
 	}
+	go user.startNotifiyingSingleClient()
 	unPauseGame()
 }
 
 func checkForClientInput(user *User) {
+	// Für jeden User der Connected ist läuft die funktion hier die ganze Zeit in einer Goroutine
+	// Wird in einput Empfangen wird er als recieveWSEnvelope in den userInputs Channel / Queue gelegt
+	// Von dort aus wird er dann abgearbeitet
 	for {
 		var v recieveWSEnvelope
 		err := user.connection.ReadJSON(&v)
 		if err != nil {
 			logger.Warn(user.username+": Error while checking for input, Closing Connection", slog.String("Error", err.Error())) //logger or log?
+			// Bei fehlern werden die Clients mit gewalt disconnected, müssen se sich halt wieder neu verbinden (oder einfach keine fehler verursachen :D)
 			user.isConnected = false
 			user.connection.Close()
 			user.connection = nil
 			return
 		}
-
-		v.Username = user.username
+		// Manche werte kommen nicht direkt aus dem WS sondern werden hier ergänzt
+		// User um nachher zugriff auf den Username und auf die connection zu haben, damit man rückmeldung geben kann
+		v.user = user
 		userInputs <- v
 	}
 }

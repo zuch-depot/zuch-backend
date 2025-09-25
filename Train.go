@@ -98,7 +98,7 @@ func (t *Train) move() [2]int {
 	// for alle waggons {clients.schickeNachtricht(waggong x,y, hat sich bewegt)}
 
 	// Alles was bis hier gekmmen ist hat sich bewegt (laut wilken beim döner essen)
-	eventsInTick <- wsEnvelope{Type: "train.move", Msg: t}
+	broadcastChannel <- wsEnvelope{Type: "train.update", Msg: t}
 
 	return entblocken
 }

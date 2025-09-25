@@ -1,16 +1,49 @@
 package main
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"log/slog"
+)
 
+//	es gibt beide, da ich json.RawMessage brauche um die nachricht zunächst nur zum teil dekodieren zu können. Da kann ich aber nicht alles reinschreiben also gibt es die normale variante die dafür ein any hat
+//
+// Mögliche Types siehe wsFormat.go, bspw. tile.update. Steuert welcher teil des Backends dafür zuständig ist
+// bei Username wird automatisch der Username über den sich die websocket verbindung angemeldet hat eingetragen, Eingaben vom User werden überschrieben
+// Msg ist die eigentliche nachricht, siehe ebenfalls wsFormat.go, nicht alle haben ein eigenes Struct, aber einige
 type wsEnvelope struct {
-	Type     string
-	Username string
-	Msg      any
+	Type          string
+	Username      string
+	TransactionID string
+	Msg           any
 }
+
+//	es gibt beide, da ich json.RawMessage brauche um die nachricht zunächst nur zum teil dekodieren zu können. Da kann ich aber nicht alles reinschreiben also gibt es die normale variante die dafür ein any hat
+//
+// Mögliche Types siehe wsFormat.go, bspw. tile.update. Steuert welcher teil des Backends dafür zuständig ist
+// bei Username wird automatisch der Username über den sich die websocket verbindung angemeldet hat eingetragen, Eingaben vom User werden überschrieben
+// Msg ist die eigentliche nachricht, siehe ebenfalls wsFormat.go, nicht alle haben ein eigenes Struct, aber einige
 type recieveWSEnvelope struct {
-	Type     string
-	Username string
-	Msg      json.RawMessage
+	Type          string
+	user          *User  // genutzt um zugriff auf die Connectin zu haben, damit man anhand der transactionID feedback / Fehler senden kann
+	TransactionID string // Wird vom CLIENT gesetzt, der kann sich die dann merken und kriegt ggf, für fehler hier drüber eine rückmeldung vom Server
+	Msg           json.RawMessage
+}
+
+func (envelope *recieveWSEnvelope) reply(success bool, message string) {
+	if envelope.TransactionID == "" {
+		logger.Info("Client did not transmit a TransactionID to track this Transaction, guess they dont want any feedback", slog.String("Username", envelope.user.username))
+		return
+	}
+	if !envelope.user.isConnected {
+		logger.Info("Client no longer connected, guess they dont want any feedback", slog.String("Username", envelope.user.username))
+		return
+	}
+
+	replyInnerMSG := relpyMSG{Success: success, Msg: message}
+	reply := wsEnvelope{Type: "game.reply", Username: envelope.user.username, TransactionID: envelope.TransactionID, Msg: replyInnerMSG}
+	logger.Debug("Replying to Client event", slog.String("user", envelope.user.username), slog.String("Event Type", reply.Type))
+	envelope.user.webSocketQueue <- reply
+
 }
 
 type tileUpdateMSG struct {
@@ -22,12 +55,22 @@ type tileUpdateMSG struct {
 	Action  string // remove, build
 }
 
+type relpyMSG struct {
+	Msg     string
+	Success bool
+}
+
 var (
 
-	// #region Map & Tiles
-
+	// #region game
 	// map.initialLoad
+	// Wird genutzt um anfangs den aktuellen stand an den client zu senden, hier ist so gut wie alles enthalten das das backend weiß
+	// Strukturiert wie das gamestate objekt, nutzt game.initialLoad als type
 	mapInitialLoad = wsEnvelope{Type: "game.initialLoad", Msg: &gamestate{}}
+	gameReplyMsg   = wsEnvelope{Type: "game.reply", Msg: &relpyMSG{}}
+	// #endregion game
+
+	// #region Map & Tiles
 	// Aktualisierung von genau einem Tile, bspw. Schiene oder Signal bauen
 	// 	{
 	//   "Type": "tile.update",
@@ -44,7 +87,9 @@ var (
 	// #endregion Map
 
 	// #region Trains
-	trainMove = wsEnvelope{Type: "train.move", Msg: &Train{}}
+	// wird bisher genutzt um die bewegung von zügen darzustellen, vielleicht macht es sinn das in ein simpleres format zu ändern, aber bis wird es so geamcht, ggf auch für veränderte füllstände oder so genutzt
+	// Bezieht sich auch auf genau einen zug
+	trainMove = wsEnvelope{Type: "train.update", Msg: &Train{}}
 	// #endregion Trains
 // map.updateTile
 

@@ -18,10 +18,10 @@ var (
 	trains    []*Train
 	//Plattform
 )
-var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true, Level: slog.LevelDebug}))
+var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true, Level: slog.LevelInfo}))
 var userInputs = make(chan recieveWSEnvelope, 300) //Queue, die die UserInputs bis zum Start des nächsten Ticks speichert
 var unPause = make(chan bool)
-var eventsInTick = make(chan wsEnvelope, 100)
+var broadcastChannel = make(chan wsEnvelope, 100)
 
 var isPaused = false
 
@@ -38,8 +38,8 @@ func main() {
 
 	// hier den Server starten
 	go startServer()
-	go startNotifiyingClientsOfChanges(&users, eventsInTick)
-
+	// Anfangen aus events an clients zu schicken
+	go startListiningToBroadcast(broadcastChannel)
 	//Zeit pro Tick bestimmen
 	ticksMilisec, err := strconv.Atoi(os.Getenv("TICKTIMEMILISEC"))
 
@@ -107,5 +107,20 @@ func moveTrains() {
 	//entblocken
 	for _, i := range tilesToUnblock {
 		tiles[i[0]][i[1]].IsBlocked = false
+	}
+}
+
+func startListiningToBroadcast(broadcastChannel <-chan wsEnvelope) {
+	for {
+		envelope, ok := <-broadcastChannel
+		if ok {
+			for _, user := range users {
+				if user.isConnected {
+					logger.Debug("Notifying client of Change", slog.String("User", user.username), slog.String("Type", envelope.Type))
+					user.webSocketQueue <- envelope
+				}
+			}
+
+		}
 	}
 }

@@ -203,21 +203,21 @@ func handleTileUpdate(envelope recieveWSEnvelope, tiles [][]*Tile) {
 	var update tileUpdateMSG
 	err := json.Unmarshal(envelope.Msg, &update)
 	if err != nil {
-		fmt.Println("EROOR", err)
+		logger.Error("EROOR", slog.String("error", err.Error()))
 	}
 
 	sizeX, err := strconv.ParseInt(os.Getenv("XSIZE"), 10, 64)
 	if err != nil {
-		log.Println("Error while loading Size of Map in the x dimension", err)
+		logger.Error("Error while loading Size of Map in the x dimension", slog.String("error", err.Error()))
 	}
 
 	sizeY, err := strconv.ParseInt(os.Getenv("YSIZE"), 10, 64)
 	if err != nil {
-		log.Println("Error while loading Size of Map in the y dimension", err)
+		logger.Error("Error while loading Size of Map in the y dimension", slog.String("error", err.Error()))
 	}
 
 	if !((0 <= update.X && update.X < int(sizeX)) && (0 <= update.Y && update.Y < int(sizeY)) && (1 <= update.Subtile && update.Subtile <= 4)) {
-		logger.Error("Invalid coordinates in wsEnvolope, ignoring this envolpe and continuing", slog.String("username", envelope.Username))
+		logger.Error("Invalid coordinates in wsEnvolope, ignoring this envolpe and continuing", slog.String("username", envelope.user.username))
 		return
 	}
 
@@ -225,15 +225,29 @@ func handleTileUpdate(envelope recieveWSEnvelope, tiles [][]*Tile) {
 	case "build":
 		switch update.Subject {
 		case "rail":
-			tiles[update.X][update.Y].addTrack(update.Subtile)
-			eventsInTick <- wsEnvelope{Type: "tile.update", Username: "Server", Msg: &tileUpdateMSG{X: update.X, Y: update.Y, Subtile: update.Subtile, Subject: update.Subject, Action: update.Action}}
+			executeAndReply(tiles[update.X][update.Y].addTrack, &envelope, &update)
+		case "signal":
+			executeAndReply(tiles[update.X][update.Y].addSignal, &envelope, &update)
+
 		}
 	case "remove":
 		switch update.Subject {
 		case "rail":
-			tiles[update.X][update.Y].removeTracks(update.Subtile)
-			eventsInTick <- wsEnvelope{Type: "tile.update", Username: "Server", Msg: &tileUpdateMSG{X: update.X, Y: update.Y, Subtile: update.Subtile, Subject: update.Subject, Action: update.Action}}
+			executeAndReply(tiles[update.X][update.Y].removeTracks, &envelope, &update)
+		case "signal":
+			executeAndReply(tiles[update.X][update.Y].removeSignal, &envelope, &update)
+
 		}
 	}
 
+}
+
+func executeAndReply(callback func(int) (bool, string), envelope *recieveWSEnvelope, update *tileUpdateMSG) {
+	success, msg := callback(update.Subtile)
+	if success {
+		broadcastChannel <- wsEnvelope{Type: envelope.Type, Username: "Server", Msg: &tileUpdateMSG{X: update.X, Y: update.Y, Subtile: update.Subtile, Subject: update.Subject, Action: update.Action}}
+		envelope.reply(success, "")
+	} else {
+		envelope.reply(success, msg)
+	}
 }

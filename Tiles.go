@@ -8,19 +8,45 @@ type Tile struct {
 	IsBlocked   bool //nur für tracks
 }
 
-func (t *Tile) addTrack(i int) {
-	t.Tracks[i-1] = true
+// Fügt bei i ein gleis hinzu, wenn da keins ist
+// returnt true bei erfolg und false bei error
+func (t *Tile) addTrack(i int) (bool, string) {
+	if !t.Tracks[i-1] {
+		t.Tracks[i-1] = true
+		return true, ""
+	}
+	return false, "There is already a Track at that Position"
 }
 
-func (t *Tile) removeTracks(i int) {
-	t.Tracks[i-1] = false
+// Entfernt bei i ein gleis, wenn da eins ist
+// returnt true bei erfolg und false bei error
+func (t *Tile) removeTracks(i int) (bool, string) {
+	if t.Tracks[i-1] || t.IsBlocked {
+		t.Tracks[i-1] = false
+		return true, ""
+	}
+	return false, "There is no Track to Remove, or the Tile may be blocked by a Train, if so try again later"
+
 }
 
-func (t Tile) addSignal(i int) {
-
+// Fügt bei i ein Signal hinzu, wenn da keins ist und ein entsprechendes Gleis vorhanden ist, um bei i ein signal zu bauen muss gleis i da sein
+// returnt true bei erfolg und false bei error
+func (t *Tile) addSignal(i int) (bool, string) {
+	if t.Tracks[i-1] || t.Signals[i-1] {
+		t.Signals[i-1] = true
+		return true, ""
+	}
+	return false, "There may be no Track to place the signal onto, or there is already a signal at that location"
 }
 
-func (t Tile) removeSignals() {
+// Fügt bei i ein Signal hinzu, wenn da keins ist
+// returnt true bei erfolg und false bei error
+func (t Tile) removeSignal(i int) (bool, string) {
+	if t.Signals[i-1] {
+		t.Signals[i-1] = false
+		return true, ""
+	}
+	return false, "There is no Signal to remove"
 
 }
 
