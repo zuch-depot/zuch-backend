@@ -202,15 +202,15 @@ func (t *Train) recalculatePath() {
 	if t.NextStop.IsPlattform {
 		paths[i] = append(paths[i], t.NextStop.Plattform.getPathToOpposite(goals[i])...)
 	}
-	t.currentPath = paths[i]
+	t.CurrentPath = paths[i]
 
-	t.nextGoal = paths[i][len(paths[i])-1]
+	t.NextGoal = paths[i][len(paths[i])-1]
 
 	//Umdrehen Weg, damit der vom Start zum Ziel, war bis jetzt umgedreht
 	slices.Reverse(pathsSignals[i])
 	//Ziel wird als Signal hinzugefügt, da es (eigentlich) sich wie eins verhält
 	pathsSignals[i] = append(pathsSignals[i], [][3]int{paths[i][len(paths[i])-1]}...)
-	t.currentPathSignals = pathsSignals[i]
+	t.CurrentPathSignals = pathsSignals[i]
 	logger.Debug("----------------------")
 
 }

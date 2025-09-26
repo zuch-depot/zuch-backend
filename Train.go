@@ -9,17 +9,18 @@ type Train struct {
 	Waggons            []*TrainType //Alle müssen nebeneinander spawnen
 	Schedule           Schedule
 	NextStop           Stop //nur fürs testen
-	nextGoal           [3]int
-	lastGoal           [3]int
+	NextGoal           [3]int
+	LastGoal           [3]int
 	CurrentStop        Stop     //wird überschrieben, wenn der Zug von der Zielstation ausfahren möchte und nur mit StaionsStops
-	currentPath        [][3]int //neu berechnen bei laden
-	currentPathSignals [][3]int
-	foundPathToNext    bool //ob das letzte Pathfinding nicht erfolgreich war, dann muss erneut veruscht werden, ohne neuen Stop auszuwählen
+	CurrentPath        [][3]int //neu berechnen bei laden
+	CurrentPathSignals [][3]int
+	FoundPathToNext    bool //ob das letzte Pathfinding nicht erfolgreich war, dann muss erneut veruscht werden, ohne neuen Stop auszuwählen
 
-	waiting         bool //hat letzten Tick ein geblockes Tile gefunden oder keinen Weg gefunden und wartet
-	loadingTime     int  //Wie lange ist der Zug schon am be-/entladen? 0 == nicht am laden. Zeiteinheit ist wie oft methode aufgerufen wurde
-	finishedLoading bool //wenn nichts mehr geladen wird true. Kann auch wieder zurückgenommen werden
+	Waiting         bool //hat letzten Tick ein geblockes Tile gefunden oder keinen Weg gefunden und wartet
+	LoadingTime     int  //Wie lange ist der Zug schon am be-/entladen? 0 == nicht am laden. Zeiteinheit ist wie oft methode aufgerufen wurde
+	FinishedLoading bool //wenn nichts mehr geladen wird true. Kann auch wieder zurückgenommen werden
 	Id              int
+	User            *User
 }
 
 type TrainType struct {
@@ -46,15 +47,15 @@ func (t *Train) calculateTrain() [2]int {
 	//sonst wird neu versucht
 	pathfindToNextAndMove := func() [2]int {
 		//wie in Variablennamen beschrieben
-		if t.foundPathToNext {
+		if t.FoundPathToNext {
 			t.NextStop = t.Schedule.nextStop(t.NextStop)
 		}
 		t.recalculatePath()
 		//aktualisierung der Variable (siehe Variablenbeschreibung)
-		if len(t.currentPath) == 0 {
-			t.foundPathToNext = false
+		if len(t.CurrentPath) == 0 {
+			t.FoundPathToNext = false
 		} else {
-			t.foundPathToNext = true
+			t.FoundPathToNext = true
 			return t.move(true)
 		}
 		return [2]int{-1, -1}
@@ -63,47 +64,47 @@ func (t *Train) calculateTrain() [2]int {
 	var r [2]int
 
 	//ist gerade in die Staion eingefahren, also speichern der aktuellen Station. Nächste Station wird bei neuberechen überschrieben
-	if t.NextStop.IsPlattform && t.loadingTime == 0 && t.nextGoal == t.Waggons[0].Position {
+	if t.NextStop.IsPlattform && t.LoadingTime == 0 && t.NextGoal == t.Waggons[0].Position {
 		t.CurrentStop = t.NextStop
-		t.lastGoal = t.nextGoal
+		t.LastGoal = t.NextGoal
 		logger.Debug("Zug " + t.Name + " in " + t.CurrentStop.Plattform.station.Name + " eingefahren.")
-	} else if !t.NextStop.IsPlattform && len(t.currentPath) == 0 {
+	} else if !t.NextStop.IsPlattform && len(t.CurrentPath) == 0 {
 		//wenn das nächste Ziel ein Wegpunkt ist und man angekommen ist, braucht man einfach den nächsten Stop aussuchen und fahren
 		return pathfindToNextAndMove()
 	}
 
 	//wenn der aktuelle Stop eine Plattform ist und man an der an der Station steht
-	if t.CurrentStop.IsPlattform && t.lastGoal == t.Waggons[0].Position {
+	if t.CurrentStop.IsPlattform && t.LastGoal == t.Waggons[0].Position {
 		//wenn min Zeit erreicht ist überprüfen und man fertig mit laden ist, ob man fahren kann
-		if t.loadingTime >= minLoadUloadTicks && t.finishedLoading {
+		if t.LoadingTime >= minLoadUloadTicks && t.FinishedLoading {
 			logger.Debug("Zug " + t.Name + " versucht aus " + t.CurrentStop.Plattform.station.Name + " auszufahren.")
 
-			if len(t.currentPath) == 0 {
+			if len(t.CurrentPath) == 0 {
 				r = pathfindToNextAndMove()
 			} else {
 				r = t.move(false)
 			}
 
 			//Ist Zug losgefahren, also Reset der Werte fürs nächste Laden
-			if !t.waiting {
+			if !t.Waiting {
 				logger.Debug("Zug " + t.Name + " aus " + t.CurrentStop.getName() + "ausgefahren.")
-				t.loadingTime = 0
-				t.finishedLoading = false
+				t.LoadingTime = 0
+				t.FinishedLoading = false
 				return r
 			}
 		}
 		//laden/entladen, wenn er noch warten muss oder noch laden muss
-		if t.waiting || t.loadingTime < minLoadUloadTicks || !t.finishedLoading {
-			t.finishedLoading = t.loadUndload()
+		if t.Waiting || t.LoadingTime < minLoadUloadTicks || !t.FinishedLoading {
+			t.FinishedLoading = t.loadUndload()
 
 			printTrains()
 		}
-		t.loadingTime++
+		t.LoadingTime++
 
 		//wenn er sich nicht bewegt hat
 		return [2]int{-1, -1}
 	}
-	if len(t.currentPath) == 0 {
+	if len(t.CurrentPath) == 0 {
 		return pathfindToNextAndMove()
 	}
 	return t.move(false)
@@ -158,10 +159,10 @@ func (t *Train) loadUndload() bool {
 			for _, cargo := range command.CargoType {
 				var removed int
 				//ausladen was geht aus den Züge, max LoadUnloadSpeed
-				if sta.capacity-sta.getFillLevel() >= avaliableLoadUnloadSpeed {
+				if sta.Capacity-sta.getFillLevel() >= avaliableLoadUnloadSpeed {
 					removed = t.unloadCargo(cargo, avaliableLoadUnloadSpeed)
 				} else {
-					removed = t.unloadCargo(cargo, sta.capacity-sta.getFillLevel())
+					removed = t.unloadCargo(cargo, sta.Capacity-sta.getFillLevel())
 				}
 				avaliableLoadUnloadSpeed -= removed
 
@@ -257,22 +258,22 @@ func (t *Train) unloadCargo(cargoType string, maxCargoRemoved int) int {
 // returnt Tile zum unblocken
 func (t *Train) move(wasRecalculated bool) [2]int {
 	var entblocken [2]int
-	newGenNoSignal := t.waiting //neu generiert und kein Signal, oder er hat letzte mal gewartet, dann gucken, ob immer noch
+	newGenNoSignal := t.Waiting //neu generiert und kein Signal, oder er hat letzte mal gewartet, dann gucken, ob immer noch
 
 	//Wenn das neu generiert wurde
 	if wasRecalculated {
 		newGenNoSignal = true
 		//wenn das Pathfinding nicht funktioniert hat
-		if len(t.currentPath) == 0 {
-			t.waiting = true
+		if len(t.CurrentPath) == 0 {
+			t.Waiting = true
 
 			logger.Debug("Zug " + t.Name + " konnte den Weg zu " + t.NextStop.getName() + " nicht finden.")
 			return [2]int{-1, -1}
 		}
 	}
 
-	path := t.currentPath
-	signals := t.currentPathSignals
+	path := t.CurrentPath
+	signals := t.CurrentPathSignals
 
 	if newGenNoSignal && len(signals) > 1 {
 		newGenNoSignal = false
@@ -291,7 +292,7 @@ func (t *Train) move(wasRecalculated bool) [2]int {
 			!newGenNoSignal && path[i] != signals[1] && i < len(path); i++ {
 			if tiles[path[i][0]][path[i][1]].IsBlocked {
 				logger.Debug("Zug " + t.Name + ": Blocked Tile found: []" + strconv.Itoa(path[i][0]) + ", " + strconv.Itoa(path[i][1]) + ", " + strconv.Itoa(path[i][2]) + ". Waiting")
-				t.waiting = true
+				t.Waiting = true
 				return [2]int{-1, -1}
 			}
 		}
@@ -300,9 +301,9 @@ func (t *Train) move(wasRecalculated bool) [2]int {
 			tiles[path[i][0]][path[i][1]].IsBlocked = true
 		}
 		//nun wird das Signal aus der Queue rausgenommen, da der Zug über das Signal fährt
-		t.currentPathSignals = t.currentPathSignals[1:]
+		t.CurrentPathSignals = t.CurrentPathSignals[1:]
 
-		t.waiting = false
+		t.Waiting = false
 	}
 
 	//entblocken des letzten Tiles, wenn letzter Waggon sich rausbewegt (x oder y vom letzten unterschiedlich ist zum 2. letzten)
@@ -320,9 +321,9 @@ func (t *Train) move(wasRecalculated bool) [2]int {
 	}
 
 	//Bewegung der Lokomotive
-	t.Waggons[0].Position = t.currentPath[0]
+	t.Waggons[0].Position = t.CurrentPath[0]
 	//rausschmeißen des Tiles, wo die Lok sich hinbewegt hat aus der Queue
-	t.currentPath = t.currentPath[1:]
+	t.CurrentPath = t.CurrentPath[1:]
 
 	// for alle waggons {clients.schickeNachtricht(waggong x,y, hat sich bewegt)}
 

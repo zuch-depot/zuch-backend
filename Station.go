@@ -7,16 +7,17 @@ import (
 type Station struct {
 	Name     string
 	Storage  map[string]int //von was ist wieviel gelagert: CargoType? Hinzufügen nur mit Methode, rausnehmen direkt. MUSS mit make komplett initiiert werden
-	capacity int            //was ist die maximale Kapazität
+	Capacity int            //was ist die maximale Kapazität
+	User     *User
 }
 
 // return Restwert, der keinen Platz gefunden hat
 func (s *Station) addCargo(cargoType string, quantity int) int {
 	filled := s.getFillLevel()
 	//ist noch platz?
-	if filled < s.capacity {
+	if filled < s.Capacity {
 		//wie viel Platz?
-		emtySpace := s.capacity - filled
+		emtySpace := s.Capacity - filled
 		overflow := quantity - emtySpace
 		//reicht der Platz?, dann gibt es keinen Overflow
 		if overflow < 0 {

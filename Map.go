@@ -34,9 +34,9 @@ var (
 // nur fürs Testen, inkl. Schedule
 func createTrains() {
 	//stations
-	stations = append(stations, &Station{Name: "Station Nord", capacity: 100, Storage: map[string]int{"Kartoffeln": 100, "Pommes": 50}})
+	stations = append(stations, &Station{Name: "Station Nord", Capacity: 100, Storage: map[string]int{"Kartoffeln": 100, "Pommes": 50}})
 	plattforms := []Plattform{{Name: "Gleis 1", Tiles: [][2]int{{2, 0}, {3, 0}}, station: stations[0]}}
-	stations = append(stations, &Station{Name: "Station Süd", capacity: 150, Storage: map[string]int{}})
+	stations = append(stations, &Station{Name: "Station Süd", Capacity: 150, Storage: map[string]int{}})
 	plattforms = append(plattforms, Plattform{Name: "Gleis 31", Tiles: [][2]int{{3, 7}, {4, 7}, {5, 7}}, station: stations[1]})
 
 	//Zug eins mit Schedule

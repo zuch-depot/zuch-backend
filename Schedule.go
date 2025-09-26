@@ -4,7 +4,7 @@ import "slices"
 
 type Schedule struct {
 	Name  string
-	User  User
+	User  *User
 	Stops []Stop
 }
 

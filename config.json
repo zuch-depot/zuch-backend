@@ -4,9 +4,40 @@
             "Kohle", "Eisenerz"
         ],
         "Lebensmittel": [
-            "Kartoffeln", "Pommes"
+            "Kartoffeln", "Pommes", "Sonnenblumenöl"
         ],
         "Flüssigkeiten": [
             "Erdöl", "Treibstoff"
         ]
-}]}
+    }],
+    "Aktive Tiles": {
+        "Kohle Bergwerk": {
+            "Produktionszyklen": [{
+                "Verbrauch": {"CargoTyp": [""], "Menge": [0]},
+                "Produktion": {"CargoTyp": ["Kohle"], "Menge": [10]},
+                "verfügbareLevelUndScaling": [2,2]
+            }]
+        },
+        "Kohlekraftwerk": {
+            "Produktionszyklen": [{
+                "Verbrauch": {"CargoTyp": ["Kohle"], "Menge": [20]},
+                "Produktion": {"CargoTyp": [""], "Menge": [0]},
+                "verfügbareLevelUndScaling": [2,2]
+            }]
+        },
+        "Bauernhof": {
+            "Produktionszyklen": [{
+                "Verbrauch": {"CargoTyp": [""], "Menge": [0]},
+                "Produktion": {"CargoTyp": ["Kartoffeln"], "Menge": [20]},
+                "verfügbareLevelUndScaling": [2,2]
+            }]
+        },
+        "Lebensmittelfabrik": {
+            "Produktionszyklen": [{
+                "Verbrauch": {"CargoTyp": ["Kartoffeln", "Sonnenblumenöl"], "Menge": [30, 5]},
+                "Produktion": {"CargoTyp": ["Pommes"], "Menge": [15]},
+                "verfügbareLevelUndScaling": [2,2]
+            }]
+        }
+    }
+}
