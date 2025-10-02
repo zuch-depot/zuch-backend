@@ -1,5 +1,5 @@
 {
-    "Train Categories" : [{
+    "Train Categories" : {
         "Schüttgut": [
             "Kohle", "Eisenerz"
         ],
@@ -9,33 +9,33 @@
         "Flüssigkeiten": [
             "Erdöl", "Treibstoff"
         ]
-    }],
+    },
     "Aktive Tiles": {
         "Kohle Bergwerk": {
             "Produktionszyklen": [{
-                "Verbrauch": {"CargoTyp": [""], "Menge": [0]},
-                "Produktion": {"CargoTyp": ["Kohle"], "Menge": [10]},
+                "Verbrauch": {},
+                "Produktion": {"Kohle": 10},
                 "verfügbareLevelUndScaling": [2,2]
             }]
         },
         "Kohlekraftwerk": {
             "Produktionszyklen": [{
-                "Verbrauch": {"CargoTyp": ["Kohle"], "Menge": [20]},
-                "Produktion": {"CargoTyp": [""], "Menge": [0]},
+                "Verbrauch": {"Kohle": 20},
+                "Produktion": {},
                 "verfügbareLevelUndScaling": [2,2]
             }]
         },
         "Bauernhof": {
             "Produktionszyklen": [{
-                "Verbrauch": {"CargoTyp": [""], "Menge": [0]},
-                "Produktion": {"CargoTyp": ["Kartoffeln"], "Menge": [20]},
+                "Verbrauch": {},
+                "Produktion": {"Kartoffeln": 2, "Sonnenblumenöl": 1},
                 "verfügbareLevelUndScaling": [2,2]
             }]
         },
         "Lebensmittelfabrik": {
             "Produktionszyklen": [{
-                "Verbrauch": {"CargoTyp": ["Kartoffeln", "Sonnenblumenöl"], "Menge": [30, 5]},
-                "Produktion": {"CargoTyp": ["Pommes"], "Menge": [15]},
+                "Verbrauch": {"Kartoffeln": 4, "Sonnenblumenöl": 1},
+                "Produktion": {"Pommes": 2},
                 "verfügbareLevelUndScaling": [2,2]
             }]
         }

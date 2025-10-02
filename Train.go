@@ -386,28 +386,3 @@ func neighbourTracks(x int, y int, sub int) [][3]int {
 	}
 	return connectedNeigbours
 }
-
-type WaggonModdel int
-
-const (
-	Dampflokomotive WaggonModdel = iota
-	SchüttgutWagen
-)
-
-func Abs(x int) int {
-	if x < 0 {
-		return -x
-	}
-	return x
-}
-
-func getCargoCategory(cargoType string) string {
-	for key, value := range CargoCategoryAndTypes {
-		for _, value2 := range value {
-			if value2 == cargoType {
-				return key
-			}
-		}
-	}
-	return ""
-}

@@ -13,15 +13,19 @@ import (
 )
 
 var (
-	users     []*User
-	schedules []*Schedule
-	stations  []*Station
-	tiles     [][]*Tile
-	trains    []*Train
+	users       []*User
+	schedules   []*Schedule
+	stations    []*Station
+	tiles       [][]*Tile
+	trains      []*Train
+	activeTiles []*ActiveTile
 
-	loadUnloadSpeed       int
-	minLoadUloadTicks     int
-	CargoCategoryAndTypes map[string][]string
+	loadUnloadSpeed   int
+	minLoadUloadTicks int
+	configData        ConfigData //übergeordetes Struct, in das alles aus config.json reingeladen wird
+
+	stationRange int
+
 	//Plattforms
 )
 var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true, Level: slog.LevelInfo}))
@@ -47,6 +51,12 @@ func main() {
 	}
 	minLoadUloadTicks = int(tempVar)
 
+	tempVar, err = strconv.ParseInt(os.Getenv("MAXDISTANCEACTIVETILETOSTATION"), 10, 64)
+	if err != nil {
+		log.Println("Error while loading the radius of the station, where aktive Tiles are detected", err)
+	}
+	stationRange = int(tempVar)
+
 	//wichtig als initialisierung, bevor Züge verarbeitet werden
 	loadConfig()
 
@@ -64,11 +74,11 @@ func main() {
 	go startListiningToBroadcast(broadcastChannel)
 	//Zeit pro Tick bestimmen
 	ticksMilisec, err := strconv.Atoi(os.Getenv("TICKTIMEMILISEC"))
-
-	ticker := time.NewTicker(time.Duration(ticksMilisec) * time.Millisecond)
 	if err != nil {
 		logger.Error("Failed to convert Ticktime to Int", slog.String("Error", err.Error())) //anderes Log?// Panic beendet das programm :(
 	}
+
+	ticker := time.NewTicker(time.Duration(ticksMilisec) * time.Millisecond)
 
 	//jeder Tick
 	for tick := 0; ; tick++ {
@@ -90,9 +100,12 @@ func main() {
 		}
 
 		//process factorys
+		if (tick+1)%10 == 0 {
+			processActiveTiles()
+		}
 
 		//anzeigen Testing
-		if tick%100 == 0 {
+		if tick%10 == 0 {
 			printMap()
 			// fmt.Println("tick", tick)
 		}
@@ -131,23 +144,34 @@ func calculateTrains() {
 	}
 }
 
+type Produktionszyklus struct {
+	Consumtion                 map[string]int `json:"Verbrauch"`
+	Produktion                 map[string]int `json:"Produktion"`
+	VerfuegbareLevelUndScaling []int          `json:"verfügbareLevelUndScaling"`
+}
+
+// Struktur für aktive Tiles
+type ActiveTileCategory struct {
+	Productioncycles []Produktionszyklus `json:"Produktionszyklen"`
+}
+
+// Root-Struktur für config.json
+type ConfigData struct {
+	TrainCategories      map[string][]string           `json:"Train Categories"`
+	ActiveTileCategories map[string]ActiveTileCategory `json:"Aktive Tiles"`
+}
+
 func loadConfig() {
-	//einlesen der config
-	configFile, err := os.ReadFile("config.json")
+
+	// JSON-Datei öffnen
+	file, err := os.ReadFile("config.json")
 	if err != nil {
-		log.Println("Error while loading config.json", err)
-	}
-	raw := make(map[string][]map[string][]string)
-	if err := json.Unmarshal(configFile, &raw); err != nil {
 		panic(err)
 	}
 
-	// Zielmap aufbauen
-	CargoCategoryAndTypes = make(map[string][]string)
-	for _, entry := range raw["Train Categories"] {
-		for key, values := range entry {
-			CargoCategoryAndTypes[key] = values
-		}
+	// Unmarshal in Struktur
+	if err := json.Unmarshal(file, &configData); err != nil {
+		panic(err)
 	}
 }
 

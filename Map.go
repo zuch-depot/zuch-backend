@@ -16,7 +16,7 @@ var (
 		/*
 		 0.1.2.3.4.5.6.7.8.9*/
 		" .+.-.-.+.+.-. . .|", //0
-		" .|. . .+.+. . . .|", //1
+		" .|.B. .+.+. . . .|", //1
 		" .|. . . .+.+. . .|", //2
 		" .|. . . . .|. .+.+", //3
 		" .+.-.-.+.-.+. .|.|", //4
@@ -24,30 +24,37 @@ var (
 		" . .|. . . .|. .+.+", //6
 		" . .+.-.-.-.+. . .|", //7
 		" .+.+. . . .|. . .|", //8
-		" .+.+. . . .|. . . ", //9
+		" .+.+. . .L.|. . . ", //9
 	}
 	testSignals = [][3]int{
-		[3]int{1, 3, 4},
+		{1, 3, 4},
+		{4, 5, 2},
 	}
 )
 
 // nur fürs Testen, inkl. Schedule
 func createTrains() {
-	//stations
-	stations = append(stations, &Station{Name: "Station Nord", Capacity: 100, Storage: map[string]int{"Kartoffeln": 100, "Pommes": 50}})
+	//stations inkl. Initialisieren
+	stations = append(stations, &Station{Name: "Station Nord", Id: 1, Capacity: 100, Storage: map[string]int{}})
 	plattforms := []Plattform{{Name: "Gleis 1", Tiles: [][2]int{{2, 0}, {3, 0}}, station: stations[0]}}
-	stations = append(stations, &Station{Name: "Station Süd", Capacity: 150, Storage: map[string]int{}})
+	stations[0].changeStationTile(false, [2]int{2, 0})
+	stations[0].changeStationTile(false, [2]int{3, 0})
+
+	stations = append(stations, &Station{Name: "Station Süd", Id: 2, Capacity: 150, Storage: map[string]int{}})
 	plattforms = append(plattforms, Plattform{Name: "Gleis 31", Tiles: [][2]int{{3, 7}, {4, 7}, {5, 7}}, station: stations[1]})
+	stations[1].changeStationTile(false, [2]int{3, 7})
+	stations[1].changeStationTile(false, [2]int{4, 7})
+	stations[1].changeStationTile(false, [2]int{5, 7})
 
 	//Zug eins mit Schedule
 	Stops := []Stop{
 		{Id: 1, Plattform: &plattforms[0], IsPlattform: true, LoadUnloadCommand: [2]LoadUnloadCommand{
-			{CargoType: []string{"Kohle"}},
-			{Loading: true, CargoType: []string{"Kartoffeln", "Pommes"}}}},
+			{CargoType: []string{"Pommes"}},
+			{Loading: true, CargoType: []string{"Kartoffeln", "Sonnenblumenöl"}}}},
 		{Id: 2, Goal: [3]int{1, 3, 4}, Name: "Wegpunkt 1"},
 		{Id: 3, Plattform: &plattforms[1], IsPlattform: true, LoadUnloadCommand: [2]LoadUnloadCommand{
-			{CargoType: []string{"Kartoffeln", "Pommes"}},
-			{Loading: true, CargoType: []string{"Kohle"}}}}}
+			{CargoType: []string{"Kartoffeln", "Sonnenblumenöl"}},
+			{Loading: true, CargoType: []string{"Pommes"}}}}}
 	schedules = append(schedules, &Schedule{Stops: Stops})
 	temp := []*TrainType{
 		{Position: [3]int{4, 4, 1}},
@@ -58,8 +65,8 @@ func createTrains() {
 	// Zug zwei
 	temp = []*TrainType{
 		{Position: [3]int{6, 6, 2}},
-		{Position: [3]int{6, 5, 4}},
-		{Position: [3]int{6, 5, 2}}}
+		{Position: [3]int{6, 5, 4}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}},
+		{Position: [3]int{6, 5, 2}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}}}
 	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE2", NextStop: Stops[2], Id: 1})
 }
 
@@ -88,6 +95,7 @@ func initializeTiles() {
 			//hier die Infos für das Tile laden
 
 			//testing
+			var aktiveTile ActiveTile
 			var tracks [4]bool
 			switch line[o] {
 			case "-":
@@ -96,6 +104,14 @@ func initializeTiles() {
 				tracks = [4]bool{false, true, false, true}
 			case "+":
 				tracks = [4]bool{true, true, true, true}
+			case "B":
+				temp := configData.ActiveTileCategories["Bauernhof"]
+				aktiveTile = ActiveTile{Name: "Bauernhof Nord", Category: &temp, maxStorage: 150}
+				activeTiles = append(activeTiles, &aktiveTile)
+			case "L":
+				temp := configData.ActiveTileCategories["Lebensmittelfabrik"]
+				aktiveTile = ActiveTile{Name: "Lebensmittelfabrik Süd", Category: &temp, maxStorage: 50, Storage: map[string]int{"Kartoffeln": 100}}
+				activeTiles = append(activeTiles, &aktiveTile)
 			}
 
 			//signals testing
@@ -106,7 +122,7 @@ func initializeTiles() {
 				}
 			}
 
-			tiles[o][i] = &Tile{IsPlattform: false, Tracks: tracks, Signals: signals}
+			tiles[o][i] = &Tile{IsPlattform: false, Tracks: tracks, Signals: signals, ActiveTile: &aktiveTile}
 		}
 	}
 
