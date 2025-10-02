@@ -6,6 +6,10 @@ type Tile struct {
 	IsPlattform bool
 	IsBlocked   bool //nur für tracks
 	ActiveTile  *ActiveTile
+
+	//ob auf dem Tile gebaut werden kann. Wenn es ein Hindernis ist, muss irgendwie bestimmt werden,
+	//welches Sprite das ist, es können aber auch Tracks und Signale Mapseitig unveränderlich sein.
+	IsLocked bool
 }
 
 type ActiveTile struct {
@@ -17,11 +21,12 @@ type ActiveTile struct {
 	maxStorage int //maximum Lager pro Gut -> sonst kann es zu unwiederruflichen auffüllen kommen
 }
 
-// Fügt bei i ein gleis hinzu, wenn da keins ist und da kein AktiveTile ist
+// Fügt bei i ein gleis hinzu, wenn da keins ist und das Tile nicht locked ist
 // returnt true bei erfolg und false bei error
+// TODO MUSS ANGEPASSt WERDEN, damit Stationen nicht kaputt gemacht werden
 func (t *Tile) addTrack(i int) (bool, string) {
-	if t.ActiveTile.Category == nil {
-		return false, "There is a Active Tile there, no Tracks can be build on this tile."
+	if t.IsBlocked {
+		return false, "This Tile is locked and cannot be altered"
 	}
 	if !t.Tracks[i-1] {
 		t.Tracks[i-1] = true
@@ -30,10 +35,14 @@ func (t *Tile) addTrack(i int) (bool, string) {
 	return false, "There is already a Track at that Position."
 }
 
-// Entfernt bei i ein gleis und Signal, wenn da eins ist
+// Entfernt bei i ein gleis und Signal, wenn da eins ist und das Tile nicht locked ist
 // returnt true bei erfolg und false bei error
 // wenn kein Signal an der Stelle ist, wird kein Fehler geworfen
+// TODO MUSS ANGEPASST WERDEN, Stationen müssen berücksichtigt werden
 func (t *Tile) removeTrack(i int) (bool, string) {
+	if t.IsLocked {
+		return false, "This Tile is locked and cannot be altered"
+	}
 	if t.Tracks[i-1] && !t.IsBlocked {
 		t.Tracks[i-1] = false
 		t.Signals[i-1] = false
@@ -43,9 +52,13 @@ func (t *Tile) removeTrack(i int) (bool, string) {
 
 }
 
-// Fügt bei i ein Signal hinzu, wenn da keins ist und ein entsprechendes Gleis vorhanden ist, um bei i ein signal zu bauen muss gleis i da sein
+// Fügt bei i ein Signal hinzu, wenn da keins ist und ein entsprechendes Gleis vorhanden ist,
+// um bei i ein signal zu bauen muss gleis i da sein, und das Tile nicht locked ist;
 // returnt true bei erfolg und false bei error
 func (t *Tile) addSignal(i int) (bool, string) {
+	if t.IsLocked {
+		return false, "This Tile is locked and cannot be altered"
+	}
 	if t.Tracks[i-1] || t.Signals[i-1] {
 		t.Signals[i-1] = true
 		return true, ""
@@ -53,9 +66,12 @@ func (t *Tile) addSignal(i int) (bool, string) {
 	return false, "There may be no Track to place the signal onto, or there is already a signal at that location."
 }
 
-// Fügt bei i ein Signal hinzu, wenn da keins ist
+// Fügt bei i ein Signal hinzu, wenn da keins ist und das Tile nicht locked ist
 // returnt true bei erfolg und false bei error
 func (t *Tile) removeSignal(i int) (bool, string) {
+	if t.IsLocked {
+		return false, "This Tile is locked and cannot be altered"
+	}
 	if t.Signals[i-1] {
 		t.Signals[i-1] = false
 		return true, ""
@@ -64,11 +80,14 @@ func (t *Tile) removeSignal(i int) (bool, string) {
 
 }
 
-func (t Tile) removePlattform() {
-
+func (t Tile) removePlattform() (bool, string) {
+	if t.IsLocked {
+		return false, "This Tile is locked and cannot be altered"
+	}
+	return true, "temp"
 }
 
-//bis jetzt noch keine Level implementiert
+// bis jetzt noch keine Level implementiert
 func processActiveTiles() {
 
 	for _, activeTile := range activeTiles {

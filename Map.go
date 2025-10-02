@@ -122,7 +122,9 @@ func initializeTiles() {
 				}
 			}
 
-			tiles[o][i] = &Tile{IsPlattform: false, Tracks: tracks, Signals: signals, ActiveTile: &aktiveTile}
+			isLocked := aktiveTile.Stations == nil
+
+			tiles[o][i] = &Tile{IsPlattform: false, Tracks: tracks, Signals: signals, ActiveTile: &aktiveTile, IsLocked: isLocked}
 		}
 	}
 
