@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
 )
 
@@ -292,6 +293,13 @@ func (t *Train) move(wasRecalculated bool) [2]int {
 			!newGenNoSignal && path[i] != signals[1] && i < len(path); i++ {
 			if tiles[path[i][0]][path[i][1]].IsBlocked {
 				logger.Debug("Zug " + t.Name + ": Blocked Tile found: []" + strconv.Itoa(path[i][0]) + ", " + strconv.Itoa(path[i][1]) + ", " + strconv.Itoa(path[i][2]) + ". Waiting")
+
+				if !t.Waiting {
+					//TODO
+					logger.Debug("Hallo Jannis, hier Nachricht an client, dass das Signal an Stelle " +
+						fmt.Sprint(t.Waggons[0].Position) + " auf rot geschaltet werden soll")
+				}
+
 				t.Waiting = true
 				return [2]int{-1, -1}
 			}
@@ -303,16 +311,28 @@ func (t *Train) move(wasRecalculated bool) [2]int {
 		//nun wird das Signal aus der Queue rausgenommen, da der Zug über das Signal fährt
 		t.CurrentPathSignals = t.CurrentPathSignals[1:]
 
+		logger.Debug("Hallo Jannis, hier Nachricht an client, dass das Signal an Stelle " +
+			fmt.Sprint(t.Waggons[0].Position) + " auf grün geschaltet werden soll. Irgnoriere das beim laden bitte xD")
+
 		t.Waiting = false
+
 	}
 
 	//entblocken des letzten Tiles, wenn letzter Waggon sich rausbewegt (x oder y vom letzten unterschiedlich ist zum 2. letzten)
 	// in die Queue schreiben, da entblocken nur am Ende des Ticks
-	if len(t.Waggons) == 1 ||
-		(t.Waggons[len(t.Waggons)-1].Position[0] != t.Waggons[len(t.Waggons)-2].Position[0] ||
-			t.Waggons[len(t.Waggons)-1].Position[1] != t.Waggons[len(t.Waggons)-2].Position[1]) {
-		letzterWagON := t.Waggons[len(t.Waggons)-1]
-		tiles[letzterWagON.Position[0]][letzterWagON.Position[1]].IsBlocked = false
+	letzterWaggon := t.Waggons[len(t.Waggons)-1]
+	if len(t.Waggons) == 1 || (letzterWaggon.Position[0] != t.Waggons[len(t.Waggons)-2].Position[0] ||
+		letzterWaggon.Position[1] != t.Waggons[len(t.Waggons)-2].Position[1]) {
+
+		// tiles[letzterWaggon.Position[0]][letzterWaggon.Position[1]].IsBlocked = false
+		entblocken = [2]int{letzterWaggon.Position[0], letzterWaggon.Position[1]}
+
+		//wenn das subTile, aus dem man sich herausbewegt ein Signal hat, hat man ein Signal passiert
+		//das passt, da alle Signal außen an den Tiles stehen
+		if tiles[letzterWaggon.Position[0]][letzterWaggon.Position[1]].Signals[letzterWaggon.Position[2]-1] {
+			logger.Debug("Hallo Jannis, hier Nachricht an client, dass das Signal an Stelle " +
+				fmt.Sprint(letzterWaggon.Position) + " auf blau geschaltet werden soll")
+		}
 	}
 
 	//Bewegung der Waggons
