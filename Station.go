@@ -26,6 +26,13 @@ func (s Station) changeStationTile(remove bool, position [2]int) {
 		yMin = 0
 	}
 
+	if remove {
+		tiles[position[0]][position[1]].IsPlattform = false
+	} else {
+		tiles[position[0]][position[1]].IsPlattform = true
+
+	}
+
 	//durchiteriren durch alle Tiles in Reichweite und innerhalb der Bounds
 	for y := yMin; y <= yMin+(stationRange*2) && y < len(tiles); y++ {
 		for x := xMin; x <= xMin+(stationRange*2) && x < len(tiles[0]); x++ {
