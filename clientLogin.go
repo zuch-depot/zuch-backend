@@ -57,6 +57,11 @@ func startServer() {
 
 func acceptNewClient(w http.ResponseWriter, r *http.Request) {
 	username := r.URL.Query().Get("username")
+	if username == "Server" {
+		http.Error(w, "User already Connected", 400)
+		logger.Info("User Tried to login as \"Server\", but that name is reserved", slog.String("Username", username))
+		return
+	}
 	userExists := false
 	for _, v := range users {
 		if v.username == username { // Username has already connected at some point

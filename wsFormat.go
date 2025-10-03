@@ -55,6 +55,11 @@ type tileUpdateMSG struct {
 	Action  string // remove, build
 }
 
+type trainMoveMSG struct {
+	Id      int
+	Waggons []*TrainType
+}
+
 type relpyMSG struct {
 	Msg     string
 	Success bool
@@ -89,7 +94,10 @@ var (
 	// #region Trains
 	// wird bisher genutzt um die bewegung von zügen darzustellen, vielleicht macht es sinn das in ein simpleres format zu ändern, aber bis wird es so geamcht, ggf auch für veränderte füllstände oder so genutzt
 	// Bezieht sich auch auf genau einen zug
-	trainMove = wsEnvelope{Type: "train.update", Msg: &Train{}}
+	trainMove = wsEnvelope{Type: "train.move", Msg: &trainMoveMSG{}}
+
+	trainCreate = wsEnvelope{Type: "train.create", Msg: &Train{}}
+
 	// #endregion Trains
 // map.updateTile
 
