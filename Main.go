@@ -106,7 +106,7 @@ func main() {
 
 		//anzeigen Testing
 		if tick%10 == 0 {
-			printMap()
+			// printMap()
 			// fmt.Println("tick", tick)
 		}
 		// das wartet hier bis ein tick ausgelöst wird,
@@ -122,7 +122,8 @@ func processClientInputs() {
 		switch input.Type {
 		case "tile.update":
 			handleTileUpdate(input, tiles)
-
+		case "train.create":
+			handleCreateTrain(input)
 		}
 	}
 }

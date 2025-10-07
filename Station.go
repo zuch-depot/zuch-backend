@@ -26,6 +26,7 @@ func (s Station) changeStationTile(remove bool, position [2]int) {
 		yMin = 0
 	}
 
+	// Ich war mal so frech - Jannis
 	if remove {
 		tiles[position[0]][position[1]].IsPlattform = false
 	} else {

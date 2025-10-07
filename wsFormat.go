@@ -31,11 +31,11 @@ type recieveWSEnvelope struct {
 
 func (envelope *recieveWSEnvelope) reply(success bool, message string) {
 	if envelope.TransactionID == "" {
-		logger.Info("Client did not transmit a TransactionID to track this Transaction, guess they dont want any feedback", slog.String("Username", envelope.user.username))
+		logger.Debug("Client did not transmit a TransactionID to track this Transaction, guess they dont want any feedback", slog.String("Username", envelope.user.username))
 		return
 	}
 	if !envelope.user.isConnected {
-		logger.Info("Client no longer connected, guess they dont want any feedback", slog.String("Username", envelope.user.username))
+		logger.Debug("Client no longer connected, guess they dont want any feedback", slog.String("Username", envelope.user.username))
 		return
 	}
 
@@ -47,9 +47,7 @@ func (envelope *recieveWSEnvelope) reply(success bool, message string) {
 }
 
 type tileUpdateMSG struct {
-	X       int
-	Y       int
-	Subtile int // 1 => links, 2 => oben, 3 => rechts, 4 => unten
+	position [3]int // 0 => links, 1 => oben, 2 => rechts, 3 => unten
 	// Wilken hat sich entschlossen immer wenn ein subtile als int gespeichert wird bei 1 anzufangen und wenn es ein bool[4] ist bei 0, also kann sein das es sich irgendwo verschiebt aber das kriegen wir sicher noch behoben Bei schienen auch analog
 	Subject string //
 	Action  string // remove, build
@@ -57,7 +55,18 @@ type tileUpdateMSG struct {
 
 type trainMoveMSG struct {
 	Id      int
-	Waggons []*TrainType
+	Waggons []*Waggon
+}
+
+type trainCreateMSG struct {
+	Name    string
+	Waggons []trainCreateWaggons
+	Id      int
+}
+
+type trainCreateWaggons struct {
+	Position [3]int
+	Typ      string
 }
 
 type relpyMSG struct {
@@ -92,11 +101,13 @@ var (
 	// #endregion Map
 
 	// #region Trains
-	// wird bisher genutzt um die bewegung von zügen darzustellen, vielleicht macht es sinn das in ein simpleres format zu ändern, aber bis wird es so geamcht, ggf auch für veränderte füllstände oder so genutzt
+	// wird bisher genutzt um die bewegung von zügen darzustellen
 	// Bezieht sich auch auf genau einen zug
 	trainMove = wsEnvelope{Type: "train.move", Msg: &trainMoveMSG{}}
-
-	trainCreate = wsEnvelope{Type: "train.create", Msg: &Train{}}
+	// Eingehend
+	trainCreateIn = wsEnvelope{Type: "train.create", Msg: &trainCreateMSG{}}
+	// Ausgehend
+	trainCreateOut = wsEnvelope{Type: "train.create", Msg: &Train{}}
 
 	// #endregion Trains
 // map.updateTile

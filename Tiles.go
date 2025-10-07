@@ -68,7 +68,7 @@ func (t Tile) removePlattform() {
 
 }
 
-//bis jetzt noch keine Level implementiert
+// bis jetzt noch keine Level implementiert
 func processActiveTiles() {
 
 	for _, activeTile := range activeTiles {

@@ -1,12 +1,19 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
+	"log/slog"
+	"slices"
 	"strconv"
+	"sync/atomic"
 )
 
+var currentTrainID atomic.Uint64
+
 type Train struct {
-	Name               string
-	Waggons            []*TrainType //Alle müssen nebeneinander spawnen
+	Name               string    // Nicht eindeutig, dafür siehe ID
+	Waggons            []*Waggon //Alle müssen nebeneinander spawnen
 	Schedule           Schedule
 	NextStop           Stop //nur fürs testen
 	NextGoal           [3]int
@@ -23,12 +30,9 @@ type Train struct {
 	User            *User
 }
 
-type TrainType struct {
+type Waggon struct {
 	Position     [3]int //x,y,sub
 	MaxSpeed     int
-	Id           int
-	Size         int
-	Cargo        int //was ist das?
 	CargoStorage *CargoStorage
 }
 
@@ -37,6 +41,73 @@ type CargoStorage struct {
 	filled          int
 	filledCargoType string
 	CargoCategory   string //statisch
+}
+
+func addTrain(update trainCreateMSG) (*Train, error) {
+	err := checkIfWaggonsAreValid(update.Waggons)
+	if err != nil {
+		return nil, err
+	}
+
+	train := &Train{Name: update.Name, Id: int(currentTrainID.Load())}
+	currentTrainID.Add(1)
+
+	for _, waggon := range update.Waggons {
+		err := train.addWaggon(waggon.Position, waggon.Typ)
+		if err != nil {
+			return nil, fmt.Errorf("this shoudln't happen; %s", err.Error())
+		}
+	}
+
+	trains = append(trains, train)
+	return train, nil
+}
+
+// Überprüft ob alle waggons eine Valide Position haben, also das Gleis nicht blockiert ist, das gleis existiert und die Waggons zusammenhänend sind
+func checkIfWaggonsAreValid(waggons []trainCreateWaggons) error {
+	for i, waggon := range waggons {
+		if tiles[waggon.Position[0]][waggon.Position[1]].IsBlocked {
+			return fmt.Errorf("track is blocked")
+		}
+		// Schaut ob der n. Waggon ein Nachbar des n-1. Waggon ist, daher beim 0. Überspringen
+		if i != 0 {
+			prevWaggon := waggons[i-1]
+			possibleTracks := neighbourTracks(prevWaggon.Position[0], prevWaggon.Position[1], prevWaggon.Position[2])
+
+			if !slices.Contains(possibleTracks, waggon.Position) {
+				return fmt.Errorf("waggons are not continuos or a track is missing")
+			}
+		}
+	}
+	// Gibt einen Fehler zurück falls
+	return nil
+}
+
+// Fügt einen Wagon zu einem Zug, typ gibt die art des wagongs an, daraus basierend wird capacity und maxSpeed bestimmt, bspw "Lebensmittel"
+// true => Erfolgreich; false => fehler
+func (t *Train) addWaggon(position [3]int, typ string) error {
+	var capacity, maxSpeed int
+	// Typ gibt kurz als string an was für einen Waggon man will
+	// hier werden die passenden Attribute rausgesucht
+	switch typ {
+	case "Lebensmittel":
+		capacity = 30
+		maxSpeed = 77
+	default:
+		logger.Error("Invalider Typ", slog.String("Typ", typ))
+		return fmt.Errorf("invalider Typ")
+	}
+
+	// Hier wird noch überorüft ob da überhaupt ein freies gleis ist
+	if !tiles[position[0]][position[1]].Tracks[position[2]-1] { // Wenn dort ein gleis ist
+		return fmt.Errorf("kein Gleis vorhanden")
+	}
+
+	// Waggons zu zug hinzufügen
+	t.Waggons = append(t.Waggons, &Waggon{Position: position, MaxSpeed: maxSpeed, CargoStorage: &CargoStorage{capacity: capacity, CargoCategory: typ}})
+	tiles[position[0]][position[1]].IsBlocked = true
+	logger.Debug("Blockiertes", slog.Int("Pos 0", position[0]), slog.Int("Pos 1", position[1]), slog.Bool("Blocked", tiles[position[0]][position[1]].IsBlocked))
+	return nil
 }
 
 // returned Tile zum entblcken
@@ -385,4 +456,30 @@ func neighbourTracks(x int, y int, sub int) [][3]int {
 		appending([3]int{1, 2, 3})
 	}
 	return connectedNeigbours
+}
+
+func handleCreateTrain(envelope recieveWSEnvelope) {
+	var update trainCreateMSG
+	err := json.Unmarshal(envelope.Msg, &update)
+	if err != nil {
+		logger.Error("Error unmarhsalling Json", slog.String("error", err.Error()), slog.String("Username", envelope.user.username))
+		envelope.reply(false, err.Error())
+
+	}
+	train, err := addTrain(update)
+	if err != nil {
+		logger.Error("Error creating train", slog.String("error", err.Error()), slog.String("Username", envelope.user.username))
+		envelope.reply(false, err.Error())
+		return
+	}
+
+	logger.Info("Created Train", slog.String("Username", envelope.user.username), slog.String("Zug Name", update.Name))
+	broadcastChannel <- wsEnvelope{
+		Type:          "train.create",
+		Username:      envelope.user.username,
+		TransactionID: envelope.TransactionID,
+		Msg:           train,
+	}
+
+	envelope.reply(true, "")
 }

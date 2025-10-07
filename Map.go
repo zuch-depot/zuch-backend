@@ -51,26 +51,33 @@ func createTrains() {
 		{Id: 1, Plattform: &plattforms[0], IsPlattform: true, LoadUnloadCommand: [2]LoadUnloadCommand{
 			{CargoType: []string{"Pommes"}},
 			{Loading: true, CargoType: []string{"Kartoffeln", "Sonnenblumenöl"}}}},
-		{Id: 2, Goal: [3]int{1, 3, 4}, Name: "Wegpunkt 1"},
+		// {Id: 2, Goal: [3]int{1, 3, 4}, Name: "Wegpunkt 1"},
 		{Id: 3, Plattform: &plattforms[1], IsPlattform: true, LoadUnloadCommand: [2]LoadUnloadCommand{
 			{CargoType: []string{"Kartoffeln", "Sonnenblumenöl"}},
 			{Loading: true, CargoType: []string{"Pommes"}}}}}
 	schedules = append(schedules, &Schedule{Stops: Stops})
-	temp := []*TrainType{
+	temp := []*Waggon{
 		{Position: [3]int{4, 4, 1}},
 		{Position: [3]int{3, 4, 3}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}},
 		{Position: [3]int{3, 4, 1}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}},
 		{Position: [3]int{2, 4, 3}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}}}
-	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE1", NextStop: Stops[0], Id: 0})
+	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE1", NextStop: Stops[0], Id: int(currentTrainID.Load())})
+	currentTrainID.Add(1)
+
 	// Zug zwei
-	temp = []*TrainType{
+	temp = []*Waggon{
 		{Position: [3]int{6, 6, 2}},
 		{Position: [3]int{6, 5, 4}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}},
 		{Position: [3]int{6, 5, 2}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}}}
-	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE2", NextStop: Stops[2], Id: 1})
+	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE2", NextStop: Stops[1], Id: int(currentTrainID.Load())})
+	currentTrainID.Add(1)
+
 }
 
 func initializeTiles() {
+	// Setzt die erste Zug ID, pass hier halbwegs zum initialisieren
+	currentTrainID.Store(0)
+
 	//Map Größe aus config laden
 	sizeX, err := strconv.ParseInt(os.Getenv("XSIZE"), 10, 64)
 	if err != nil {
@@ -216,7 +223,7 @@ func handleTileUpdate(envelope recieveWSEnvelope, tiles [][]*Tile) {
 		logger.Error("Error while loading Size of Map in the y dimension", slog.String("error", err.Error()))
 	}
 
-	if !((0 <= update.X && update.X < int(sizeX)) && (0 <= update.Y && update.Y < int(sizeY)) && (1 <= update.Subtile && update.Subtile <= 4)) {
+	if !((0 <= update.position[0] && update.position[0] < int(sizeX)) && (0 <= update.position[1] && update.position[1] < int(sizeY)) && (0 < update.position[2] && update.position[2] <= 4)) {
 		logger.Error("Invalid coordinates in wsEnvolope, ignoring this envolpe and continuing", slog.String("username", envelope.user.username))
 		return
 	}
@@ -225,17 +232,17 @@ func handleTileUpdate(envelope recieveWSEnvelope, tiles [][]*Tile) {
 	case "build":
 		switch update.Subject {
 		case "rail":
-			executeAndReply(tiles[update.X][update.Y].addTrack, &envelope, &update)
+			executeAndReply(tiles[update.position[0]][update.position[1]].addTrack, &envelope, &update)
 		case "signal":
-			executeAndReply(tiles[update.X][update.Y].addSignal, &envelope, &update)
+			executeAndReply(tiles[update.position[0]][update.position[1]].addSignal, &envelope, &update)
 
 		}
 	case "remove":
 		switch update.Subject {
 		case "rail":
-			executeAndReply(tiles[update.X][update.Y].removeTrack, &envelope, &update)
+			executeAndReply(tiles[update.position[0]][update.position[1]].removeTrack, &envelope, &update)
 		case "signal":
-			executeAndReply(tiles[update.X][update.Y].removeSignal, &envelope, &update)
+			executeAndReply(tiles[update.position[0]][update.position[1]].removeSignal, &envelope, &update)
 
 		}
 	}
@@ -243,9 +250,9 @@ func handleTileUpdate(envelope recieveWSEnvelope, tiles [][]*Tile) {
 }
 
 func executeAndReply(callback func(int) (bool, string), envelope *recieveWSEnvelope, update *tileUpdateMSG) {
-	success, msg := callback(update.Subtile)
+	success, msg := callback(update.position[2])
 	if success {
-		broadcastChannel <- wsEnvelope{Type: envelope.Type, Username: "Server", Msg: &tileUpdateMSG{X: update.X, Y: update.Y, Subtile: update.Subtile, Subject: update.Subject, Action: update.Action}}
+		broadcastChannel <- wsEnvelope{Type: envelope.Type, Username: "Server", Msg: &tileUpdateMSG{position: update.position, Subject: update.Subject, Action: update.Action}}
 		envelope.reply(success, "")
 	} else {
 		envelope.reply(success, msg)
