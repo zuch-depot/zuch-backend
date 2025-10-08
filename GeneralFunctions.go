@@ -28,9 +28,9 @@ func Abs(x int) int {
 }
 
 // finde die CargoCategory des CargoTypes
-func getCargoCategory(cargoType string) string {
+func getCargoCategory(cargoType string, gs *gameState) string {
 	//iteriere die CargoCategorys
-	for key, value := range configData.TrainCategories {
+	for key, value := range gs.configData.TrainCategories {
 		//suche in der aktuellen Category nach dem Type
 		for _, value2 := range value {
 			//wenn gefunden, kann der zurückgegeben werden

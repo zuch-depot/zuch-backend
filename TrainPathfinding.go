@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-func (t *Train) recalculatePath() {
+func (t *Train) recalculatePath(gs *gameState) {
 
 	type ToDo struct {
 		x          int
@@ -63,7 +63,7 @@ func (t *Train) recalculatePath() {
 			}
 
 			//Nachbarn bestimmen
-			neighbours := neighbourTracks(visitingTile[0], visitingTile[1], visitingTile[2])
+			neighbours := neighbourTracks(visitingTile[0], visitingTile[1], visitingTile[2], gs)
 
 			//Visit neu erstellen um gotNeighbours auf true zu stellen. Besser wenn das als []*Visit ist und nicht neu erstellt werden muss
 			v := visited[visitingTile]
@@ -73,8 +73,8 @@ func (t *Train) recalculatePath() {
 				n := neighbours[i]
 
 				//Nur durchkommen, wenn Signal richtig rum ist
-				nTileSig := tiles[n[0]][n[1]].Signals
-				vTileSig := tiles[visitingTile[0]][visitingTile[1]].Signals
+				nTileSig := gs.Tiles[n[0]][n[1]].Signals
+				vTileSig := gs.Tiles[visitingTile[0]][visitingTile[1]].Signals
 				//wenn man sich sub3 anguckt und auf dem rechten Tile ein Signal steht und nicht auf sub 3 auch eins steht, dann nicht den Nachbarn wählen
 				if (visitingTile[2] == 3 && n[0] > visitingTile[0] && n[2] == 1 && nTileSig[0] && !vTileSig[2]) ||
 					(visitingTile[2] == 4 && n[1] > visitingTile[1] && n[2] == 2 && nTileSig[1] && !vTileSig[3]) ||
@@ -129,7 +129,7 @@ func (t *Train) recalculatePath() {
 				//hinzufügen des aktuell betrachteten sub Tiles in Weg List
 				path = append(path, current)
 				//Bestimmung, ob beim aktuellen sub Tile ein Signal ist, dann füge das hinzu
-				if tiles[current[0]][current[1]].Signals[current[2]-1] {
+				if gs.Tiles[current[0]][current[1]].Signals[current[2]-1] {
 					pathSignals = append(pathSignals, current)
 				}
 				//Bestimmung des nächsten zu betrachtenen sub Tile

@@ -43,19 +43,27 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func startServer() {
+func startServer(gs *gameState) {
 
-	http.HandleFunc("/ws", acceptNewClient)
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) { // Muss so gelöst werden damit ich noch die referenz zum Gamestate übertragen kann
+		acceptNewClient(w, r, gs)
+	})
 	// die werden später noch als teil des WS umgesetzt (denke ich mal), aber zum testen erstmal so
-	http.HandleFunc("/save", handleSaveRequest)
-	http.HandleFunc("/pause", handlePauseGame)
-	http.HandleFunc("/unpause", handleUnpauseGame)
+	http.HandleFunc("/save", func(w http.ResponseWriter, r *http.Request) { // Muss so gelöst werden damit ich noch die referenz zum Gamestate übertragen kann
+		handleSaveRequest(w, r, gs)
+	})
+	http.HandleFunc("/pause", func(w http.ResponseWriter, r *http.Request) { // Muss so gelöst werden damit ich noch die referenz zum Gamestate übertragen kann
+		handlePauseGame(w, r, gs)
+	})
+	http.HandleFunc("/unpause", func(w http.ResponseWriter, r *http.Request) { // Muss so gelöst werden damit ich noch die referenz zum Gamestate übertragen kann
+		handleUnpauseGame(w, r, gs)
+	})
 
 	logger.Error("error running Webserver", slog.String("Error", http.ListenAndServe("localhost:"+os.Getenv("PORT"), nil).Error()))
 
 }
 
-func acceptNewClient(w http.ResponseWriter, r *http.Request) {
+func acceptNewClient(w http.ResponseWriter, r *http.Request, gs *gameState) {
 	username := r.URL.Query().Get("username")
 	if username == "Server" {
 		http.Error(w, "User already Connected", 400)
@@ -63,7 +71,7 @@ func acceptNewClient(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	userExists := false
-	for _, v := range users {
+	for _, v := range gs.Users {
 		if v.username == username { // Username has already connected at some point
 			userExists = true
 			if !v.isConnected { // reconnect user
@@ -75,9 +83,9 @@ func acceptNewClient(w http.ResponseWriter, r *http.Request) {
 				v.connection = conn
 				v.webSocketQueue = make(chan wsEnvelope, 100)
 				v.isConnected = true
-				initializeClient(v, &gamestateTemp{Users: users, Schedules: schedules, Stations: stations, Tiles: tiles, Trains: trains})
+				initializeClient(v, gs)
 
-				go checkForClientInput(v)
+				go checkForClientInput(v, gs)
 
 			} else { // Deny User
 				http.Error(w, "User already Connected", 400)
@@ -98,10 +106,10 @@ func acceptNewClient(w http.ResponseWriter, r *http.Request) {
 		logger.Info("Accepted new Client, with username "+username, slog.String("Username", username))
 
 		user := User{username: username, isConnected: true, connection: conn, webSocketQueue: make(chan wsEnvelope, 100)}
-		users = append(users, &user)
+		gs.Users = append(gs.Users, &user)
 
-		initializeClient(&user, &gamestateTemp{Users: users, Schedules: schedules, Stations: stations, Tiles: tiles, Trains: trains})
-		go checkForClientInput(&user)
+		initializeClient(&user, gs)
+		go checkForClientInput(&user, gs)
 	}
 }
 
@@ -113,24 +121,25 @@ type gamestateTemp struct {
 	Trains    []*Train
 }
 
-func initializeClient(user *User, state *gamestateTemp) {
-	pauseGame()
+func initializeClient(user *User, gs *gameState) {
+	pauseGame(gs)
 
 	// Hier muss ich erstmal alles am stück einmal rüber senden
 	// Der Kriegt quasi einmal den Savefile zugeschickt und danach nur noch die änderungen
 
 	logger.Info("Sending Client Gamestate", slog.String("Username", user.username))
 
-	envelope := wsEnvelope{Type: "game.initialLoad", Msg: state}
+	//  Das hier wird noch geändert werden müssen, gs hat eventuell zu viele infos, da müsste man mal schauen welche gesendet werden sollen
+	envelope := wsEnvelope{Type: "game.initialLoad", Msg: gs}
 	err := user.connection.WriteJSON(envelope)
 	if err != nil {
 		logger.Error("Failes parsing state to JSON", slog.String("Error", err.Error()))
 	}
 	go user.startNotifiyingSingleClient()
-	unPauseGame()
+	unPauseGame(gs)
 }
 
-func checkForClientInput(user *User) {
+func checkForClientInput(user *User, gs *gameState) {
 	// Für jeden User der Connected ist läuft die funktion hier die ganze Zeit in einer Goroutine
 	// Wird in einput Empfangen wird er als recieveWSEnvelope in den userInputs Channel / Queue gelegt
 	// Von dort aus wird er dann abgearbeitet
@@ -148,6 +157,6 @@ func checkForClientInput(user *User) {
 		// Manche werte kommen nicht direkt aus dem WS sondern werden hier ergänzt
 		// User um nachher zugriff auf den Username und auf die connection zu haben, damit man rückmeldung geben kann
 		v.user = user
-		userInputs <- v
+		gs.userInputs <- v
 	}
 }

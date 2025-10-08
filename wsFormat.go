@@ -47,7 +47,7 @@ func (envelope *recieveWSEnvelope) reply(success bool, message string) {
 }
 
 type tileUpdateMSG struct {
-	position [3]int // 0 => links, 1 => oben, 2 => rechts, 3 => unten
+	Position [3]int // 0 => links, 1 => oben, 2 => rechts, 3 => unten
 	// Wilken hat sich entschlossen immer wenn ein subtile als int gespeichert wird bei 1 anzufangen und wenn es ein bool[4] ist bei 0, also kann sein das es sich irgendwo verschiebt aber das kriegen wir sicher noch behoben Bei schienen auch analog
 	Subject string //
 	Action  string // remove, build
@@ -80,7 +80,7 @@ var (
 	// map.initialLoad
 	// Wird genutzt um anfangs den aktuellen stand an den client zu senden, hier ist so gut wie alles enthalten das das backend weiß
 	// Strukturiert wie das gamestate objekt, nutzt game.initialLoad als type
-	mapInitialLoad = wsEnvelope{Type: "game.initialLoad", Msg: &gamestate{}}
+	mapInitialLoad = wsEnvelope{Type: "game.initialLoad", Msg: &SendAbleGamestate{}}
 	gameReplyMsg   = wsEnvelope{Type: "game.reply", Msg: &relpyMSG{}}
 	// #endregion game
 

@@ -69,9 +69,9 @@ func (t Tile) removePlattform() {
 }
 
 // bis jetzt noch keine Level implementiert
-func processActiveTiles() {
+func processActiveTiles(gs *gameState) {
 
-	for _, activeTile := range activeTiles {
+	for _, activeTile := range gs.ActiveTiles {
 		//wenn noch kein Map erstellt wurde, dann erstelle Map
 		//maybe irgendwo anders?
 		if len(activeTile.Storage) == 0 {

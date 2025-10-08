@@ -43,8 +43,8 @@ type CargoStorage struct {
 	CargoCategory   string //statisch
 }
 
-func addTrain(update trainCreateMSG) (*Train, error) {
-	err := checkIfWaggonsAreValid(update.Waggons)
+func addTrain(update trainCreateMSG, gs *gameState) (*Train, error) {
+	err := checkIfWaggonsAreValid(update.Waggons, gs)
 	if err != nil {
 		return nil, err
 	}
@@ -53,26 +53,26 @@ func addTrain(update trainCreateMSG) (*Train, error) {
 	currentTrainID.Add(1)
 
 	for _, waggon := range update.Waggons {
-		err := train.addWaggon(waggon.Position, waggon.Typ)
+		err := train.addWaggon(waggon.Position, waggon.Typ, gs.Tiles)
 		if err != nil {
 			return nil, fmt.Errorf("this shoudln't happen; %s", err.Error())
 		}
 	}
 
-	trains = append(trains, train)
+	gs.Trains = append(gs.Trains, train)
 	return train, nil
 }
 
 // Überprüft ob alle waggons eine Valide Position haben, also das Gleis nicht blockiert ist, das gleis existiert und die Waggons zusammenhänend sind
-func checkIfWaggonsAreValid(waggons []trainCreateWaggons) error {
+func checkIfWaggonsAreValid(waggons []trainCreateWaggons, gs *gameState) error {
 	for i, waggon := range waggons {
-		if tiles[waggon.Position[0]][waggon.Position[1]].IsBlocked {
+		if gs.Tiles[waggon.Position[0]][waggon.Position[1]].IsBlocked {
 			return fmt.Errorf("track is blocked")
 		}
 		// Schaut ob der n. Waggon ein Nachbar des n-1. Waggon ist, daher beim 0. Überspringen
 		if i != 0 {
 			prevWaggon := waggons[i-1]
-			possibleTracks := neighbourTracks(prevWaggon.Position[0], prevWaggon.Position[1], prevWaggon.Position[2])
+			possibleTracks := neighbourTracks(prevWaggon.Position[0], prevWaggon.Position[1], prevWaggon.Position[2], gs)
 
 			if !slices.Contains(possibleTracks, waggon.Position) {
 				return fmt.Errorf("waggons are not continuos or a track is missing")
@@ -85,7 +85,7 @@ func checkIfWaggonsAreValid(waggons []trainCreateWaggons) error {
 
 // Fügt einen Wagon zu einem Zug, typ gibt die art des wagongs an, daraus basierend wird capacity und maxSpeed bestimmt, bspw "Lebensmittel"
 // true => Erfolgreich; false => fehler
-func (t *Train) addWaggon(position [3]int, typ string) error {
+func (t *Train) addWaggon(position [3]int, typ string, tiles [][]*Tile) error {
 	var capacity, maxSpeed int
 	// Typ gibt kurz als string an was für einen Waggon man will
 	// hier werden die passenden Attribute rausgesucht
@@ -112,7 +112,7 @@ func (t *Train) addWaggon(position [3]int, typ string) error {
 
 // returned Tile zum entblcken
 // wenn fertig mit Laden/entladen passiert ein Tick nichts und dann fährt er los
-func (t *Train) calculateTrain() [2]int {
+func (t *Train) calculateTrain(gs *gameState) [2]int {
 
 	//bestimmt, ob man beim letzten Pathfining erfolgreich war. wenn ja und man den nächsten sucht, dann wird der nächste Stop ausgewählt
 	//sonst wird neu versucht
@@ -121,13 +121,13 @@ func (t *Train) calculateTrain() [2]int {
 		if t.FoundPathToNext {
 			t.NextStop = t.Schedule.nextStop(t.NextStop)
 		}
-		t.recalculatePath()
+		t.recalculatePath(gs)
 		//aktualisierung der Variable (siehe Variablenbeschreibung)
 		if len(t.CurrentPath) == 0 {
 			t.FoundPathToNext = false
 		} else {
 			t.FoundPathToNext = true
-			return t.move(true)
+			return t.move(true, gs)
 		}
 		return [2]int{-1, -1}
 	}
@@ -147,13 +147,13 @@ func (t *Train) calculateTrain() [2]int {
 	//wenn der aktuelle Stop eine Plattform ist und man an der an der Station steht
 	if t.CurrentStop.IsPlattform && t.LastGoal == t.Waggons[0].Position {
 		//wenn min Zeit erreicht ist überprüfen und man fertig mit laden ist, ob man fahren kann
-		if t.LoadingTime >= minLoadUloadTicks && t.FinishedLoading {
+		if t.LoadingTime >= gs.minLoadUloadTicks && t.FinishedLoading {
 			logger.Debug("Zug " + t.Name + " versucht aus " + t.CurrentStop.Plattform.station.Name + " auszufahren.")
 
 			if len(t.CurrentPath) == 0 {
 				r = pathfindToNextAndMove()
 			} else {
-				r = t.move(false)
+				r = t.move(false, gs)
 			}
 
 			//Ist Zug losgefahren, also Reset der Werte fürs nächste Laden
@@ -165,10 +165,10 @@ func (t *Train) calculateTrain() [2]int {
 			}
 		}
 		//laden/entladen, wenn er noch warten muss oder noch laden muss
-		if t.Waiting || t.LoadingTime < minLoadUloadTicks || !t.FinishedLoading {
-			t.FinishedLoading = t.loadUndload()
+		if t.Waiting || t.LoadingTime < gs.minLoadUloadTicks || !t.FinishedLoading {
+			t.FinishedLoading = t.loadUndload(gs)
 
-			printTrains()
+			printTrains(gs)
 		}
 		t.LoadingTime++
 
@@ -178,11 +178,11 @@ func (t *Train) calculateTrain() [2]int {
 	if len(t.CurrentPath) == 0 {
 		return pathfindToNextAndMove()
 	}
-	return t.move(false)
+	return t.move(false, gs)
 }
 
 // returnt ob der Zug voll ist oder nichts mehr zu laden ist, also abfahrtsbereit ist
-func (t *Train) loadUndload() bool {
+func (t *Train) loadUndload(gs *gameState) bool {
 	var r bool
 
 	//station, in die der Zug steht
@@ -190,7 +190,7 @@ func (t *Train) loadUndload() bool {
 
 	//es wird durch die Reihenfolge der Commands zuerst geladen, dann entladen.
 	// Dabei wird nur beladen, wenn entladen fertig ist, bzw. noch kapazität von Gütern bewegt pro Tick über gelassen hat
-	avaliableLoadUnloadSpeed := loadUnloadSpeed //misst, wie viel noch geladen und entladen werden darf
+	avaliableLoadUnloadSpeed := gs.loadUnloadSpeed //misst, wie viel noch geladen und entladen werden darf
 	for _, command := range t.CurrentStop.LoadUnloadCommand {
 		//wenn man nichts mehr verladen darf, dann kann man noch nicht fertig sein
 		if avaliableLoadUnloadSpeed == 0 {
@@ -202,9 +202,9 @@ func (t *Train) loadUndload() bool {
 				var loaded int
 				//Berücksichtigung, dass max LoadUnloadSpeed pro Vorgang verladen wird
 				if sta.Storage[cargo] >= avaliableLoadUnloadSpeed {
-					loaded = avaliableLoadUnloadSpeed - t.loadCargo(cargo, avaliableLoadUnloadSpeed) //hinzufügen in den Zug
+					loaded = avaliableLoadUnloadSpeed - t.loadCargo(cargo, avaliableLoadUnloadSpeed, gs) //hinzufügen in den Zug
 				} else {
-					loaded = sta.Storage[cargo] - t.loadCargo(cargo, sta.Storage[cargo])
+					loaded = sta.Storage[cargo] - t.loadCargo(cargo, sta.Storage[cargo], gs)
 				}
 				sta.Storage[cargo] -= loaded //Entfernen aus der Station
 				avaliableLoadUnloadSpeed -= loaded
@@ -262,7 +262,7 @@ func (t *Train) loadUndload() bool {
 }
 
 // return nicht geladenen Cargo. Geht davon aus, dass toLoad in Grenzen des LoadUnloadSpeedes ist
-func (t *Train) loadCargo(cargoType string, toLoad int) int {
+func (t *Train) loadCargo(cargoType string, toLoad int, gs *gameState) int {
 	var r int
 
 	for _, waggon := range t.Waggons {
@@ -274,7 +274,7 @@ func (t *Train) loadCargo(cargoType string, toLoad int) int {
 		//wenn Waggon richtigen CargoType hat, wenn er schon gefüllt ist, wird gefüllt, oder wenn leer ist, die passende Category hat
 		if waggon.CargoStorage != nil {
 
-			if (waggon.CargoStorage.filled == 0 && waggon.CargoStorage.CargoCategory == getCargoCategory(cargoType)) ||
+			if (waggon.CargoStorage.filled == 0 && waggon.CargoStorage.CargoCategory == getCargoCategory(cargoType, gs)) ||
 				(cargoType == waggon.CargoStorage.filledCargoType) {
 				emptySpace := waggon.CargoStorage.capacity - waggon.CargoStorage.filled
 				//wenn Waggon voll ist oder gefüllter wert, wenn was gefüllt ist, nächsten nehmen
@@ -327,7 +327,7 @@ func (t *Train) unloadCargo(cargoType string, maxCargoRemoved int) int {
 
 // für 2 Wege Signale muss geprüft werden, ob nicht schon ein Zug zum Signal auf der anderen Seite fährt
 // returnt Tile zum unblocken
-func (t *Train) move(wasRecalculated bool) [2]int {
+func (t *Train) move(wasRecalculated bool, gs *gameState) [2]int {
 	var entblocken [2]int
 	newGenNoSignal := t.Waiting //neu generiert und kein Signal, oder er hat letzte mal gewartet, dann gucken, ob immer noch
 
@@ -361,7 +361,7 @@ func (t *Train) move(wasRecalculated bool) [2]int {
 		// --> wichtig für Stationen, immer letzte Subtile ansteuern
 		for i := 0; (newGenNoSignal && path[i] != signals[0]) ||
 			!newGenNoSignal && path[i] != signals[1] && i < len(path); i++ {
-			if tiles[path[i][0]][path[i][1]].IsBlocked {
+			if gs.Tiles[path[i][0]][path[i][1]].IsBlocked {
 				logger.Debug("Zug " + t.Name + ": Blocked Tile found: []" + strconv.Itoa(path[i][0]) + ", " + strconv.Itoa(path[i][1]) + ", " + strconv.Itoa(path[i][2]) + ". Waiting")
 				t.Waiting = true
 				return [2]int{-1, -1}
@@ -369,7 +369,7 @@ func (t *Train) move(wasRecalculated bool) [2]int {
 		}
 		//da nichts geblocked war, blockt dieser Zug jetzt die Strecke zum nächsten Signal
 		for i := 0; newGenNoSignal && path[i] != signals[0] || !newGenNoSignal && path[i] != signals[1] && i < len(path); i++ {
-			tiles[path[i][0]][path[i][1]].IsBlocked = true
+			gs.Tiles[path[i][0]][path[i][1]].IsBlocked = true
 		}
 		//nun wird das Signal aus der Queue rausgenommen, da der Zug über das Signal fährt
 		t.CurrentPathSignals = t.CurrentPathSignals[1:]
@@ -383,7 +383,7 @@ func (t *Train) move(wasRecalculated bool) [2]int {
 		(t.Waggons[len(t.Waggons)-1].Position[0] != t.Waggons[len(t.Waggons)-2].Position[0] ||
 			t.Waggons[len(t.Waggons)-1].Position[1] != t.Waggons[len(t.Waggons)-2].Position[1]) {
 		letzterWagON := t.Waggons[len(t.Waggons)-1]
-		tiles[letzterWagON.Position[0]][letzterWagON.Position[1]].IsBlocked = false
+		gs.Tiles[letzterWagON.Position[0]][letzterWagON.Position[1]].IsBlocked = false
 	}
 
 	//Bewegung der Waggons
@@ -399,7 +399,7 @@ func (t *Train) move(wasRecalculated bool) [2]int {
 	// for alle waggons {clients.schickeNachtricht(waggong x,y, hat sich bewegt)}
 
 	// Alles was bis hier gekmmen ist hat sich bewegt (laut wilken beim döner essen)
-	broadcastChannel <- wsEnvelope{Type: "train.move", Msg: trainMoveMSG{Id: t.Id, Waggons: t.Waggons}}
+	gs.broadcastChannel <- wsEnvelope{Type: "train.move", Msg: trainMoveMSG{Id: t.Id, Waggons: t.Waggons}}
 
 	return entblocken
 }
@@ -412,14 +412,14 @@ func (t *Train) move(wasRecalculated bool) [2]int {
 *	4 [x][y][1,2,3], [x][y+1][2]
  */
 // verified
-func neighbourTracks(x int, y int, sub int) [][3]int {
+func neighbourTracks(x int, y int, sub int, gs *gameState) [][3]int {
 	var connectedNeigbours [][3]int // [3]int identifiziert mit x y und subtile ein exaktes Subtile,
 	// Alle Koordinaten von Subtiles zurückgeben die angrenzen die können im gleichem subtile oder im angrenzendem
 
 	appending := func(subtilesToCheck [3]int) {
 		for i := range 3 {
 			o := subtilesToCheck[i]
-			if tiles[x][y].Tracks[o-1] {
+			if gs.Tiles[x][y].Tracks[o-1] {
 				connectedNeigbours = append(connectedNeigbours, [3]int{x, y, o})
 			}
 		}
@@ -428,28 +428,28 @@ func neighbourTracks(x int, y int, sub int) [][3]int {
 	switch sub {
 	case 1:
 		if x > 0 {
-			if tiles[x-1][y].Tracks[2] {
+			if gs.Tiles[x-1][y].Tracks[2] {
 				connectedNeigbours = append(connectedNeigbours, [3]int{x - 1, y, 3})
 			}
 		}
 		appending([3]int{2, 3, 4})
 	case 2:
 		if y > 0 {
-			if tiles[x][y-1].Tracks[3] {
+			if gs.Tiles[x][y-1].Tracks[3] {
 				connectedNeigbours = append(connectedNeigbours, [3]int{x, y - 1, 4})
 			}
 		}
 		appending([3]int{1, 3, 4})
 	case 3:
-		if x != len(tiles)-1 {
-			if tiles[x+1][y].Tracks[0] {
+		if x != len(gs.Tiles)-1 {
+			if gs.Tiles[x+1][y].Tracks[0] {
 				connectedNeigbours = append(connectedNeigbours, [3]int{x + 1, y, 1})
 			}
 		}
 		appending([3]int{1, 2, 4})
 	case 4:
-		if y != len(tiles[0])-1 {
-			if tiles[x][y+1].Tracks[1] {
+		if y != len(gs.Tiles[0])-1 {
+			if gs.Tiles[x][y+1].Tracks[1] {
 				connectedNeigbours = append(connectedNeigbours, [3]int{x, y + 1, 2})
 			}
 		}
@@ -458,7 +458,7 @@ func neighbourTracks(x int, y int, sub int) [][3]int {
 	return connectedNeigbours
 }
 
-func handleCreateTrain(envelope recieveWSEnvelope) {
+func handleCreateTrain(envelope recieveWSEnvelope, gs *gameState) {
 	var update trainCreateMSG
 	err := json.Unmarshal(envelope.Msg, &update)
 	if err != nil {
@@ -466,7 +466,7 @@ func handleCreateTrain(envelope recieveWSEnvelope) {
 		envelope.reply(false, err.Error())
 
 	}
-	train, err := addTrain(update)
+	train, err := addTrain(update, gs)
 	if err != nil {
 		logger.Error("Error creating train", slog.String("error", err.Error()), slog.String("Username", envelope.user.username))
 		envelope.reply(false, err.Error())
@@ -474,7 +474,7 @@ func handleCreateTrain(envelope recieveWSEnvelope) {
 	}
 
 	logger.Info("Created Train", slog.String("Username", envelope.user.username), slog.String("Zug Name", update.Name))
-	broadcastChannel <- wsEnvelope{
+	gs.broadcastChannel <- wsEnvelope{
 		Type:          "train.create",
 		Username:      envelope.user.username,
 		TransactionID: envelope.TransactionID,

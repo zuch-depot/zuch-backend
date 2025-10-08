@@ -15,32 +15,32 @@ type Station struct {
 // remove = true -> referenz wird entfernt, = false -> wird hinzugefügt;
 // findet alle Aktiven Tiles im validen Radius um das neue Tile der Station und verknüpft/entfernt entsprechend die Station, falls noch nicht geschehen
 // egal ob neue Station oder nicht
-func (s Station) changeStationTile(remove bool, position [2]int) {
+func (s Station) changeStationTile(remove bool, position [2]int, gs *gameState) {
 	//minimum bestimmen, maximum wird in schleife geprüft, dass nicht out of bounds
-	xMin := position[0] - stationRange
+	xMin := position[0] - gs.stationRange
 	if xMin < 0 {
 		xMin = 0
 	}
-	yMin := position[1] - stationRange
+	yMin := position[1] - gs.stationRange
 	if yMin < 0 {
 		yMin = 0
 	}
 
 	// Ich war mal so frech - Jannis
 	if remove {
-		tiles[position[0]][position[1]].IsPlattform = false
+		gs.Tiles[position[0]][position[1]].IsPlattform = false
 	} else {
-		tiles[position[0]][position[1]].IsPlattform = true
+		gs.Tiles[position[0]][position[1]].IsPlattform = true
 
 	}
 
 	//durchiteriren durch alle Tiles in Reichweite und innerhalb der Bounds
-	for y := yMin; y <= yMin+(stationRange*2) && y < len(tiles); y++ {
-		for x := xMin; x <= xMin+(stationRange*2) && x < len(tiles[0]); x++ {
+	for y := yMin; y <= yMin+(gs.stationRange*2) && y < len(gs.Tiles); y++ {
+		for x := xMin; x <= xMin+(gs.stationRange*2) && x < len(gs.Tiles[0]); x++ {
 			//jedes Aktive Tile braucht eine Category, muss also nicht existent sein, wenn keine Referenz darauf auf eine gibt
 			//daran erkenne ich jetzt, dass in dem Tile ein aktives Tile ist
-			if tiles[x][y].ActiveTile.Category != nil {
-				tile := *tiles[x][y]
+			if gs.Tiles[x][y].ActiveTile.Category != nil {
+				tile := gs.Tiles[x][y]
 
 				//gucken, ob die Station schon hinterlegt ist
 				stationFound := false
@@ -57,7 +57,7 @@ func (s Station) changeStationTile(remove bool, position [2]int) {
 				}
 				// wenn die Station nicht gefunden wurde und hinzugefügt werden soll, hinzufügen der Station
 				if !stationFound && !remove {
-					tiles[x][y].ActiveTile.Stations = append(tiles[x][y].ActiveTile.Stations, &s)
+					gs.Tiles[x][y].ActiveTile.Stations = append(gs.Tiles[x][y].ActiveTile.Stations, &s)
 					// continue
 				}
 			}

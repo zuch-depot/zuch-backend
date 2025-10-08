@@ -12,30 +12,53 @@ import (
 	"github.com/telemachus/humane"
 )
 
-var (
-	users       []*User
-	schedules   []*Schedule
-	stations    []*Station
-	tiles       [][]*Tile
-	trains      []*Train
-	activeTiles []*ActiveTile
+type gameState struct {
+	Users       []*User
+	Schedules   []*Schedule
+	Stations    []*Station
+	Tiles       [][]*Tile
+	Trains      []*Train
+	ActiveTiles []*ActiveTile
 
 	loadUnloadSpeed   int
 	minLoadUloadTicks int
 	configData        ConfigData //übergeordetes Struct, in das alles aus config.json reingeladen wird
 
 	stationRange int
+	ticker       *time.Ticker
+	tick         int
+	isPaused     bool
 
-	//Plattforms
-)
+	broadcastChannel chan wsEnvelope
+	userInputs       chan recieveWSEnvelope
+	unPause          chan bool
+}
+
+// var (
+// 	users       []*User
+// 	schedules   []*Schedule
+// 	stations    []*Station
+// 	tiles       [][]*Tile
+// 	trains      []*Train
+// 	activeTiles []*ActiveTile
+
+// 	loadUnloadSpeed   int
+// 	minLoadUloadTicks int
+// 	configData        ConfigData //übergeordetes Struct, in das alles aus config.json reingeladen wird
+
+// 	stationRange int
+
+//	 isPaused bool
+//		//Plattforms
+//
+// )
 var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true, Level: slog.LevelInfo}))
-var userInputs = make(chan recieveWSEnvelope, 300) //Queue, die die UserInputs bis zum Start des nächsten Ticks speichert
-var unPause = make(chan bool)
-var broadcastChannel = make(chan wsEnvelope, 100)
 
-var isPaused = false
+//Queue, die die UserInputs bis zum Start des nächsten Ticks speichert
 
 func main() {
+
+	gs := gameState{userInputs: make(chan recieveWSEnvelope, 300), broadcastChannel: make(chan wsEnvelope, 100), unPause: make(chan bool)}
 	godotenv.Load("main.env")
 
 	//loading global variables
@@ -43,97 +66,97 @@ func main() {
 	if err != nil {
 		log.Println("Error while loading LoadUnloadSpeed", err)
 	}
-	loadUnloadSpeed = int(tempVar)
+	gs.loadUnloadSpeed = int(tempVar)
 
 	tempVar, err = strconv.ParseInt(os.Getenv("MINLOADUNLOADTICKS"), 10, 64)
 	if err != nil {
 		log.Println("Error while loading minLoadUloadTicks", err)
 	}
-	minLoadUloadTicks = int(tempVar)
+	gs.minLoadUloadTicks = int(tempVar)
 
 	tempVar, err = strconv.ParseInt(os.Getenv("MAXDISTANCEACTIVETILETOSTATION"), 10, 64)
 	if err != nil {
 		log.Println("Error while loading the radius of the station, where aktive Tiles are detected", err)
 	}
-	stationRange = int(tempVar)
+	gs.stationRange = int(tempVar)
 
 	//wichtig als initialisierung, bevor Züge verarbeitet werden
-	loadConfig()
+	loadConfig(&gs)
 
 	// Ablauf
 	// beim ersten start (eventuell probieren Dateien einzulesen) sonst defaults setzen
 	// Map erstellen
-	initializeTiles()
-	createTrains()
+	initializeTiles(&gs)
+	createTrains(&gs)
 	// sich merken wer wer ist
 	// wenn wer rausfliegt sollten die sachen noch da sein
 
 	// hier den Server starten
-	go startServer()
+	go startServer(&gs)
 	// Anfangen aus events an clients zu schicken
-	go startListiningToBroadcast(broadcastChannel)
+	go startListiningToBroadcast(gs.broadcastChannel, &gs)
 	//Zeit pro Tick bestimmen
 	ticksMilisec, err := strconv.Atoi(os.Getenv("TICKTIMEMILISEC"))
 	if err != nil {
-		logger.Error("Failed to convert Ticktime to Int", slog.String("Error", err.Error())) //anderes Log?// Panic beendet das programm :(
+		logger.Error("Failed to convert Ticktime to Int", slog.String("Error", err.Error())) //anderes Log?
 	}
 
-	ticker := time.NewTicker(time.Duration(ticksMilisec) * time.Millisecond)
+	gs.ticker = time.NewTicker(time.Duration(ticksMilisec) * time.Millisecond)
 
 	//jeder Tick
-	for tick := 0; ; tick++ {
+	for gs.tick = 0; ; gs.tick++ {
 		// Wenn pausiert wurde, warten bis entpausiert signal kommt
-		if isPaused {
+		if gs.isPaused {
 			confirmPause <- true
-			<-unPause
-			isPaused = false
+			<-gs.unPause // Hier warten bis es wieder entpausiert wird
+			gs.isPaused = false
 			logger.Info("continuing after Pause")
 		}
 
 		//Client Inputs
-		processClientInputs()
+		processClientInputs(&gs)
 
 		//Train calculate (Läd/Entläd oder bewegt) und entblocken
-		if tick%10 == 0 {
+		if gs.tick%10 == 0 {
 			// printTrains()
-			calculateTrains()
+			calculateTrains(&gs)
 		}
 
 		//process factorys
-		if (tick+1)%10 == 0 {
-			processActiveTiles()
+		if gs.tick%10 == 1 {
+			processActiveTiles(&gs)
 		}
 
 		//anzeigen Testing
-		if tick%10 == 0 {
+		if gs.tick%10 == 0 {
 			// printMap()
 			// fmt.Println("tick", tick)
 		}
 		// das wartet hier bis ein tick ausgelöst wird,
 
-		<-ticker.C
+		<-gs.ticker.C
 	}
 }
 
-func processClientInputs() {
-	for len(userInputs) > 0 {
-		input := <-userInputs
+func processClientInputs(gs *gameState) {
+	for len(gs.userInputs) > 0 {
+		input := <-gs.userInputs
 
 		switch input.Type {
 		case "tile.update":
-			handleTileUpdate(input, tiles)
+			handleTileUpdate(input, gs)
 		case "train.create":
-			handleCreateTrain(input)
+			handleCreateTrain(input, gs)
 		}
 	}
 }
 
-func calculateTrains() {
+func calculateTrains(gs *gameState) {
 	//Speichern, welche Tiles am Ende des Threads entblocked werden muss
 	var tilesToUnblock [][2]int
 
-	for i := range trains {
-		temp := trains[i].calculateTrain()
+	for i := range gs.Trains {
+		temp := gs.Trains[i].calculateTrain(gs)
 		if temp[0] >= 0 {
 			tilesToUnblock = append(tilesToUnblock, temp)
 		}
@@ -141,7 +164,7 @@ func calculateTrains() {
 
 	//entblocken
 	for _, i := range tilesToUnblock {
-		tiles[i[0]][i[1]].IsBlocked = false
+		gs.Tiles[i[0]][i[1]].IsBlocked = false
 	}
 }
 
@@ -162,7 +185,7 @@ type ConfigData struct {
 	ActiveTileCategories map[string]ActiveTileCategory `json:"Aktive Tiles"`
 }
 
-func loadConfig() {
+func loadConfig(gs *gameState) {
 
 	// JSON-Datei öffnen
 	file, err := os.ReadFile("config.json")
@@ -171,16 +194,16 @@ func loadConfig() {
 	}
 
 	// Unmarshal in Struktur
-	if err := json.Unmarshal(file, &configData); err != nil {
+	if err := json.Unmarshal(file, &gs.configData); err != nil {
 		panic(err)
 	}
 }
 
-func startListiningToBroadcast(broadcastChannel <-chan wsEnvelope) {
+func startListiningToBroadcast(broadcastChannel <-chan wsEnvelope, gs *gameState) {
 	for {
 		envelope, ok := <-broadcastChannel
 		if ok {
-			for _, user := range users {
+			for _, user := range gs.Users {
 				if user.isConnected {
 					logger.Debug("Notifying client of Change", slog.String("User", user.username), slog.String("Type", envelope.Type))
 					user.webSocketQueue <- envelope
