@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "zuch-frontend",
+			"path": "../zuch-frontend"
+		},
+		{
+			"name": "zuch-backend",
+			"path": "."
+		}
+	],
+	"settings": {}
+}

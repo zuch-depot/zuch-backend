@@ -19,6 +19,7 @@ type ActiveTile struct {
 	Stations   []*Station //Stationen, die in der Nähe sind. wird mit changeStationTile verwaltet
 	Storage    map[string]int
 	maxStorage int //maximum Lager pro Gut -> sonst kann es zu unwiederruflichen auffüllen kommen
+
 }
 
 // Fügt bei i ein gleis hinzu, wenn da keins ist und das Tile nicht locked ist
@@ -184,4 +185,11 @@ func processActiveTiles() {
 		}
 
 	}
+}
+
+type Car struct {
+}
+
+func (A *ActiveTile) calculateCargoPaths() {
+
 }

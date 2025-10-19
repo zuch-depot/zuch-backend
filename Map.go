@@ -29,6 +29,7 @@ var (
 	testSignals = [][3]int{
 		{1, 3, 4},
 		{4, 5, 2},
+		{4, 5, 2},
 	}
 )
 
@@ -64,9 +65,9 @@ func createTrains() {
 	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE1", NextStop: Stops[0], Id: 0})
 	// Zug zwei
 	temp = []*TrainType{
-		{Position: [3]int{6, 6, 2}},
-		{Position: [3]int{6, 5, 4}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}},
-		{Position: [3]int{6, 5, 2}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}}}
+		{Position: [3]int{6, 4, 2}},
+		{Position: [3]int{6, 3, 4}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}},
+		{Position: [3]int{6, 3, 2}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}}}
 	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE2", NextStop: Stops[2], Id: 1})
 }
 
