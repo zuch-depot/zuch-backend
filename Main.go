@@ -147,7 +147,10 @@ func processClientInputs(gs *gameState) {
 			handleTileUpdate(input, gs)
 		case "train.create":
 			handleCreateTrain(input, gs)
+		default:
+			input.reply(false, "Invalid Envelope Type")
 		}
+
 	}
 }
 
