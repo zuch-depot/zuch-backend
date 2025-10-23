@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -32,6 +33,10 @@ type gameState struct {
 	broadcastChannel chan wsEnvelope
 	userInputs       chan recieveWSEnvelope
 	unPause          chan bool
+
+	sizeX       int
+	sizeY       int
+	SizeSubtile int
 }
 
 // var (
@@ -58,7 +63,7 @@ var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: tr
 
 func main() {
 
-	gs := gameState{userInputs: make(chan recieveWSEnvelope, 300), broadcastChannel: make(chan wsEnvelope, 100), unPause: make(chan bool)}
+	gs := gameState{userInputs: make(chan recieveWSEnvelope, 300), broadcastChannel: make(chan wsEnvelope, 100), unPause: make(chan bool), SizeSubtile: 4}
 	godotenv.Load("main.env")
 
 	//loading global variables
@@ -141,11 +146,13 @@ func main() {
 func processClientInputs(gs *gameState) {
 	for len(gs.userInputs) > 0 {
 		input := <-gs.userInputs
-
-		switch input.Type {
-		case "tile.update":
-			handleTileUpdate(input, gs)
-		case "train.create":
+		inputCat := strings.Split(input.Type, ".")
+		switch inputCat[0] {
+		case "rail":
+			handleRailUpdate(input, gs)
+		case "signal":
+			handleSignalUpdate(input, gs)
+		case "train":
 			handleCreateTrain(input, gs)
 		default:
 			input.reply(false, "Invalid Envelope Type")

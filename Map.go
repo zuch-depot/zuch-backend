@@ -132,7 +132,8 @@ func initializeTiles(gs *gameState) {
 			gs.Tiles[o][i] = &Tile{IsPlattform: false, Tracks: tracks, Signals: signals, ActiveTile: &aktiveTile}
 		}
 	}
-
+	gs.sizeX = int(sizeX)
+	gs.sizeY = int(sizeY)
 	fmt.Println("Tiles initialised with a Map size of", sizeX, sizeY)
 }
 
@@ -206,50 +207,68 @@ func isSignalAt(x int, y int, gs *gameState) (bool, int) {
 	return false, 0
 }
 
-func handleTileUpdate(envelope recieveWSEnvelope, gs *gameState) {
-	var update tileUpdateMSG
-	err := json.Unmarshal(envelope.Msg, &update)
+func unpackEnvelope[T any](envelope recieveWSEnvelope, typ T) (T, error) {
+	var dest T
+	err := json.Unmarshal(envelope.Msg, &dest)
 	if err != nil {
-		logger.Error("EROOR", slog.String("error", err.Error()))
+		logger.Error("error", slog.String("error", err.Error()))
+		return dest, fmt.Errorf("%s", err.Error())
+	}
+	return dest, nil
+}
+
+func checkIfCoordinatesAreValid(position [3]int, gs *gameState) error {
+	if !((0 <= position[0] && position[0] < int(gs.sizeX)) && (0 <= position[1] && position[1] < int(gs.sizeY)) && (0 < position[2] && position[2] <= gs.SizeSubtile)) {
+		return fmt.Errorf("coordinates are invalid")
+	} else {
+		return nil
+	}
+}
+
+func handleRailUpdate(envelope recieveWSEnvelope, gs *gameState) {
+	update, err := unpackEnvelope(envelope, tileUpdateMSG{})
+	if err != nil {
+		logger.Error("Could not unpack Envelope", slog.String("error", err.Error()))
+		envelope.reply(false, "Could not unpack Envelope, ignoring this envolpe and continuing")
+
+	}
+	err = checkIfCoordinatesAreValid(update.Position, gs)
+	if err != nil {
+		logger.Error("Envelope contains invalid Coordinates", slog.String("error", err.Error()))
+		envelope.reply(false, "Envelope contains invalid Coordinates")
 	}
 
-	sizeX, err := strconv.ParseInt(os.Getenv("XSIZE"), 10, 64)
-	if err != nil {
-		logger.Error("Error while loading Size of Map in the x dimension", slog.String("error", err.Error()))
-		envelope.reply(false, "Error while loading Size of Map in the x dimension")
-		return
+	switch envelope.Type {
+	case "rail.create":
+		executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].addTrack, &envelope, &update, gs)
+	case "rail.remove":
+		executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].removeTrack, &envelope, &update, gs)
+	default:
+		envelope.reply(false, "Unknown type")
 	}
+}
 
-	sizeY, err := strconv.ParseInt(os.Getenv("YSIZE"), 10, 64)
+func handleSignalUpdate(envelope recieveWSEnvelope, gs *gameState) {
+	update, err := unpackEnvelope(envelope, tileUpdateMSG{})
 	if err != nil {
-		logger.Error("Error while loading Size of Map in the y dimension", slog.String("error", err.Error()))
-		envelope.reply(false, "Error while loading Size of Map in the y dimension")
-		return
-	}
-
-	if !((0 <= update.Position[0] && update.Position[0] < int(sizeX)) && (0 <= update.Position[1] && update.Position[1] < int(sizeY)) && (0 < update.Position[2] && update.Position[2] <= 4)) {
-		logger.Error("Invalid coordinates in wsEnvolope, ignoring this envolpe and continuing", slog.String("username", envelope.user.username))
+		logger.Error("Could not unpack Envelope", slog.String("error", err.Error()))
 		envelope.reply(false, "Invalid coordinates in wsEnvolope, ignoring this envolpe and continuing")
-		return
+
 	}
 
-	switch update.Action {
-	case "build":
-		switch update.Subject {
-		case "rail":
-			executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].addTrack, &envelope, &update, gs)
-		case "signal":
-			executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].addSignal, &envelope, &update, gs)
+	err = checkIfCoordinatesAreValid(update.Position, gs)
+	if err != nil {
+		logger.Error("Envelope contains invalid Coordinates", slog.String("error", err.Error()))
+		envelope.reply(false, "Envelope contains invalid Coordinates")
+	}
 
-		}
-	case "remove":
-		switch update.Subject {
-		case "rail":
-			executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].removeTrack, &envelope, &update, gs)
-		case "signal":
-			executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].removeSignal, &envelope, &update, gs)
-
-		}
+	switch envelope.Type {
+	case "signal.create":
+		executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].addSignal, &envelope, &update, gs)
+	case "signal.remove":
+		executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].removeSignal, &envelope, &update, gs)
+	default:
+		envelope.reply(false, "Unknown type")
 	}
 
 }

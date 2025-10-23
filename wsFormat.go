@@ -81,13 +81,16 @@ var (
 	// Wird genutzt um anfangs den aktuellen stand an den client zu senden, hier ist so gut wie alles enthalten das das backend weiß
 	// Strukturiert wie das gamestate objekt, nutzt game.initialLoad als type
 	mapInitialLoad = wsEnvelope{Type: "game.initialLoad", Msg: &SendAbleGamestate{}}
-	gameReplyMsg   = wsEnvelope{Type: "game.reply", Msg: &relpyMSG{}}
+
+	// Wird genutzt um antworten auf die "Anfragen" des Client zu schicken, geht immer nur an den client der sie geschickt hat, der client kann bei seinen anfragen eine Transaktion ID eintragen, die wird hier auch wieder rein kopiert
+	gameReplyMsg = wsEnvelope{Type: "game.reply", Msg: &relpyMSG{}}
 	// #endregion game
 
 	// #region Map & Tiles
 	// Aktualisierung von genau einem Tile, bspw. Schiene oder Signal bauen
 	// 	{
 	//   "Type": "tile.update",
+	// 	 "TransactionID":"ganz netter string oder uuid oder so",
 	//   "Msg": {
 	//     "X": 0,
 	//     "Y": 0,
