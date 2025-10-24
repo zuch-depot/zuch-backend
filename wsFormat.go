@@ -49,8 +49,6 @@ func (envelope *recieveWSEnvelope) reply(success bool, message string) {
 type tileUpdateMSG struct {
 	Position [3]int // 0 => links, 1 => oben, 2 => rechts, 3 => unten
 	// Wilken hat sich entschlossen immer wenn ein subtile als int gespeichert wird bei 1 anzufangen und wenn es ein bool[4] ist bei 0, also kann sein das es sich irgendwo verschiebt aber das kriegen wir sicher noch behoben Bei schienen auch analog
-	Subject string //
-	Action  string // remove, build
 }
 
 type trainMoveMSG struct {
@@ -64,9 +62,18 @@ type trainCreateMSG struct {
 	Id      int
 }
 
+type trainRemoveMSG struct {
+	Id int
+}
+
+// blockiert mehrere, nicht nur ein tile
+type blockedTilesMSG struct {
+	Tiles [][2]int
+}
+
 type trainCreateWaggons struct {
 	Position [3]int
-	Typ      string
+	Typ      string // sollte mit einem string identifizieren wie schnell wie viel kapazität usw. muss mich da mit wilken noch genauer absprechen, bisher nur "Lebensmittel" als option
 }
 
 type relpyMSG struct {
@@ -87,21 +94,15 @@ var (
 	// #endregion game
 
 	// #region Map & Tiles
-	// Aktualisierung von genau einem Tile, bspw. Schiene oder Signal bauen
-	// 	{
-	//   "Type": "tile.update",
-	// 	 "TransactionID":"ganz netter string oder uuid oder so",
-	//   "Msg": {
-	//     "X": 0,
-	//     "Y": 0,
-	//     "Subtile": 3,  // geht von 1-4
-	//     "Subject": "rail",
-	//     "Action": "build"
-	//   }
-	//  }
-	mapUpdate = wsEnvelope{Type: "tile.update", Msg: &tileUpdateMSG{}}
+	railCreate   = wsEnvelope{Type: "rail.create", Msg: &tileUpdateMSG{}}
+	railRemove   = wsEnvelope{Type: "rail.remove", Msg: &tileUpdateMSG{}}
+	signalCreate = wsEnvelope{Type: "signal.create", Msg: &tileUpdateMSG{}}
+	signalRemove = wsEnvelope{Type: "signal.remove", Msg: &tileUpdateMSG{}}
 
-	// #endregion Map
+	tilesBlock   = wsEnvelope{Type: "tiles.block", Msg: &blockedTilesMSG{}}
+	tilesUnblock = wsEnvelope{Type: "tiles.unblock", Msg: &blockedTilesMSG{}}
+
+	// #endregion Map & Tiles
 
 	// #region Trains
 	// wird bisher genutzt um die bewegung von zügen darzustellen
@@ -109,10 +110,12 @@ var (
 	trainMove = wsEnvelope{Type: "train.move", Msg: &trainMoveMSG{}}
 	// Eingehend
 	trainCreateIn = wsEnvelope{Type: "train.create", Msg: &trainCreateMSG{}}
+	trainRemove   = wsEnvelope{Type: "train.remove", Msg: &trainRemoveMSG{}}
 	// Ausgehend
 	trainCreateOut = wsEnvelope{Type: "train.create", Msg: &Train{}}
 
 	// #endregion Trains
+
 // map.updateTile
 
 )

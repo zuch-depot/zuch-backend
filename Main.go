@@ -18,7 +18,7 @@ type gameState struct {
 	Schedules   []*Schedule
 	Stations    []*Station
 	Tiles       [][]*Tile
-	Trains      []*Train
+	Trains      map[int]*Train
 	ActiveTiles []*ActiveTile
 
 	loadUnloadSpeed   int
@@ -63,7 +63,7 @@ var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: tr
 
 func main() {
 
-	gs := gameState{userInputs: make(chan recieveWSEnvelope, 300), broadcastChannel: make(chan wsEnvelope, 100), unPause: make(chan bool), SizeSubtile: 4}
+	gs := gameState{userInputs: make(chan recieveWSEnvelope, 300), broadcastChannel: make(chan wsEnvelope, 100), unPause: make(chan bool), SizeSubtile: 4, Trains: make(map[int]*Train)}
 	godotenv.Load("main.env")
 
 	//loading global variables
@@ -147,15 +147,22 @@ func processClientInputs(gs *gameState) {
 	for len(gs.userInputs) > 0 {
 		input := <-gs.userInputs
 		inputCat := strings.Split(input.Type, ".")
+		var err error
 		switch inputCat[0] {
 		case "rail":
-			handleRailUpdate(input, gs)
+			err = handleTileUpdate(input, gs)
 		case "signal":
-			handleSignalUpdate(input, gs)
+			err = handleTileUpdate(input, gs)
 		case "train":
-			handleCreateTrain(input, gs)
+			err = handleTrainUpdate(input, gs)
 		default:
 			input.reply(false, "Invalid Envelope Type")
+		}
+		if err != nil {
+			logger.Error(err.Error())
+			input.reply(false, err.Error())
+		} else {
+			input.reply(true, "")
 		}
 
 	}
@@ -176,6 +183,7 @@ func calculateTrains(gs *gameState) {
 	for _, i := range tilesToUnblock {
 		gs.Tiles[i[0]][i[1]].IsBlocked = false
 	}
+	gs.broadcastChannel <- wsEnvelope{Type: "tiles.unblock", Username: "Server", Msg: blockedTilesMSG{Tiles: tilesToUnblock}}
 }
 
 type Produktionszyklus struct {

@@ -61,7 +61,7 @@ func createTrains(gs *gameState) {
 		{Position: [3]int{3, 4, 3}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}},
 		{Position: [3]int{3, 4, 1}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}},
 		{Position: [3]int{2, 4, 3}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}}}
-	gs.Trains = append(gs.Trains, &Train{Waggons: temp, Schedule: *gs.Schedules[0], Name: "RE1", NextStop: Stops[0], Id: int(currentTrainID.Load())})
+	gs.Trains[int(currentTrainID.Load())] = &Train{Waggons: temp, Schedule: *gs.Schedules[0], Name: "RE1", NextStop: Stops[0], Id: int(currentTrainID.Load())}
 	currentTrainID.Add(1)
 
 	// Zug zwei
@@ -69,7 +69,7 @@ func createTrains(gs *gameState) {
 		{Position: [3]int{6, 6, 2}},
 		{Position: [3]int{6, 5, 4}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}},
 		{Position: [3]int{6, 5, 2}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}}}
-	gs.Trains = append(gs.Trains, &Train{Waggons: temp, Schedule: *gs.Schedules[0], Name: "RE2", NextStop: Stops[1], Id: int(currentTrainID.Load())})
+	gs.Trains[int(currentTrainID.Load())] = &Train{Waggons: temp, Schedule: *gs.Schedules[0], Name: "RE2", NextStop: Stops[1], Id: int(currentTrainID.Load())}
 	currentTrainID.Add(1)
 
 }
@@ -225,60 +225,39 @@ func checkIfCoordinatesAreValid(position [3]int, gs *gameState) error {
 	}
 }
 
-func handleRailUpdate(envelope recieveWSEnvelope, gs *gameState) {
+func handleTileUpdate(envelope recieveWSEnvelope, gs *gameState) error {
 	update, err := unpackEnvelope(envelope, tileUpdateMSG{})
 	if err != nil {
-		logger.Error("Could not unpack Envelope", slog.String("error", err.Error()))
-		envelope.reply(false, "Could not unpack Envelope, ignoring this envolpe and continuing")
+		return fmt.Errorf("Could not unpack Envelope", slog.String("error", err.Error()))
 
 	}
 	err = checkIfCoordinatesAreValid(update.Position, gs)
 	if err != nil {
-		logger.Error("Envelope contains invalid Coordinates", slog.String("error", err.Error()))
-		envelope.reply(false, "Envelope contains invalid Coordinates")
+		return fmt.Errorf("Envelope contains invalid Coordinates", slog.String("error", err.Error()))
 	}
 
 	switch envelope.Type {
 	case "rail.create":
-		executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].addTrack, &envelope, &update, gs)
+		return executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].addTrack, &envelope, &update, gs)
 	case "rail.remove":
-		executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].removeTrack, &envelope, &update, gs)
-	default:
-		envelope.reply(false, "Unknown type")
-	}
-}
-
-func handleSignalUpdate(envelope recieveWSEnvelope, gs *gameState) {
-	update, err := unpackEnvelope(envelope, tileUpdateMSG{})
-	if err != nil {
-		logger.Error("Could not unpack Envelope", slog.String("error", err.Error()))
-		envelope.reply(false, "Invalid coordinates in wsEnvolope, ignoring this envolpe and continuing")
-
-	}
-
-	err = checkIfCoordinatesAreValid(update.Position, gs)
-	if err != nil {
-		logger.Error("Envelope contains invalid Coordinates", slog.String("error", err.Error()))
-		envelope.reply(false, "Envelope contains invalid Coordinates")
-	}
-
-	switch envelope.Type {
+		return executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].removeTrack, &envelope, &update, gs)
 	case "signal.create":
-		executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].addSignal, &envelope, &update, gs)
+		return executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].addSignal, &envelope, &update, gs)
 	case "signal.remove":
-		executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].removeSignal, &envelope, &update, gs)
+		return executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].removeSignal, &envelope, &update, gs)
 	default:
-		envelope.reply(false, "Unknown type")
+		return fmt.Errorf("Unknown envelope Tyoe")
 	}
-
 }
 
-func executeAndReply(callback func(int) (bool, string), envelope *recieveWSEnvelope, update *tileUpdateMSG, gs *gameState) {
+// Führt das callback mit den daten des envelopes aus, tritt ein fehler aus wird der zurück gegeben, andererseits wird die nachricht an alle geschickt
+func executeAndReply(callback func(int) (bool, string), envelope *recieveWSEnvelope, update *tileUpdateMSG, gs *gameState) error {
 	success, msg := callback(update.Position[2])
 	if success {
-		gs.broadcastChannel <- wsEnvelope{Type: envelope.Type, Username: "Server", Msg: &tileUpdateMSG{Position: update.Position, Subject: update.Subject, Action: update.Action}}
+		gs.broadcastChannel <- wsEnvelope{Type: envelope.Type, Username: "Server", Msg: &tileUpdateMSG{Position: update.Position}}
 		envelope.reply(success, "")
+		return nil
 	} else {
-		envelope.reply(success, msg)
+		return fmt.Errorf(msg)
 	}
 }

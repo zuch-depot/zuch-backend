@@ -43,7 +43,29 @@ type CargoStorage struct {
 	CargoCategory   string //statisch
 }
 
+// entfernt diesen zug, dazu wird er aus dem array genommen und sein currentPath wird auf nicht blockiert gesetzt, hoffe das passt so
+// fehler sind bisher ungenutzt, irgendwas wirrd schon schiefgehen
+func (t *Train) removeTrain(gs *gameState) error {
+
+	var blockedTilesPositions [][2]int
+	for _, v := range t.CurrentPath {
+		gs.Tiles[v[0]][v[1]].IsBlocked = false // ich hab keine ahnung ob das so geht
+		blockedTilesPositions = append(blockedTilesPositions, [2]int{v[0], v[1]})
+	}
+	// Das kann hier gut sein das da zeugs doppelt drinne ist aber das ist mir spontan egal, doppelt auf false setzen hält ohnehin besser
+	gs.broadcastChannel <- wsEnvelope{Type: "tiles.unblock", Username: "Server", Msg: blockedTilesMSG{Tiles: blockedTilesPositions}}
+
+	before := len(gs.Trains)
+	delete(gs.Trains, t.Id)
+	if !(before > len(gs.Trains)) {
+		return fmt.Errorf("couldn't find train in map")
+	}
+	return nil
+}
+
+// Fügt einen Zug hinzu, anhand eines namens und der position sowie des typen und positionen der waggons
 func addTrain(update trainCreateMSG, gs *gameState) (*Train, error) {
+	// Weg muss ja frei sein, und alles müssen zusammenhängen
 	err := checkIfWaggonsAreValid(update.Waggons, gs)
 	if err != nil {
 		return nil, err
@@ -53,13 +75,13 @@ func addTrain(update trainCreateMSG, gs *gameState) (*Train, error) {
 	currentTrainID.Add(1)
 
 	for _, waggon := range update.Waggons {
-		err := train.addWaggon(waggon.Position, waggon.Typ, gs.Tiles)
+		err := train.addWaggon(waggon.Position, waggon.Typ, gs.Tiles, gs)
 		if err != nil {
 			return nil, fmt.Errorf("this shoudln't happen; %s", err.Error())
 		}
 	}
 
-	gs.Trains = append(gs.Trains, train)
+	gs.Trains[train.Id] = train
 	return train, nil
 }
 
@@ -85,7 +107,7 @@ func checkIfWaggonsAreValid(waggons []trainCreateWaggons, gs *gameState) error {
 
 // Fügt einen Wagon zu einem Zug, typ gibt die art des wagongs an, daraus basierend wird capacity und maxSpeed bestimmt, bspw "Lebensmittel"
 // true => Erfolgreich; false => fehler
-func (t *Train) addWaggon(position [3]int, typ string, tiles [][]*Tile) error {
+func (t *Train) addWaggon(position [3]int, typ string, tiles [][]*Tile, gs *gameState) error {
 	var capacity, maxSpeed int
 	// Typ gibt kurz als string an was für einen Waggon man will
 	// hier werden die passenden Attribute rausgesucht
@@ -103,9 +125,13 @@ func (t *Train) addWaggon(position [3]int, typ string, tiles [][]*Tile) error {
 		return fmt.Errorf("kein Gleis vorhanden")
 	}
 
-	// Waggons zu zug hinzufügen
+	// Waggons zu zug hinzufügen und entsprechende tiles blockieren
 	t.Waggons = append(t.Waggons, &Waggon{Position: position, MaxSpeed: maxSpeed, CargoStorage: &CargoStorage{capacity: capacity, CargoCategory: typ}})
 	tiles[position[0]][position[1]].IsBlocked = true
+	var blockedTilesPositions [][2]int
+	blockedTilesPositions = append(blockedTilesPositions, [2]int(position[:2]))
+	gs.broadcastChannel <- wsEnvelope{Type: "tiles.block", Username: "Server", Msg: blockedTilesMSG{Tiles: blockedTilesPositions}}
+
 	logger.Debug("Blockiertes", slog.Int("Pos 0", position[0]), slog.Int("Pos 1", position[1]), slog.Bool("Blocked", tiles[position[0]][position[1]].IsBlocked))
 	return nil
 }
@@ -368,9 +394,14 @@ func (t *Train) move(wasRecalculated bool, gs *gameState) [2]int {
 			}
 		}
 		//da nichts geblocked war, blockt dieser Zug jetzt die Strecke zum nächsten Signal
+		var blockedTilesPositions [][2]int
 		for i := 0; newGenNoSignal && path[i] != signals[0] || !newGenNoSignal && path[i] != signals[1] && i < len(path); i++ {
 			gs.Tiles[path[i][0]][path[i][1]].IsBlocked = true
+			blockedTilesPositions = append(blockedTilesPositions, [2]int{path[i][0], path[i][1]})
 		}
+
+		// dann können die clients auch nett anzeigen welche jetzt blockiert sind :D , brauche ich vielleicht auch fürs debuggen :D :D
+		gs.broadcastChannel <- wsEnvelope{Type: "tiles.block", Username: "Server", Msg: blockedTilesMSG{Tiles: blockedTilesPositions}}
 		//nun wird das Signal aus der Queue rausgenommen, da der Zug über das Signal fährt
 		t.CurrentPathSignals = t.CurrentPathSignals[1:]
 
@@ -384,6 +415,8 @@ func (t *Train) move(wasRecalculated bool, gs *gameState) [2]int {
 			t.Waggons[len(t.Waggons)-1].Position[1] != t.Waggons[len(t.Waggons)-2].Position[1]) {
 		letzterWagON := t.Waggons[len(t.Waggons)-1]
 		gs.Tiles[letzterWagON.Position[0]][letzterWagON.Position[1]].IsBlocked = false
+		gs.broadcastChannel <- wsEnvelope{Type: "tiles.unblock", Username: "Server", Msg: blockedTilesMSG{Tiles: [][2]int{[2]int{letzterWagON.Position[0], letzterWagON.Position[1]}}}}
+
 	}
 
 	//Bewegung der Waggons
@@ -458,28 +491,55 @@ func neighbourTracks(x int, y int, sub int, gs *gameState) [][3]int {
 	return connectedNeigbours
 }
 
-func handleCreateTrain(envelope recieveWSEnvelope, gs *gameState) {
+func handleTrainUpdate(envelope recieveWSEnvelope, gs *gameState) error {
+	switch envelope.Type {
+	case "train.create":
+		return handleCreateTrain(envelope, gs)
+	case "train.remove":
+		return handleRemoveTrain(envelope, gs)
+	default:
+		return fmt.Errorf("unknown envelope Type")
+	}
+}
+
+func handleRemoveTrain(envelope recieveWSEnvelope, gs *gameState) error {
+	var update trainRemoveMSG
+	err := json.Unmarshal(envelope.Msg, &update)
+	if err != nil {
+		return fmt.Errorf("could not unpack envelope; %s", err.Error())
+	}
+	logger.Info("Tryring to remove Train", slog.String("Username", envelope.user.username), slog.Int("Train ID", update.Id))
+	train, prs := gs.Trains[update.Id]
+	if prs {
+		gs.broadcastChannel <- wsEnvelope{
+			Type:          "train.remove",
+			Username:      "Server",
+			TransactionID: envelope.TransactionID,
+			Msg:           trainRemoveMSG{Id: update.Id},
+		}
+		return train.removeTrain(gs)
+	} else {
+		return fmt.Errorf("no matching train found, id: %d", update.Id)
+	}
+}
+
+func handleCreateTrain(envelope recieveWSEnvelope, gs *gameState) error {
 	var update trainCreateMSG
 	err := json.Unmarshal(envelope.Msg, &update)
 	if err != nil {
-		logger.Error("Error unmarhsalling Json", slog.String("error", err.Error()), slog.String("Username", envelope.user.username))
-		envelope.reply(false, err.Error())
-
+		return fmt.Errorf("could not unpack envelope; %s", err.Error())
 	}
 	train, err := addTrain(update, gs)
 	if err != nil {
-		logger.Error("Error creating train", slog.String("error", err.Error()), slog.String("Username", envelope.user.username))
-		envelope.reply(false, err.Error())
-		return
+		return fmt.Errorf("error creating train; %s", err.Error())
 	}
 
-	logger.Info("Created Train", slog.String("Username", envelope.user.username), slog.String("Zug Name", update.Name))
+	logger.Info("Creating Train", slog.String("Username", envelope.user.username), slog.String("Zug Name", update.Name))
 	gs.broadcastChannel <- wsEnvelope{
 		Type:          "train.create",
-		Username:      envelope.user.username,
+		Username:      "Server",
 		TransactionID: envelope.TransactionID,
 		Msg:           train,
 	}
-
-	envelope.reply(true, "")
+	return nil
 }
