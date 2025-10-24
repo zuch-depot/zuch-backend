@@ -354,7 +354,7 @@ func (t *Train) unloadCargo(cargoType string, maxCargoRemoved int) int {
 // für 2 Wege Signale muss geprüft werden, ob nicht schon ein Zug zum Signal auf der anderen Seite fährt
 // returnt Tile zum unblocken
 func (t *Train) move(wasRecalculated bool, gs *gameState) [2]int {
-	var entblocken [2]int
+	entblocken := [2]int{-1, -1}
 	newGenNoSignal := t.Waiting //neu generiert und kein Signal, oder er hat letzte mal gewartet, dann gucken, ob immer noch
 
 	//Wenn das neu generiert wurde
@@ -414,8 +414,9 @@ func (t *Train) move(wasRecalculated bool, gs *gameState) [2]int {
 		(t.Waggons[len(t.Waggons)-1].Position[0] != t.Waggons[len(t.Waggons)-2].Position[0] ||
 			t.Waggons[len(t.Waggons)-1].Position[1] != t.Waggons[len(t.Waggons)-2].Position[1]) {
 		letzterWagON := t.Waggons[len(t.Waggons)-1]
-		gs.Tiles[letzterWagON.Position[0]][letzterWagON.Position[1]].IsBlocked = false
-		gs.broadcastChannel <- wsEnvelope{Type: "tiles.unblock", Username: "Server", Msg: blockedTilesMSG{Tiles: [][2]int{[2]int{letzterWagON.Position[0], letzterWagON.Position[1]}}}}
+		entblocken = [2]int{letzterWagON.Position[0], letzterWagON.Position[1]}
+		// gs.Tiles[letzterWagON.Position[0]][letzterWagON.Position[1]].IsBlocked = false
+		// gs.broadcastChannel <- wsEnvelope{Type: "tiles.unblock", Username: "Server", Msg: blockedTilesMSG{Tiles: [][2]int{[2]int{letzterWagON.Position[0], letzterWagON.Position[1]}}}}
 
 	}
 

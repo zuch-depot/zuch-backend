@@ -183,7 +183,9 @@ func calculateTrains(gs *gameState) {
 	for _, i := range tilesToUnblock {
 		gs.Tiles[i[0]][i[1]].IsBlocked = false
 	}
-	gs.broadcastChannel <- wsEnvelope{Type: "tiles.unblock", Username: "Server", Msg: blockedTilesMSG{Tiles: tilesToUnblock}}
+	if len(tilesToUnblock) > 0 {
+		gs.broadcastChannel <- wsEnvelope{Type: "tiles.unblock", Username: "kaputt", Msg: blockedTilesMSG{Tiles: tilesToUnblock}}
+	}
 }
 
 type Produktionszyklus struct {
