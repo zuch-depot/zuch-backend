@@ -96,15 +96,15 @@ func initializeTiles(gs *gameState) {
 	}
 
 	//Erstellung der Tiles
-	for i := range sizeY {
-		line := strings.Split(testMap[i], ".") //testing
-		for o := range sizeX {
+	for y := range sizeY {
+		line := strings.Split(testMap[y], ".") //testing
+		for x := range sizeX {
 			//hier die Infos für das Tile laden
 
 			//testing
 			var aktiveTile ActiveTile
 			var tracks [4]bool
-			switch line[o] {
+			switch line[x] {
 			case "-":
 				tracks = [4]bool{true, false, true, false}
 			case "|":
@@ -124,12 +124,12 @@ func initializeTiles(gs *gameState) {
 			//signals testing
 			var signals [4]bool
 			for p := range testSignals {
-				if testSignals[p][0] == int(o) && testSignals[p][1] == int(i) {
+				if testSignals[p][0] == int(x) && testSignals[p][1] == int(y) {
 					signals[testSignals[p][2]-1] = true
 				}
 			}
 
-			gs.Tiles[o][i] = &Tile{IsPlattform: false, Tracks: tracks, Signals: signals, ActiveTile: &aktiveTile}
+			gs.Tiles[x][y] = &Tile{IsPlattform: false, Tracks: tracks, Signals: signals, ActiveTile: &aktiveTile, X: int(x), Y: int(y)}
 		}
 	}
 	gs.sizeX = int(sizeX)
@@ -246,18 +246,17 @@ func handleTileUpdate(envelope recieveWSEnvelope, gs *gameState) error {
 	case "signal.remove":
 		return executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].removeSignal, &envelope, &update, gs)
 	default:
-		return fmt.Errorf("Unknown envelope Tyoe")
+		return fmt.Errorf("unknown envelope Tyoe")
 	}
 }
 
 // Führt das callback mit den daten des envelopes aus, tritt ein fehler aus wird der zurück gegeben, andererseits wird die nachricht an alle geschickt
-func executeAndReply(callback func(int) (bool, string), envelope *recieveWSEnvelope, update *tileUpdateMSG, gs *gameState) error {
-	success, msg := callback(update.Position[2])
+func executeAndReply(callback func(int, *gameState) (bool, string), envelope *recieveWSEnvelope, update *tileUpdateMSG, gs *gameState) error {
+	success, msg := callback(update.Position[2], gs)
 	if success {
-		gs.broadcastChannel <- wsEnvelope{Type: envelope.Type, Username: "Server", Msg: &tileUpdateMSG{Position: update.Position}}
 		envelope.reply(success, "")
 		return nil
 	} else {
-		return fmt.Errorf(msg)
+		return fmt.Errorf("%s", msg)
 	}
 }

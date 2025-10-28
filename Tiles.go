@@ -6,6 +6,8 @@ type Tile struct {
 	IsPlattform bool
 	IsBlocked   bool //nur für tracks
 	ActiveTile  *ActiveTile
+	X           int
+	Y           int
 }
 
 type ActiveTile struct {
@@ -19,12 +21,13 @@ type ActiveTile struct {
 
 // Fügt bei i ein gleis hinzu, wenn da keins ist und da kein AktiveTile ist
 // returnt true bei erfolg und false bei error
-func (t *Tile) addTrack(i int) (bool, string) {
-	if t.ActiveTile.Category == nil {
+func (t *Tile) addTrack(subtile int, gs *gameState) (bool, string) {
+	if t.ActiveTile.Category != nil {
 		return false, "There is a Active Tile there, no Tracks can be build on this tile."
 	}
-	if !t.Tracks[i-1] {
-		t.Tracks[i-1] = true
+	if !t.Tracks[subtile-1] {
+		t.Tracks[subtile-1] = true
+		gs.broadcastChannel <- wsEnvelope{Type: "rail.create", Username: "Server", Msg: &tileUpdateMSG{Position: [3]int{t.X, t.Y, subtile}}}
 		return true, ""
 	}
 	return false, "There is already a Track at that Position."
@@ -33,10 +36,11 @@ func (t *Tile) addTrack(i int) (bool, string) {
 // Entfernt bei i ein gleis und Signal, wenn da eins ist
 // returnt true bei erfolg und false bei error
 // wenn kein Signal an der Stelle ist, wird kein Fehler geworfen
-func (t *Tile) removeTrack(i int) (bool, string) {
-	if t.Tracks[i-1] && !t.IsBlocked {
-		t.Tracks[i-1] = false
-		t.Signals[i-1] = false
+func (t *Tile) removeTrack(subtile int, gs *gameState) (bool, string) {
+	if t.Tracks[subtile-1] && !t.IsBlocked {
+		t.Tracks[subtile-1] = false
+		t.removeSignal(subtile, gs) // das muss noch kommunitzier werden
+		gs.broadcastChannel <- wsEnvelope{Type: "rail.remove", Username: "Server", Msg: &tileUpdateMSG{Position: [3]int{t.X, t.Y, subtile}}}
 		return true, ""
 	}
 	return false, "There is no Track to Remove, or the Tile may be blocked by a Train, if so try again later."
@@ -45,9 +49,13 @@ func (t *Tile) removeTrack(i int) (bool, string) {
 
 // Fügt bei i ein Signal hinzu, wenn da keins ist und ein entsprechendes Gleis vorhanden ist, um bei i ein signal zu bauen muss gleis i da sein
 // returnt true bei erfolg und false bei error
-func (t *Tile) addSignal(i int) (bool, string) {
-	if t.Tracks[i-1] || t.Signals[i-1] {
-		t.Signals[i-1] = true
+func (t *Tile) addSignal(subtile int, gs *gameState) (bool, string) {
+	if t.ActiveTile.Category != nil {
+		return false, "There is a Active Tile there, no Signal can be build on this tile."
+	}
+	if t.Tracks[subtile-1] || t.Signals[subtile-1] {
+		t.Signals[subtile-1] = true
+		gs.broadcastChannel <- wsEnvelope{Type: "signal.create", Username: "Server", Msg: &tileUpdateMSG{Position: [3]int{t.X, t.Y, subtile}}}
 		return true, ""
 	}
 	return false, "There may be no Track to place the signal onto, or there is already a signal at that location."
@@ -55,16 +63,13 @@ func (t *Tile) addSignal(i int) (bool, string) {
 
 // Fügt bei i ein Signal hinzu, wenn da keins ist
 // returnt true bei erfolg und false bei error
-func (t *Tile) removeSignal(i int) (bool, string) {
-	if t.Signals[i-1] {
-		t.Signals[i-1] = false
+func (t *Tile) removeSignal(subtile int, gs *gameState) (bool, string) {
+	if t.Signals[subtile-1] {
+		t.Signals[subtile-1] = false
+		gs.broadcastChannel <- wsEnvelope{Type: "signal.remove", Username: "Server", Msg: &tileUpdateMSG{Position: [3]int{t.X, t.Y, subtile}}}
 		return true, ""
 	}
 	return false, "There is no Signal to remove."
-
-}
-
-func (t Tile) removePlattform() {
 
 }
 
