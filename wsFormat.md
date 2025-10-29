@@ -2,6 +2,7 @@
 - Jede Verbindung erfolgt über einen Websocket
 - Der Server kann ohne aufforderung Nachrichten an den client senden und andersum
 - Jede nachricht wird in einen **Envelope** verpackt
+- im wsbeispiele ordner sind beispielanfragen, können mit 
 ## Funktionsweise
 - der client verbindet sich per Websocket zum Backend
 - dort wird automatisch ein "Spieler" für ihn erstellt

@@ -1,0 +1,27 @@
+type: websocket_request
+model: websocket_request
+id: wr_773LzsmnXx
+createdAt: 2025-10-27T19:45:08.820872306
+updatedAt: 2025-10-28T20:42:30.873732776
+workspaceId: wk_UugpzjqKHn
+folderId: fl_bgxodGfD9k
+authentication: {}
+authenticationType: null
+description: ''
+headers: []
+message: |-
+  {
+    "Type": "rail.remove",
+    "TransactionID": "1232",
+    "Msg": {
+      "Position": [
+        1,
+        4,
+        3
+      ]
+    }
+  }
+name: rail.remove
+sortPriority: 5000.0
+url: ws://localhost:8080/ws?username=jannis
+urlParameters: []

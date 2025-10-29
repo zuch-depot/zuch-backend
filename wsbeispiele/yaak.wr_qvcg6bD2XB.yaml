@@ -1,0 +1,27 @@
+type: websocket_request
+model: websocket_request
+id: wr_qvcg6bD2XB
+createdAt: 2025-10-06T08:58:41.386952533
+updatedAt: 2025-10-28T20:42:30.868469829
+workspaceId: wk_UugpzjqKHn
+folderId: fl_bgxodGfD9k
+authentication: {}
+authenticationType: null
+description: ''
+headers: []
+message: |-
+  {
+    "Type": "signal.remove",
+    "TransactionID": "1232",
+    "Msg": {
+      "Position": [
+        1,
+        2,
+        4
+      ],
+    }
+  }
+name: signal.remove
+sortPriority: 3000.0
+url: ws://localhost:8080/ws?username=jannis
+urlParameters: []

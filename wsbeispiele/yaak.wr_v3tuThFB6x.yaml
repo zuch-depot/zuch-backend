@@ -1,0 +1,33 @@
+type: websocket_request
+model: websocket_request
+id: wr_v3tuThFB6x
+createdAt: 2025-09-19T22:18:52.159260223
+updatedAt: 2025-10-28T20:42:30.860565700
+workspaceId: wk_UugpzjqKHn
+folderId: fl_bgxodGfD9k
+authentication: {}
+authenticationType: null
+description: ''
+headers: []
+message: |-
+  {
+    "Type": "train.create",
+    "TransactionID":"4",
+    "Msg": {
+      "Name": "RE16",
+      "Waggons": [
+        {
+          "Position": [
+            1,
+            2,
+            2
+          ],
+          "Typ": "Lebensmittel"
+        }
+      ]
+    }
+  }
+name: train.create
+sortPriority: 0.0
+url: ws://localhost:8080/ws?username=jannis2
+urlParameters: []
