@@ -70,7 +70,7 @@ func createTrains(gs *gameState) {
 		{Position: [3]int{6, 6, 2}},
 		{Position: [3]int{6, 5, 4}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}},
 		{Position: [3]int{6, 5, 2}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}}}
-	gs.Trains[int(currentTrainID.Load())] = &Train{Waggons: temp, Schedule: *gs.Schedules[0], Name: "RE2", NextStop: Stops[2], Id: 1}
+	gs.Trains[int(currentTrainID.Load())] = &Train{Waggons: temp, Schedule: *gs.Schedules[0], Name: "RE2", NextStop: Stops[1], Id: 1}
 }
 
 func initializeTiles(gs *gameState) {
@@ -128,24 +128,23 @@ func initializeTiles(gs *gameState) {
 				}
 			}
 
-			gs.Tiles[x][y] = &Tile{IsPlattform: false, Tracks: tracks, Signals: signals, ActiveTile: &aktiveTile}
+			gs.Tiles[x][y] = &Tile{IsPlattform: false, Tracks: tracks, Signals: signals, ActiveTile: &aktiveTile, IsLocked: aktiveTile.Stations == nil, X: int(x), Y: int(y)}
 		}
 	}
 	gs.sizeX = int(sizeX)
 	gs.sizeY = int(sizeY)
-	fmt.Println("Tiles initialised with a Map size of", sizeX, sizeY)
+	logger.Info("Tiles initialised with a Map size of", slog.Int64("SizeX", sizeX), slog.Int64("SizeY", sizeY))
 }
 
 // testing
 func printTrains(gs *gameState) {
 	for _, i := range gs.Trains {
-		fmt.Print("Train", i.Name)
+		logger.Debug(fmt.Sprint("Train", i.Name))
 		for _, waggon := range i.Waggons {
-			fmt.Print(waggon.CargoStorage, "")
+			logger.Debug(fmt.Sprint(waggon.CargoStorage, ""))
 		}
-		fmt.Println("")
 	}
-	fmt.Println("-----------------------")
+	logger.Debug(fmt.Sprintln("-----------------------"))
 }
 
 // nur fürs Testen
@@ -227,12 +226,12 @@ func checkIfCoordinatesAreValid(position [3]int, gs *gameState) error {
 func handleTileUpdate(envelope recieveWSEnvelope, gs *gameState) error {
 	update, err := unpackEnvelope(envelope, tileUpdateMSG{})
 	if err != nil {
-		return fmt.Errorf("Could not unpack Envelope", slog.String("error", err.Error()))
+		return fmt.Errorf("could not unpack Envelope; %s", slog.String("error", err.Error()))
 
 	}
 	err = checkIfCoordinatesAreValid(update.Position, gs)
 	if err != nil {
-		return fmt.Errorf("Envelope contains invalid Coordinates", slog.String("error", err.Error()))
+		return fmt.Errorf("envelope contains invalid Coordinates; %s", slog.String("error", err.Error()))
 	}
 
 	switch envelope.Type {

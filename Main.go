@@ -39,27 +39,7 @@ type gameState struct {
 	SizeSubtile int
 }
 
-// var (
-// 	users       []*User
-// 	schedules   []*Schedule
-// 	stations    []*Station
-// 	tiles       [][]*Tile
-// 	trains      []*Train
-// 	activeTiles []*ActiveTile
-
-// 	loadUnloadSpeed   int
-// 	minLoadUloadTicks int
-// 	configData        ConfigData //übergeordetes Struct, in das alles aus config.json reingeladen wird
-
-// 	stationRange int
-
-//	 isPaused bool
-//		//Plattforms
-//
-// )
 var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true, Level: slog.LevelInfo}))
-
-//Queue, die die UserInputs bis zum Start des nächsten Ticks speichert
 
 func main() {
 
@@ -159,7 +139,7 @@ func processClientInputs(gs *gameState) {
 			input.reply(false, "Invalid Envelope Type")
 		}
 		if err != nil {
-			logger.Error(err.Error())
+			logger.Debug(err.Error())
 			input.reply(false, err.Error())
 		} else {
 			input.reply(true, "")

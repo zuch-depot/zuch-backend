@@ -381,7 +381,7 @@ func (t *Train) move(wasRecalculated bool, gs *gameState) [2]int {
 	// (vielleicht der Zug, wenn er sich merkt, bei welchem Signal er war und das umschaltet, wenn er aus block rausgefahren ist.
 	// wird dann überschrieben, wenn der nächste zug nicht weiterfahren kann)
 	// logger.Debug("newGenNoSignal", newGenNoSignal, "Signale:", signals, "Weg:", path)
-	fmt.Println("Train", t.Name, "newGenNoSignal", newGenNoSignal, "Signale:", signals, "Weg:", path)
+	logger.Debug(fmt.Sprintln("Train", t.Name, "newGenNoSignal", newGenNoSignal, "Signale:", signals, "Weg:", path))
 	if newGenNoSignal || len(signals) > 1 && t.Waggons[0].Position == signals[0] {
 		//gucken, ob bis zum nächsten Signal alle Tiles unblocked sind, sonst fahre nicht weiter
 		// (es wird immer auch das letzte Tile überprüft, da man über ein sub tile ohne signal fahren muss, um zu einem zu kommen)
