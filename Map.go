@@ -29,6 +29,7 @@ var (
 	testSignals = [][3]int{
 		{1, 3, 4},
 		{4, 5, 2},
+		{4, 5, 2},
 	}
 )
 
@@ -69,9 +70,7 @@ func createTrains(gs *gameState) {
 		{Position: [3]int{6, 6, 2}},
 		{Position: [3]int{6, 5, 4}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}},
 		{Position: [3]int{6, 5, 2}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}}}
-	gs.Trains[int(currentTrainID.Load())] = &Train{Waggons: temp, Schedule: *gs.Schedules[0], Name: "RE2", NextStop: Stops[1], Id: int(currentTrainID.Load())}
-	currentTrainID.Add(1)
-
+	gs.Trains[int(currentTrainID.Load())] = &Train{Waggons: temp, Schedule: *gs.Schedules[0], Name: "RE2", NextStop: Stops[2], Id: 1}
 }
 
 func initializeTiles(gs *gameState) {
@@ -129,7 +128,7 @@ func initializeTiles(gs *gameState) {
 				}
 			}
 
-			gs.Tiles[x][y] = &Tile{IsPlattform: false, Tracks: tracks, Signals: signals, ActiveTile: &aktiveTile, X: int(x), Y: int(y)}
+			gs.Tiles[x][y] = &Tile{IsPlattform: false, Tracks: tracks, Signals: signals, ActiveTile: &aktiveTile}
 		}
 	}
 	gs.sizeX = int(sizeX)

@@ -381,6 +381,7 @@ func (t *Train) move(wasRecalculated bool, gs *gameState) [2]int {
 	// (vielleicht der Zug, wenn er sich merkt, bei welchem Signal er war und das umschaltet, wenn er aus block rausgefahren ist.
 	// wird dann überschrieben, wenn der nächste zug nicht weiterfahren kann)
 	// logger.Debug("newGenNoSignal", newGenNoSignal, "Signale:", signals, "Weg:", path)
+	fmt.Println("Train", t.Name, "newGenNoSignal", newGenNoSignal, "Signale:", signals, "Weg:", path)
 	if newGenNoSignal || len(signals) > 1 && t.Waggons[0].Position == signals[0] {
 		//gucken, ob bis zum nächsten Signal alle Tiles unblocked sind, sonst fahre nicht weiter
 		// (es wird immer auch das letzte Tile überprüft, da man über ein sub tile ohne signal fahren muss, um zu einem zu kommen)
@@ -389,6 +390,13 @@ func (t *Train) move(wasRecalculated bool, gs *gameState) [2]int {
 			!newGenNoSignal && path[i] != signals[1] && i < len(path); i++ {
 			if gs.Tiles[path[i][0]][path[i][1]].IsBlocked {
 				logger.Debug("Zug " + t.Name + ": Blocked Tile found: []" + strconv.Itoa(path[i][0]) + ", " + strconv.Itoa(path[i][1]) + ", " + strconv.Itoa(path[i][2]) + ". Waiting")
+
+				if !t.Waiting {
+					//TODO
+					logger.Debug("Hallo Jannis, hier Nachricht an client, dass das Signal an Stelle " +
+						fmt.Sprint(t.Waggons[0].Position) + " auf rot geschaltet werden soll")
+				}
+
 				t.Waiting = true
 				return [2]int{-1, -1}
 			}
@@ -405,19 +413,28 @@ func (t *Train) move(wasRecalculated bool, gs *gameState) [2]int {
 		//nun wird das Signal aus der Queue rausgenommen, da der Zug über das Signal fährt
 		t.CurrentPathSignals = t.CurrentPathSignals[1:]
 
+		logger.Debug("Hallo Jannis, hier Nachricht an client, dass das Signal an Stelle " +
+			fmt.Sprint(t.Waggons[0].Position) + " auf grün geschaltet werden soll. Irgnoriere das beim laden bitte xD")
+
 		t.Waiting = false
+
 	}
 
 	//entblocken des letzten Tiles, wenn letzter Waggon sich rausbewegt (x oder y vom letzten unterschiedlich ist zum 2. letzten)
 	// in die Queue schreiben, da entblocken nur am Ende des Ticks
-	if len(t.Waggons) == 1 ||
-		(t.Waggons[len(t.Waggons)-1].Position[0] != t.Waggons[len(t.Waggons)-2].Position[0] ||
-			t.Waggons[len(t.Waggons)-1].Position[1] != t.Waggons[len(t.Waggons)-2].Position[1]) {
-		letzterWagON := t.Waggons[len(t.Waggons)-1]
-		entblocken = [2]int{letzterWagON.Position[0], letzterWagON.Position[1]}
-		// gs.Tiles[letzterWagON.Position[0]][letzterWagON.Position[1]].IsBlocked = false
-		// gs.broadcastChannel <- wsEnvelope{Type: "tiles.unblock", Username: "Server", Msg: blockedTilesMSG{Tiles: [][2]int{[2]int{letzterWagON.Position[0], letzterWagON.Position[1]}}}}
+	letzterWaggon := t.Waggons[len(t.Waggons)-1]
+	if len(t.Waggons) == 1 || (letzterWaggon.Position[0] != t.Waggons[len(t.Waggons)-2].Position[0] ||
+		letzterWaggon.Position[1] != t.Waggons[len(t.Waggons)-2].Position[1]) {
 
+		// tiles[letzterWaggon.Position[0]][letzterWaggon.Position[1]].IsBlocked = false
+		entblocken = [2]int{letzterWaggon.Position[0], letzterWaggon.Position[1]}
+
+		//wenn das subTile, aus dem man sich herausbewegt ein Signal hat, hat man ein Signal passiert
+		//das passt, da alle Signal außen an den Tiles stehen
+		if gs.Tiles[letzterWaggon.Position[0]][letzterWaggon.Position[1]].Signals[letzterWaggon.Position[2]-1] {
+			logger.Debug("Hallo Jannis, hier Nachricht an client, dass das Signal an Stelle " +
+				fmt.Sprint(letzterWaggon.Position) + " auf blau geschaltet werden soll")
+		}
 	}
 
 	//Bewegung der Waggons
@@ -436,60 +453,6 @@ func (t *Train) move(wasRecalculated bool, gs *gameState) [2]int {
 	gs.broadcastChannel <- wsEnvelope{Type: "train.move", Msg: trainMoveMSG{Id: t.Id, Waggons: t.Waggons}}
 
 	return entblocken
-}
-
-/* erst auf dauerhaft blocked prüfen
-*to visit (außer, da wo man hergekommen ist):
-*	1 [x][y][2,3,4], [x-1][y][3]
-*	2 [x][y][1,3,4], [x][y+1][4]
-*	3 [x][y][1,2,4], [x+1][y][1]
-*	4 [x][y][1,2,3], [x][y+1][2]
- */
-// verified
-func neighbourTracks(x int, y int, sub int, gs *gameState) [][3]int {
-	var connectedNeigbours [][3]int // [3]int identifiziert mit x y und subtile ein exaktes Subtile,
-	// Alle Koordinaten von Subtiles zurückgeben die angrenzen die können im gleichem subtile oder im angrenzendem
-
-	appending := func(subtilesToCheck [3]int) {
-		for i := range 3 {
-			o := subtilesToCheck[i]
-			if gs.Tiles[x][y].Tracks[o-1] {
-				connectedNeigbours = append(connectedNeigbours, [3]int{x, y, o})
-			}
-		}
-	}
-
-	switch sub {
-	case 1:
-		if x > 0 {
-			if gs.Tiles[x-1][y].Tracks[2] {
-				connectedNeigbours = append(connectedNeigbours, [3]int{x - 1, y, 3})
-			}
-		}
-		appending([3]int{2, 3, 4})
-	case 2:
-		if y > 0 {
-			if gs.Tiles[x][y-1].Tracks[3] {
-				connectedNeigbours = append(connectedNeigbours, [3]int{x, y - 1, 4})
-			}
-		}
-		appending([3]int{1, 3, 4})
-	case 3:
-		if x != len(gs.Tiles)-1 {
-			if gs.Tiles[x+1][y].Tracks[0] {
-				connectedNeigbours = append(connectedNeigbours, [3]int{x + 1, y, 1})
-			}
-		}
-		appending([3]int{1, 2, 4})
-	case 4:
-		if y != len(gs.Tiles[0])-1 {
-			if gs.Tiles[x][y+1].Tracks[1] {
-				connectedNeigbours = append(connectedNeigbours, [3]int{x, y + 1, 2})
-			}
-		}
-		appending([3]int{1, 2, 3})
-	}
-	return connectedNeigbours
 }
 
 func handleTrainUpdate(envelope recieveWSEnvelope, gs *gameState) error {

@@ -8,6 +8,10 @@ type Tile struct {
 	ActiveTile  *ActiveTile
 	X           int
 	Y           int
+
+	//ob auf dem Tile gebaut werden kann. Wenn es ein Hindernis ist, muss irgendwie bestimmt werden,
+	//welches Sprite das ist, es können aber auch Tracks und Signale Mapseitig unveränderlich sein.
+	IsLocked bool
 }
 
 type ActiveTile struct {
@@ -17,9 +21,10 @@ type ActiveTile struct {
 	Stations   []*Station //Stationen, die in der Nähe sind. wird mit changeStationTile verwaltet
 	Storage    map[string]int
 	maxStorage int //maximum Lager pro Gut -> sonst kann es zu unwiederruflichen auffüllen kommen
+
 }
 
-// Fügt bei i ein gleis hinzu, wenn da keins ist und da kein AktiveTile ist
+// Fügt bei i ein gleis hinzu, wenn da keins ist und das Tile nicht locked ist
 // returnt true bei erfolg und false bei error
 func (t *Tile) addTrack(subtile int, gs *gameState) (bool, string) {
 	if t.ActiveTile.Category != nil {
@@ -33,7 +38,7 @@ func (t *Tile) addTrack(subtile int, gs *gameState) (bool, string) {
 	return false, "There is already a Track at that Position."
 }
 
-// Entfernt bei i ein gleis und Signal, wenn da eins ist
+// Entfernt bei i ein gleis und Signal, wenn da eins ist und das Tile nicht locked ist
 // returnt true bei erfolg und false bei error
 // wenn kein Signal an der Stelle ist, wird kein Fehler geworfen
 func (t *Tile) removeTrack(subtile int, gs *gameState) (bool, string) {
@@ -47,7 +52,8 @@ func (t *Tile) removeTrack(subtile int, gs *gameState) (bool, string) {
 
 }
 
-// Fügt bei i ein Signal hinzu, wenn da keins ist und ein entsprechendes Gleis vorhanden ist, um bei i ein signal zu bauen muss gleis i da sein
+// Fügt bei i ein Signal hinzu, wenn da keins ist und ein entsprechendes Gleis vorhanden ist,
+// um bei i ein signal zu bauen muss gleis i da sein, und das Tile nicht locked ist;
 // returnt true bei erfolg und false bei error
 func (t *Tile) addSignal(subtile int, gs *gameState) (bool, string) {
 	if t.ActiveTile.Category != nil {
@@ -61,7 +67,7 @@ func (t *Tile) addSignal(subtile int, gs *gameState) (bool, string) {
 	return false, "There may be no Track to place the signal onto, or there is already a signal at that location."
 }
 
-// Fügt bei i ein Signal hinzu, wenn da keins ist
+// Fügt bei i ein Signal hinzu, wenn da keins ist und das Tile nicht locked ist
 // returnt true bei erfolg und false bei error
 func (t *Tile) removeSignal(subtile int, gs *gameState) (bool, string) {
 	if t.Signals[subtile-1] {
@@ -170,4 +176,11 @@ func processActiveTiles(gs *gameState) {
 		}
 
 	}
+}
+
+type Car struct {
+}
+
+func (A *ActiveTile) calculateCargoPaths() {
+
 }
