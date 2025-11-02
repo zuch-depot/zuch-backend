@@ -7,12 +7,13 @@ import (
 	"log/slog"
 	"os"
 	"time"
+	"zuch-backend/internal/ds"
 )
 
 // Speichert den Spielstand
 // ist aber bisher pass-by-value, dunno ob reference hier vielleicht mehr sinn macht
 // Die ticks sollte man noch anhalten
-func saveGame(gs *gameState) {
+func saveGame(gs *ds.GameState) {
 	// ich will den ganzen bums hier eigentlich ja nur speichern
 	// Alles soll gerne in eine Json datei
 	// wenn die uns um die ohren fliegt kann man ja immernoch komprimieren
@@ -28,7 +29,7 @@ func saveGame(gs *gameState) {
 	pauseGame(gs)
 
 	// Einzelnes Object das hoffentlich den ganzen status des Spiels darstellt
-	state := SendAbleGamestate{Users: gs.Users, Schedules: gs.Schedules, Stations: gs.Stations, Tiles: gs.Tiles, Trains: gs.Trains}
+	state := ds.SendAbleGamestate{Users: gs.Users, Schedules: gs.Schedules, Stations: gs.Stations, Tiles: gs.Tiles, Trains: gs.Trains}
 	// Die Objekte werden in einer netten JSON verpackt
 
 	// Dateiname wird ggf. abgeändert wenn es nicht compressed wird
@@ -62,12 +63,4 @@ func saveGame(gs *gameState) {
 	}
 
 	unPauseGame(gs)
-}
-
-type SendAbleGamestate struct {
-	Users     []*User
-	Schedules []*Schedule
-	Stations  []*Station
-	Tiles     [][]*Tile
-	Trains    map[int]*Train
 }

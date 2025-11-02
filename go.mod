@@ -1,4 +1,4 @@
-module zuch
+module zuch-backend
 
 go 1.25.1
 

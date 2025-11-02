@@ -1,86 +1,9 @@
 package main
 
-type Tile struct {
-	Tracks      [4]bool
-	Signals     [4]bool
-	IsPlattform bool
-	IsBlocked   bool //nur für tracks
-	ActiveTile  *ActiveTile
-	X           int
-	Y           int
-
-	//ob auf dem Tile gebaut werden kann. Wenn es ein Hindernis ist, muss irgendwie bestimmt werden,
-	//welches Sprite das ist, es können aber auch Tracks und Signale Mapseitig unveränderlich sein.
-	IsLocked bool
-}
-
-type ActiveTile struct {
-	Category   *ActiveTileCategory
-	Name       string
-	Level      int
-	Stations   []*Station //Stationen, die in der Nähe sind. wird mit changeStationTile verwaltet
-	Storage    map[string]int
-	maxStorage int //maximum Lager pro Gut -> sonst kann es zu unwiederruflichen auffüllen kommen
-
-}
-
-// Fügt bei i ein gleis hinzu, wenn da keins ist und das Tile nicht locked ist
-// returnt true bei erfolg und false bei error
-func (t *Tile) addTrack(subtile int, gs *gameState) (bool, string) {
-	if t.ActiveTile.Category != nil {
-		return false, "There is a Active Tile there, no Tracks can be build on this tile."
-	}
-	if !t.Tracks[subtile-1] {
-		t.Tracks[subtile-1] = true
-		gs.broadcastChannel <- wsEnvelope{Type: "rail.create", Username: "Server", Msg: &tileUpdateMSG{Position: [3]int{t.X, t.Y, subtile}}}
-		return true, ""
-	}
-	return false, "There is already a Track at that Position."
-}
-
-// Entfernt bei i ein gleis und Signal, wenn da eins ist und das Tile nicht locked ist
-// returnt true bei erfolg und false bei error
-// wenn kein Signal an der Stelle ist, wird kein Fehler geworfen
-func (t *Tile) removeTrack(subtile int, gs *gameState) (bool, string) {
-	if t.Tracks[subtile-1] && !t.IsBlocked {
-		t.Tracks[subtile-1] = false
-		t.removeSignal(subtile, gs) // das muss noch kommunitzier werden
-		gs.broadcastChannel <- wsEnvelope{Type: "rail.remove", Username: "Server", Msg: &tileUpdateMSG{Position: [3]int{t.X, t.Y, subtile}}}
-		return true, ""
-	}
-	return false, "There is no Track to Remove, or the Tile may be blocked by a Train, if so try again later."
-
-}
-
-// Fügt bei i ein Signal hinzu, wenn da keins ist und ein entsprechendes Gleis vorhanden ist,
-// um bei i ein signal zu bauen muss gleis i da sein, und das Tile nicht locked ist;
-// returnt true bei erfolg und false bei error
-func (t *Tile) addSignal(subtile int, gs *gameState) (bool, string) {
-	if t.ActiveTile.Category != nil {
-		return false, "There is a Active Tile there, no Signal can be build on this tile."
-	}
-	if t.Tracks[subtile-1] || t.Signals[subtile-1] {
-		t.Signals[subtile-1] = true
-		gs.broadcastChannel <- wsEnvelope{Type: "signal.create", Username: "Server", Msg: &tileUpdateMSG{Position: [3]int{t.X, t.Y, subtile}}}
-		return true, ""
-	}
-	return false, "There may be no Track to place the signal onto, or there is already a signal at that location."
-}
-
-// Fügt bei i ein Signal hinzu, wenn da keins ist und das Tile nicht locked ist
-// returnt true bei erfolg und false bei error
-func (t *Tile) removeSignal(subtile int, gs *gameState) (bool, string) {
-	if t.Signals[subtile-1] {
-		t.Signals[subtile-1] = false
-		gs.broadcastChannel <- wsEnvelope{Type: "signal.remove", Username: "Server", Msg: &tileUpdateMSG{Position: [3]int{t.X, t.Y, subtile}}}
-		return true, ""
-	}
-	return false, "There is no Signal to remove."
-
-}
+import "zuch-backend/internal/ds"
 
 // bis jetzt noch keine Level implementiert
-func processActiveTiles(gs *gameState) {
+func processActiveTiles(gs *ds.GameState) {
 
 	for _, activeTile := range gs.ActiveTiles {
 		//wenn noch kein Map erstellt wurde, dann erstelle Map
@@ -100,7 +23,7 @@ func processActiveTiles(gs *gameState) {
 			for cargoTypeToConsume, neededQuantity := range prodCyle.Consumtion {
 
 				//hole die Ware Cargotype wenn möglich aus umligenden Stationen, wenn das Lager noch nicht voll ist
-				emptySpaceInActiveTile := activeTile.maxStorage - activeTile.Storage[cargoTypeToConsume]
+				emptySpaceInActiveTile := activeTile.MaxStorage - activeTile.Storage[cargoTypeToConsume]
 				if emptySpaceInActiveTile > 0 {
 					for _, station := range activeTile.Stations {
 						//wenn nichts von dem Typ in der Station gelagert ist
@@ -113,7 +36,7 @@ func processActiveTiles(gs *gameState) {
 							station.Storage[cargoTypeToConsume] = 0
 						} else {
 							//sonst leeren Platz füllen
-							activeTile.Storage[cargoTypeToConsume] = activeTile.maxStorage
+							activeTile.Storage[cargoTypeToConsume] = activeTile.MaxStorage
 							station.Storage[cargoTypeToConsume] -= emptySpaceInActiveTile
 						}
 					}
@@ -170,7 +93,7 @@ func processActiveTiles(gs *gameState) {
 			for _, station := range activeTile.Stations {
 				for _, cargoTypeProducing := range typesProducing {
 					quantityToAdd := activeTile.Storage[cargoTypeProducing] / numberStations
-					activeTile.Storage[cargoTypeProducing] -= quantityToAdd - station.addCargo(cargoTypeProducing, quantityToAdd)
+					activeTile.Storage[cargoTypeProducing] -= quantityToAdd - station.AddCargo(cargoTypeProducing, quantityToAdd)
 				}
 			}
 		}
@@ -179,8 +102,4 @@ func processActiveTiles(gs *gameState) {
 }
 
 type Car struct {
-}
-
-func (A *ActiveTile) calculateCargoPaths() {
-
 }

@@ -8,42 +8,20 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"zuch-backend/internal/ds"
+	"zuch-backend/internal/utils"
 
 	"github.com/joho/godotenv"
 	"github.com/telemachus/humane"
 )
 
-type gameState struct {
-	Users       []*User
-	Schedules   []*Schedule
-	Stations    []*Station
-	Tiles       [][]*Tile
-	Trains      map[int]*Train
-	ActiveTiles []*ActiveTile
-
-	loadUnloadSpeed   int
-	minLoadUloadTicks int
-	configData        ConfigData //übergeordetes Struct, in das alles aus config.json reingeladen wird
-
-	stationRange int
-	ticker       *time.Ticker
-	tick         int
-	isPaused     bool
-
-	broadcastChannel chan wsEnvelope
-	userInputs       chan recieveWSEnvelope
-	unPause          chan bool
-
-	sizeX       int
-	sizeY       int
-	SizeSubtile int
-}
-
 var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true, Level: slog.LevelInfo}))
 
 func main() {
 
-	gs := gameState{userInputs: make(chan recieveWSEnvelope, 300), broadcastChannel: make(chan wsEnvelope, 100), unPause: make(chan bool), SizeSubtile: 4, Trains: make(map[int]*Train)}
+	utils.Logger = logger
+
+	gs := ds.GameState{UserInputs: make(chan ds.RecieveWSEnvelope, 300), BroadcastChannel: make(chan ds.WsEnvelope, 100), UnPause: make(chan bool), SizeSubtile: 4, Trains: make(map[int]*ds.Train), Logger: logger}
 	godotenv.Load("main.env")
 
 	//loading global variables
@@ -51,19 +29,19 @@ func main() {
 	if err != nil {
 		log.Println("Error while loading LoadUnloadSpeed", err)
 	}
-	gs.loadUnloadSpeed = int(tempVar)
+	gs.LoadUnloadSpeed = int(tempVar)
 
 	tempVar, err = strconv.ParseInt(os.Getenv("MINLOADUNLOADTICKS"), 10, 64)
 	if err != nil {
 		log.Println("Error while loading minLoadUloadTicks", err)
 	}
-	gs.minLoadUloadTicks = int(tempVar)
+	gs.MinLoadUloadTicks = int(tempVar)
 
 	tempVar, err = strconv.ParseInt(os.Getenv("MAXDISTANCEACTIVETILETOSTATION"), 10, 64)
 	if err != nil {
 		log.Println("Error while loading the radius of the station, where aktive Tiles are detected", err)
 	}
-	gs.stationRange = int(tempVar)
+	gs.StationRange = int(tempVar)
 
 	//wichtig als initialisierung, bevor Züge verarbeitet werden
 	loadConfig(&gs)
@@ -79,22 +57,22 @@ func main() {
 	// hier den Server starten
 	go startServer(&gs)
 	// Anfangen aus events an clients zu schicken
-	go startListiningToBroadcast(gs.broadcastChannel, &gs)
+	go startListiningToBroadcast(gs.BroadcastChannel, &gs)
 	//Zeit pro Tick bestimmen
 	ticksMilisec, err := strconv.Atoi(os.Getenv("TICKTIMEMILISEC"))
 	if err != nil {
 		logger.Error("Failed to convert Ticktime to Int", slog.String("Error", err.Error())) //anderes Log?
 	}
 
-	gs.ticker = time.NewTicker(time.Duration(ticksMilisec) * time.Millisecond)
+	gs.Ticker = time.NewTicker(time.Duration(ticksMilisec) * time.Millisecond)
 
 	//jeder Tick
-	for gs.tick = 0; ; gs.tick++ {
+	for gs.Tick = 0; ; gs.Tick++ {
 		// Wenn pausiert wurde, warten bis entpausiert signal kommt
-		if gs.isPaused {
+		if gs.IsPaused {
 			confirmPause <- true
-			<-gs.unPause // Hier warten bis es wieder entpausiert wird
-			gs.isPaused = false
+			<-gs.UnPause // Hier warten bis es wieder entpausiert wird
+			gs.IsPaused = false
 			logger.Info("continuing after Pause")
 		}
 
@@ -102,30 +80,30 @@ func main() {
 		processClientInputs(&gs)
 
 		//Train calculate (Läd/Entläd oder bewegt) und entblocken
-		if gs.tick%10 == 0 {
+		if gs.Tick%10 == 0 {
 			// printTrains()
 			calculateTrains(&gs)
 		}
 
 		//process factorys
-		if gs.tick%10 == 1 {
+		if gs.Tick%10 == 1 {
 			processActiveTiles(&gs)
 		}
 
 		//anzeigen Testing
-		if gs.tick%10 == 0 {
+		if gs.Tick%10 == 0 {
 			// printMap()
 			// fmt.Println("tick", tick)
 		}
 		// das wartet hier bis ein tick ausgelöst wird,
 
-		<-gs.ticker.C
+		<-gs.Ticker.C
 	}
 }
 
-func processClientInputs(gs *gameState) {
-	for len(gs.userInputs) > 0 {
-		input := <-gs.userInputs
+func processClientInputs(gs *ds.GameState) {
+	for len(gs.UserInputs) > 0 {
+		input := <-gs.UserInputs
 		inputCat := strings.Split(input.Type, ".")
 		var err error
 		switch inputCat[0] {
@@ -136,24 +114,24 @@ func processClientInputs(gs *gameState) {
 		case "train":
 			err = handleTrainUpdate(input, gs)
 		default:
-			input.reply(false, "Invalid Envelope Type")
+			input.Reply(false, "Invalid Envelope Type", gs)
 		}
 		if err != nil {
 			logger.Debug(err.Error())
-			input.reply(false, err.Error())
+			input.Reply(false, err.Error(), gs)
 		} else {
-			input.reply(true, "")
+			input.Reply(true, "", gs)
 		}
 
 	}
 }
 
-func calculateTrains(gs *gameState) {
+func calculateTrains(gs *ds.GameState) {
 	//Speichern, welche Tiles am Ende des Threads entblocked werden muss
 	var tilesToUnblock [][2]int
 
 	for i := range gs.Trains {
-		temp := gs.Trains[i].calculateTrain(gs)
+		temp := gs.Trains[i].CalculateTrain(gs)
 		if temp[0] >= 0 {
 			tilesToUnblock = append(tilesToUnblock, temp)
 		}
@@ -164,28 +142,11 @@ func calculateTrains(gs *gameState) {
 		gs.Tiles[i[0]][i[1]].IsBlocked = false
 	}
 	if len(tilesToUnblock) > 0 {
-		gs.broadcastChannel <- wsEnvelope{Type: "tiles.unblock", Username: "kaputt", Msg: blockedTilesMSG{Tiles: tilesToUnblock}}
+		gs.BroadcastChannel <- ds.WsEnvelope{Type: "tiles.unblock", Username: "kaputt", Msg: ds.BlockedTilesMSG{Tiles: tilesToUnblock}}
 	}
 }
 
-type Produktionszyklus struct {
-	Consumtion                 map[string]int `json:"Verbrauch"`
-	Produktion                 map[string]int `json:"Produktion"`
-	VerfuegbareLevelUndScaling []int          `json:"verfügbareLevelUndScaling"`
-}
-
-// Struktur für aktive Tiles
-type ActiveTileCategory struct {
-	Productioncycles []Produktionszyklus `json:"Produktionszyklen"`
-}
-
-// Root-Struktur für config.json
-type ConfigData struct {
-	TrainCategories      map[string][]string           `json:"Train Categories"`
-	ActiveTileCategories map[string]ActiveTileCategory `json:"Aktive Tiles"`
-}
-
-func loadConfig(gs *gameState) {
+func loadConfig(gs *ds.GameState) {
 
 	// JSON-Datei öffnen
 	file, err := os.ReadFile("config.json")
@@ -194,19 +155,19 @@ func loadConfig(gs *gameState) {
 	}
 
 	// Unmarshal in Struktur
-	if err := json.Unmarshal(file, &gs.configData); err != nil {
+	if err := json.Unmarshal(file, &gs.ConfigData); err != nil {
 		panic(err)
 	}
 }
 
-func startListiningToBroadcast(broadcastChannel <-chan wsEnvelope, gs *gameState) {
+func startListiningToBroadcast(broadcastChannel <-chan ds.WsEnvelope, gs *ds.GameState) {
 	for {
 		envelope, ok := <-broadcastChannel
 		if ok {
 			for _, user := range gs.Users {
-				if user.isConnected {
-					logger.Debug("Notifying client of Change", slog.String("User", user.username), slog.String("Type", envelope.Type))
-					user.webSocketQueue <- envelope
+				if user.IsConnected {
+					logger.Debug("Notifying client of Change", slog.String("User", user.Username), slog.String("Type", envelope.Type))
+					user.WebSocketQueue <- envelope
 				}
 			}
 

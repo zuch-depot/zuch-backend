@@ -1,8 +1,10 @@
 package main
 
-func startNotifiyingClientsOfChanges(users *[]*User, channel <-chan wsEnvelope) {
+import "zuch-backend/internal/ds"
+
+func startNotifiyingClientsOfChanges(users *[]*ds.User, channel <-chan ds.WsEnvelope) {
 	for _, user := range *users {
-		if user.isConnected {
+		if user.IsConnected {
 			startNotifiyingClientsOfChanges(users, channel)
 
 		}
