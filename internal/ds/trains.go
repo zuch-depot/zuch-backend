@@ -399,9 +399,9 @@ func (t *Train) AddWaggon(position [3]int, typ string, gs *GameState) error {
 
 	// Waggons zu zug hinzufügen und entsprechende tiles blockieren
 	t.Waggons = append(t.Waggons, &Waggon{Position: position, MaxSpeed: maxSpeed, CargoStorage: &CargoStorage{Capacity: capacity, CargoCategory: typ}})
-	gs.Tiles[position[0]][position[1]].IsBlocked = true
 	var blockedTilesPositions [][2]int
 	blockedTilesPositions = append(blockedTilesPositions, [2]int(position[:2]))
+	gs.Tiles[position[0]][position[1]].IsBlocked = true
 	gs.BroadcastChannel <- WsEnvelope{Type: "tiles.block", Username: "Server", Msg: BlockedTilesMSG{Tiles: blockedTilesPositions}}
 
 	gs.Logger.Debug("Blockiertes", slog.Int("Pos 0", position[0]), slog.Int("Pos 1", position[1]), slog.Bool("Blocked", gs.Tiles[position[0]][position[1]].IsBlocked))
