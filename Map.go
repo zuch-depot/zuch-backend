@@ -35,7 +35,7 @@ var (
 )
 
 // nur fürs Testen, inkl. Schedule
-func createTrains(gs *ds.GameState) {
+func createDemoTrains(gs *ds.GameState) {
 	//stations inkl. Initialisieren
 	gs.Stations = append(gs.Stations, &ds.Station{Name: "Station Nord", Id: 1, Capacity: 100, Storage: map[string]int{}})
 	plattforms := []ds.Plattform{{Name: "Gleis 1", Tiles: [][2]int{{2, 0}, {3, 0}}, Station: gs.Stations[0]}}
@@ -72,6 +72,8 @@ func createTrains(gs *ds.GameState) {
 		{Position: [3]int{6, 5, 4}, CargoStorage: &ds.CargoStorage{Capacity: 30, CargoCategory: "Lebensmittel"}},
 		{Position: [3]int{6, 5, 2}, CargoStorage: &ds.CargoStorage{Capacity: 30, CargoCategory: "Lebensmittel"}}}
 	gs.Trains[int(gs.CurrentTrainID.Load())] = &ds.Train{Waggons: temp, Schedule: *gs.Schedules[0], Name: "RE2", NextStop: Stops[1], Id: 1}
+	gs.CurrentTrainID.Add(1)
+
 }
 
 func initializeTiles(gs *ds.GameState) {

@@ -56,25 +56,48 @@ type tileUpdateMSG struct {
 }
 ```
 - die stellt nur eine Position dar, was dort passiert wird durch den typen bestimmt 
-## Hinzufügen und entfernen von Zügen
+## Hinzufügen, entfernen und setzen von Schedules bei Zügen
 ### train.create
 - nutzt die `trainCreateMSG` 
 	- bei Typ kann angegeben werden was für ein waggong, dies bestimmt bspw. die kapazität. Muss mich da mit wilken aber noch absprechen
 - antwortet mit einem Train
+- wird als still stehender zug erstellt. Hat allerdings schon alle seine waggons, ggf kann man da später noch welche hinzufügen
 ### train.remove
 - nutzt die `trainRemoveMSG`
 - antwortet mit einer `trainRemoveMSG`
+### train.assignSchedule
 ## Datenformate hinzufügen und entfernen Züge
 ### trainCreateMSG
 ```go
 type trainCreateMSG struct {
-	Name string
+	Name	string
 	Waggons []trainCreateWaggons
-	Id int
+	Id		int
 }
 type trainCreateWaggons struct {
 	Position [3]int
 	Typ      string
+}
+
+TODO assignScheduleMsg struct {
+	trainId 	int
+	scheduleId 	int 
+}
+```
+```json
+
+{
+  "Type": "train.create",
+  "TransactionID":"edabad9e-e1a7-4e91-977a-119daaa8775e",
+  "Msg": {
+    "Name": "hallo",
+    "Waggons": [
+      {
+        "Position": [8,6,2],
+        "Typ": "Lebensmittel"
+      }
+    ]
+  }
 }
 ```
 
@@ -82,6 +105,20 @@ type trainCreateWaggons struct {
 ```go
 type trainRemoveMSG struct {
 	id int
+}
+```
+## Erstellen und löschen von Schedules
+### schedule.create
+- genutzt um basierend auf einer liste an stops eine schedule zu erstellen
+- es erfolgt keine prüfung ob die wirklich fahrbar ist
+
+### schedule.remove
+## Datenformate Erstellen und löschen von Schedules
+## Schedule.create
+```go
+type scheduleCreateMsg struct {
+	Name 	string
+	Stops	[]Stop
 }
 ```
 ## Blockieren und entblocken von Tiles 
