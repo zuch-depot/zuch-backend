@@ -51,7 +51,7 @@ func main() {
 	// beim ersten start (eventuell probieren Dateien einzulesen) sonst defaults setzen
 	// Map erstellen
 	initializeTiles(&gs)
-	createTrains(&gs)
+	createDemoTrains(&gs)
 	// sich merken wer wer ist
 	// wenn wer rausfliegt sollten die sachen noch da sein
 

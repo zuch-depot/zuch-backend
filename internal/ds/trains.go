@@ -379,7 +379,7 @@ func (t *Train) UnloadCargo(cargoType string, maxCargoRemoved int) int {
 
 // Fügt einen Wagon zu einem Zug, typ gibt die art des wagongs an, daraus basierend wird capacity und maxSpeed bestimmt, bspw "Lebensmittel"
 // true => Erfolgreich; false => fehler
-func (t *Train) AddWaggon(position [3]int, typ string, tiles [][]*Tile, gs *GameState) error {
+func (t *Train) AddWaggon(position [3]int, typ string, gs *GameState) error {
 	var capacity, maxSpeed int
 	// Typ gibt kurz als string an was für einen Waggon man will
 	// hier werden die passenden Attribute rausgesucht
@@ -393,17 +393,17 @@ func (t *Train) AddWaggon(position [3]int, typ string, tiles [][]*Tile, gs *Game
 	}
 
 	// Hier wird noch überorüft ob da überhaupt ein freies gleis ist
-	if !tiles[position[0]][position[1]].Tracks[position[2]-1] { // Wenn dort ein gleis ist
+	if !gs.Tiles[position[0]][position[1]].Tracks[position[2]-1] { // Wenn dort ein gleis ist
 		return fmt.Errorf("kein Gleis vorhanden")
 	}
 
 	// Waggons zu zug hinzufügen und entsprechende tiles blockieren
 	t.Waggons = append(t.Waggons, &Waggon{Position: position, MaxSpeed: maxSpeed, CargoStorage: &CargoStorage{Capacity: capacity, CargoCategory: typ}})
-	tiles[position[0]][position[1]].IsBlocked = true
 	var blockedTilesPositions [][2]int
 	blockedTilesPositions = append(blockedTilesPositions, [2]int(position[:2]))
+	gs.Tiles[position[0]][position[1]].IsBlocked = true
 	gs.BroadcastChannel <- WsEnvelope{Type: "tiles.block", Username: "Server", Msg: BlockedTilesMSG{Tiles: blockedTilesPositions}}
 
-	gs.Logger.Debug("Blockiertes", slog.Int("Pos 0", position[0]), slog.Int("Pos 1", position[1]), slog.Bool("Blocked", tiles[position[0]][position[1]].IsBlocked))
+	gs.Logger.Debug("Blockiertes", slog.Int("Pos 0", position[0]), slog.Int("Pos 1", position[1]), slog.Bool("Blocked", gs.Tiles[position[0]][position[1]].IsBlocked))
 	return nil
 }

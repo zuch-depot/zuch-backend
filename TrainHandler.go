@@ -20,7 +20,7 @@ func addTrain(update ds.TrainCreateMSG, gs *ds.GameState) (*ds.Train, error) {
 	gs.CurrentTrainID.Add(1)
 
 	for _, waggon := range update.Waggons {
-		err := train.AddWaggon(waggon.Position, waggon.Typ, gs.Tiles, gs)
+		err := train.AddWaggon(waggon.Position, waggon.Typ, gs)
 		if err != nil {
 			return nil, fmt.Errorf("this shoudln't happen; %s", err.Error())
 		}

@@ -35,7 +35,7 @@ var (
 )
 
 // nur fürs Testen, inkl. Schedule
-func createTrains(gs *ds.GameState) {
+func createDemoTrains(gs *ds.GameState) {
 	//stations inkl. Initialisieren
 	gs.Stations = append(gs.Stations, &ds.Station{Name: "Station Nord", Id: 1, Capacity: 100, Storage: map[string]int{}})
 	plattforms := []ds.Plattform{{Name: "Gleis 1", Tiles: [][2]int{{2, 0}, {3, 0}}, Station: gs.Stations[0]}}
@@ -57,21 +57,39 @@ func createTrains(gs *ds.GameState) {
 		{Id: 3, Plattform: &plattforms[1], IsPlattform: true, LoadUnloadCommand: [2]ds.LoadUnloadCommand{
 			{CargoType: []string{"Kartoffeln", "Sonnenblumenöl"}},
 			{Loading: true, CargoType: []string{"Pommes"}}}}}
-	gs.Schedules = append(gs.Schedules, &ds.Schedule{Stops: Stops})
-	temp := []*ds.Waggon{
-		{Position: [3]int{4, 4, 1}},
-		{Position: [3]int{3, 4, 3}, CargoStorage: &ds.CargoStorage{Capacity: 30, CargoCategory: "Lebensmittel"}},
-		{Position: [3]int{3, 4, 1}, CargoStorage: &ds.CargoStorage{Capacity: 30, CargoCategory: "Lebensmittel"}},
-		{Position: [3]int{2, 4, 3}, CargoStorage: &ds.CargoStorage{Capacity: 30, CargoCategory: "Lebensmittel"}}}
-	gs.Trains[int(gs.CurrentTrainID.Load())] = &ds.Train{Waggons: temp, Schedule: *gs.Schedules[0], Name: "RE1", NextStop: Stops[0], Id: int(gs.CurrentTrainID.Load())}
+	schedule := &ds.Schedule{Stops: Stops}
+	gs.Schedules = append(gs.Schedules, schedule)
+	// gs.Trains[int()] = &ds.Train{Waggons: temp, Schedule: *gs.Schedules[0], Name: "RE1", NextStop: Stops[0], Id: int(gs.CurrentTrainID.Load())}
+	train, err := addTrain(ds.TrainCreateMSG{Name: "RE1",
+		Waggons: []ds.TrainCreateWaggons{
+			{Position: [3]int{4, 4, 1}, Typ: "Lebensmittel"},
+			{Position: [3]int{3, 4, 3}, Typ: "Lebensmittel"},
+			{Position: [3]int{3, 4, 1}, Typ: "Lebensmittel"},
+			{Position: [3]int{2, 4, 3}, Typ: "Lebensmittel"}},
+	}, gs)
+	train.Schedule = *schedule
+	train.NextStop = Stops[0]
 	gs.CurrentTrainID.Add(1)
 
+	if err != nil {
+		gs.Logger.Error("Fehler, aber ist im demo ding egal")
+	}
+
 	// Zug zwei
-	temp = []*ds.Waggon{
-		{Position: [3]int{6, 6, 2}},
-		{Position: [3]int{6, 5, 4}, CargoStorage: &ds.CargoStorage{Capacity: 30, CargoCategory: "Lebensmittel"}},
-		{Position: [3]int{6, 5, 2}, CargoStorage: &ds.CargoStorage{Capacity: 30, CargoCategory: "Lebensmittel"}}}
-	gs.Trains[int(gs.CurrentTrainID.Load())] = &ds.Train{Waggons: temp, Schedule: *gs.Schedules[0], Name: "RE2", NextStop: Stops[1], Id: 1}
+	train, err = addTrain(ds.TrainCreateMSG{
+		Name: "RE2",
+		Waggons: []ds.TrainCreateWaggons{
+			{Position: [3]int{6, 6, 2}, Typ: "Lebensmittel"},
+			{Position: [3]int{6, 5, 4}, Typ: "Lebensmittel"},
+			{Position: [3]int{6, 5, 2}, Typ: "Lebensmittel"}}}, gs)
+	train.Schedule = *gs.Schedules[0]
+	train.NextStop = Stops[1]
+
+	if err != nil {
+		gs.Logger.Error("Fehler, aber ist im demo ding egal")
+	}
+	gs.CurrentTrainID.Add(1)
+
 }
 
 func initializeTiles(gs *ds.GameState) {
