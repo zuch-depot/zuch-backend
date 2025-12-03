@@ -1,3 +1,4 @@
+// Package df  das packet macht einfach alle datenstrukturen damit wir die nett als go doc dokumentation haben können, und damit das geht muss es auch alle funktionen die auf den datenstrukturen definiert wurde nbeinhalten
 package ds
 
 import (
@@ -25,7 +26,7 @@ type GameState struct {
 
 	LoadUnloadSpeed   int
 	MinLoadUloadTicks int
-	ConfigData        ConfigData //übergeordetes Struct, in das alles aus config.json reingeladen wird
+	ConfigData        ConfigData // übergeordetes Struct, in das alles aus config.json reingeladen wird
 
 	StationRange   int
 	CurrentTrainID atomic.Uint64
