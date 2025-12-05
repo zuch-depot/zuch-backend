@@ -57,7 +57,7 @@ func createDemoTrains(gs *ds.GameState) {
 		{Id: 3, Plattform: &plattforms[1], IsPlattform: true, LoadUnloadCommand: [2]ds.LoadUnloadCommand{
 			{CargoType: []string{"Kartoffeln", "Sonnenblumenöl"}},
 			{Loading: true, CargoType: []string{"Pommes"}}}}}
-	schedule := &ds.Schedule{Stops: Stops}
+	schedule := &ds.Schedule{Stops: Stops, Name: "Schedule 1"}
 	gs.Schedules = append(gs.Schedules, schedule)
 	// gs.Trains[int()] = &ds.Train{Waggons: temp, Schedule: *gs.Schedules[0], Name: "RE1", NextStop: Stops[0], Id: int(gs.CurrentTrainID.Load())}
 	train, err := addTrain(ds.TrainCreateMSG{Name: "RE1",

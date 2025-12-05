@@ -269,7 +269,8 @@ func (t *Train) RecalculatePath(gs *GameState) {
 
 	//gibt es einen Weg?
 	if len(paths[0])+len(paths[1]) == 0 {
-		gs.Logger.Debug("No Path found for" + t.Name)
+		//gs.Logger.Debug("No Path found for" + t.Name)
+		//Fehler wird in Move() geworfen
 		return
 	}
 	//wenn nur ein Weg, dann der, sonst der bessere
@@ -279,6 +280,7 @@ func (t *Train) RecalculatePath(gs *GameState) {
 	} else {
 		i = 0
 	}
+	//Umdrehen Weg, damit der vom Start zum Ziel, war bis jetzt umgedreht
 	slices.Reverse(paths[i])
 	//Hinzufügen der Tiles der Station ans Ende, damit der Zug bis nach Hinten einfährt, wenn das Ziel eine Plattform ist
 	if t.NextStop.IsPlattform {
@@ -286,12 +288,14 @@ func (t *Train) RecalculatePath(gs *GameState) {
 	}
 	t.CurrentPath = paths[i]
 
-	t.NextGoal = paths[i][len(paths[i])-1]
-
-	//Umdrehen Weg, damit der vom Start zum Ziel, war bis jetzt umgedreht
+	//aktuelle Position der Lokomotive wird ggf als Signal hinzugefügt, wenn sie gerade nicht vor einem Signal steht.
+	//(ist nur ein virtuelles Signal, deshalb ist das ok)
+	pathsSignals[i] = append(pathsSignals[i], t.Waggons[0].Position)
+	//Umdrehen Signale, damit der vom Start zum Ziel, war bis jetzt umgedreht
 	slices.Reverse(pathsSignals[i])
 	//Ziel wird als Signal hinzugefügt, da es (eigentlich) sich wie eins verhält
 	pathsSignals[i] = append(pathsSignals[i], [][3]int{paths[i][len(paths[i])-1]}...)
+
 	t.CurrentPathSignals = pathsSignals[i]
 	gs.Logger.Debug("----------------------")
 
