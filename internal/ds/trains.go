@@ -61,7 +61,6 @@ func (t *Train) RemoveTrain(gs *GameState) error {
 // für 2 Wege Signale muss geprüft werden, ob nicht schon ein Zug zum Signal auf der anderen Seite fährt
 // returnt Tile zum unblocken
 func (t *Train) Move(gs *GameState) [2]int {
-
 	entblocken := [2]int{-1, -1}
 
 	// wenn ein Zug an einem Ziel angekommen ist und er nicht am ein/ausladen ist oder fertig damit ist, dann neu berechnen
@@ -76,7 +75,7 @@ func (t *Train) Move(gs *GameState) [2]int {
 			//TODO Nachricht: konnte das Ziel t.NextStop.Name() nicht erreichen
 			gs.Logger.Debug(fmt.Sprintln("Zug", t.Name, "konnte das Ziel", t.NextStop, "nicht finden."))
 			foundValidStop := false
-			for i := 0; i < len(t.Schedule.Stops)+1; i++ {
+			for i := 0; i < len(t.Schedule.Stops)-1; i++ {
 				t.NextStop = t.Schedule.nextStop(t.NextStop)
 				//t.RecalculatePath(gs)
 				if len(t.CurrentPath) > 0 {

@@ -62,15 +62,14 @@ func createDemoTrains(gs *ds.GameState) {
 	// gs.Trains[int()] = &ds.Train{Waggons: temp, Schedule: *gs.Schedules[0], Name: "RE1", NextStop: Stops[0], Id: int(gs.CurrentTrainID.Load())}
 	train, err := addTrain(ds.TrainCreateMSG{Name: "RE1",
 		Waggons: []ds.TrainCreateWaggons{
-			{Position: [3]int{4, 4, 1}, Typ: "Lebensmittel"},
 			{Position: [3]int{3, 4, 3}, Typ: "Lebensmittel"},
 			{Position: [3]int{3, 4, 1}, Typ: "Lebensmittel"},
-			{Position: [3]int{2, 4, 3}, Typ: "Lebensmittel"}},
+			{Position: [3]int{2, 4, 3}, Typ: "Lebensmittel"},
+			{Position: [3]int{2, 4, 1}, Typ: "Lebensmittel"}},
 	}, gs)
 	train.Schedule = *schedule
 	train.NextStop = Stops[0]
-	gs.CurrentTrainID.Add(1)
-
+	//gs.CurrentTrainID.Add(1)
 	if err != nil {
 		gs.Logger.Error("Fehler, aber ist im demo ding egal")
 	}
@@ -88,8 +87,7 @@ func createDemoTrains(gs *ds.GameState) {
 	if err != nil {
 		gs.Logger.Error("Fehler, aber ist im demo ding egal")
 	}
-	gs.CurrentTrainID.Add(1)
-
+	//gs.CurrentTrainID.Add(1)
 }
 
 func initializeTiles(gs *ds.GameState) {
