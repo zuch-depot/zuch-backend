@@ -243,7 +243,7 @@ func (t *Train) RecalculatePath(gs *GameState) {
 	sub := func(i int, goal [3]int, outPath chan<- [][3]int, outPathSignals chan<- [][3]int) {
 
 		path, pathSignals := dijkstra(goal)
-		if len(paths) == 0 {
+		if len(path) == 0 {
 			//testet nochmal, dieses mal wird der Zug umggedreht um zu prüfen, ob dann ein Weg zu finden ist
 			gs.Logger.Debug("Teste reverse")
 			t.reverseTrain()
@@ -259,7 +259,8 @@ func (t *Train) RecalculatePath(gs *GameState) {
 
 	//Start der go routinen
 	for i := range goals {
-		go sub(i, goals[i], channelPath[i], channelPathSignals[i])
+		//go TODO: multithreading wieder implementieren, wirft einen Fehler manchmal, wenn der ZUg sich umdrehen muss
+		sub(i, goals[i], channelPath[i], channelPathSignals[i])
 	}
 	//auslesen aus dem Buffer
 	for i := range goals {
@@ -267,18 +268,21 @@ func (t *Train) RecalculatePath(gs *GameState) {
 		pathsSignals[i] = <-channelPathSignals[i]
 	}
 
-	//gibt es einen Weg?
-	if len(paths[0])+len(paths[1]) == 0 {
-		gs.Logger.Debug("No Path found for" + t.Name)
-		return
-	}
 	//wenn nur ein Weg, dann der, sonst der bessere
 	var i int
-	if len(paths[0]) >= len(paths[1]) && len(paths[1]) > 0 {
+	if len(paths[0])+len(paths[1]) == 0 {
+		//gs.Logger.Debug("No Path found for" + t.Name)
+		//Fehler wird in Move() geworfen
+		return
+	} else if len(paths[0]) == 0 {
 		i = 1
-	} else {
+	} else if len(paths[1]) == 0 {
 		i = 0
+	} else if len(paths[0]) >= len(paths[1]) {
+		i = 1
 	}
+
+	//Umdrehen Weg, damit der vom Start zum Ziel, war bis jetzt umgedreht
 	slices.Reverse(paths[i])
 	//Hinzufügen der Tiles der Station ans Ende, damit der Zug bis nach Hinten einfährt, wenn das Ziel eine Plattform ist
 	if t.NextStop.IsPlattform {
@@ -286,15 +290,16 @@ func (t *Train) RecalculatePath(gs *GameState) {
 	}
 	t.CurrentPath = paths[i]
 
-	t.NextGoal = paths[i][len(paths[i])-1]
-
-	//Umdrehen Weg, damit der vom Start zum Ziel, war bis jetzt umgedreht
+	//aktuelle Position der Lokomotive wird ggf als Signal hinzugefügt, wenn sie gerade nicht vor einem Signal steht.
+	//(ist nur ein virtuelles Signal, deshalb ist das ok)
+	pathsSignals[i] = append(pathsSignals[i], t.Waggons[0].Position)
+	//Umdrehen Signale, damit der vom Start zum Ziel, war bis jetzt umgedreht
 	slices.Reverse(pathsSignals[i])
 	//Ziel wird als Signal hinzugefügt, da es (eigentlich) sich wie eins verhält
 	pathsSignals[i] = append(pathsSignals[i], [][3]int{paths[i][len(paths[i])-1]}...)
+
 	t.CurrentPathSignals = pathsSignals[i]
 	gs.Logger.Debug("----------------------")
-
 }
 
 // func reverseTrain(train []*TrainType) {

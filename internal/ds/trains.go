@@ -6,23 +6,22 @@ import (
 	"strconv"
 )
 
+// gesetzt werden müssen: Name, Waggons, Id
 type Train struct {
 	Name               string    // Nicht eindeutig, dafür siehe ID
 	Waggons            []*Waggon //Alle müssen nebeneinander spawnen
 	Schedule           Schedule
-	NextStop           Stop //nur fürs testen
-	NextGoal           [3]int
-	LastGoal           [3]int
-	CurrentStop        Stop     //wird überschrieben, wenn der Zug von der Zielstation ausfahren möchte und nur mit StaionsStops
+	NextStop           Stop     //der Stop, in dem der Zug gerade hinfährt oder plant hinzufahren
+	LastStop           Stop     //der Stop, in dem der Zug gerade ist oder gerade war || Überflüssig??
 	CurrentPath        [][3]int //neu berechnen bei laden
 	CurrentPathSignals [][3]int
-	FoundPathToNext    bool //ob das letzte Pathfinding nicht erfolgreich war, dann muss erneut veruscht werden, ohne neuen Stop auszuwählen
+	//FoundPathToNext    bool //ob das letzte Pathfinding nicht erfolgreich war, dann muss erneut veruscht werden, ohne neuen Stop auszuwählen, NEIN??
 
 	Waiting         bool //hat letzten Tick ein geblockes Tile gefunden oder keinen Weg gefunden und wartet
 	LoadingTime     int  //Wie lange ist der Zug schon am be-/entladen? 0 == nicht am laden. Zeiteinheit ist wie oft methode aufgerufen wurde
 	FinishedLoading bool //wenn nichts mehr geladen wird true. Kann auch wieder zurückgenommen werden
 	Id              int
-	User            *User
+	//User            *User nur ggf., falls wird das implementieren
 }
 
 type Waggon struct {
@@ -58,43 +57,60 @@ func (t *Train) RemoveTrain(gs *GameState) error {
 	return nil
 }
 
+// testet selber, ob es einen Weg gibt und berechnet bei Bedarf neu
 // für 2 Wege Signale muss geprüft werden, ob nicht schon ein Zug zum Signal auf der anderen Seite fährt
 // returnt Tile zum unblocken
-func (t *Train) Move(wasRecalculated bool, gs *GameState) [2]int {
+func (t *Train) Move(gs *GameState) [2]int {
 	entblocken := [2]int{-1, -1}
-	newGenNoSignal := t.Waiting //neu generiert und kein Signal, oder er hat letzte mal gewartet, dann gucken, ob immer noch
 
-	//Wenn das neu generiert wurde
-	if wasRecalculated {
-		newGenNoSignal = true
-		//wenn das Pathfinding nicht funktioniert hat
+	// wenn ein Zug an einem Ziel angekommen ist und er nicht am ein/ausladen ist oder fertig damit ist, dann neu berechnen
+	if len(t.CurrentPath) == 0 && (t.LoadingTime == 0 || t.LoadingTime > 0 && t.FinishedLoading) {
+		//nächstes Ziel auswählen und den WEg dorthin berechnen
+		t.LastStop = t.NextStop
+		t.NextStop = t.Schedule.nextStop(t.NextStop)
+		t.RecalculatePath(gs)
+
+		//war das erfolgreich?
 		if len(t.CurrentPath) == 0 {
-			t.Waiting = true
-
-			gs.Logger.Debug("Zug " + t.Name + " konnte den Weg zu " + t.NextStop.getName() + " nicht finden.")
-			return [2]int{-1, -1}
+			//TODO Nachricht: konnte das Ziel t.NextStop.Name() nicht erreichen
+			gs.Logger.Debug(fmt.Sprintln("Zug", t.Name, "konnte das Ziel", t.NextStop, "nicht finden."))
+			foundValidStop := false
+			for i := 0; i < len(t.Schedule.Stops)-1; i++ {
+				t.NextStop = t.Schedule.nextStop(t.NextStop)
+				//t.RecalculatePath(gs)
+				if len(t.CurrentPath) > 0 {
+					foundValidStop = true
+					break
+				}
+				//TODO Nachricht: ?Konnte Ziel xy nicht erreichen?
+			}
+			if !foundValidStop {
+				//TODO Nachricht: Konnte kein Ziel erreichen, Zug ist stuck
+				gs.Logger.Debug(fmt.Sprintln("Zug", t.Name, "kann kein Ziel erreichen."))
+				return [2]int{}
+			}
 		}
 	}
 
 	path := t.CurrentPath
 	signals := t.CurrentPathSignals
 
-	if newGenNoSignal && len(signals) > 1 {
-		newGenNoSignal = false
-	}
-	//ist man bei einem Signal oder wurde neu generiert?
-	// wenn es kein nächstes Signal gibt, wird bis zum Ziel geguckt
+	//testen, ob an einem Signal angekommen. Wenn das nicht das letzte war, versuche weiter zu fahren
 	// -----------> Ähnliche logik muss irgendwo Signale auf rot/grün/?gelb schalten
 	// (vielleicht der Zug, wenn er sich merkt, bei welchem Signal er war und das umschaltet, wenn er aus block rausgefahren ist.
 	// wird dann überschrieben, wenn der nächste zug nicht weiterfahren kann)
 	// logger.Debug("newGenNoSignal", newGenNoSignal, "Signale:", signals, "Weg:", path)
-	gs.Logger.Debug(fmt.Sprintln("Train", t.Name, "newGenNoSignal", newGenNoSignal, "Signale:", signals, "Weg:", path))
-	if newGenNoSignal || len(signals) > 1 && t.Waggons[0].Position == signals[0] {
+	gs.Logger.Debug(fmt.Sprintln("Train", t.Name, "Signale:", signals, "Weg:", path))
+	if len(t.CurrentPathSignals) > 1 && t.Waggons[0].Position == signals[0] {
+
 		//gucken, ob bis zum nächsten Signal alle Tiles unblocked sind, sonst fahre nicht weiter
 		// (es wird immer auch das letzte Tile überprüft, da man über ein sub tile ohne signal fahren muss, um zu einem zu kommen)
 		// --> wichtig für Stationen, immer letzte Subtile ansteuern
-		for i := 0; (newGenNoSignal && path[i] != signals[0]) ||
-			!newGenNoSignal && path[i] != signals[1] && i < len(path); i++ {
+		for i := 0; path[i] != signals[1]; i++ {
+			if i == 0 && t.Waggons[0].Position[0] == path[0][0] && t.Waggons[0].Position[1] == path[0][1] {
+				continue
+			}
+			//man könnte hier auch eigentlich nur jeden 2. Pathtile testen, da immer 2 nebeneinander gleiches Tile sind Optimierung
 			if gs.Tiles[path[i][0]][path[i][1]].IsBlocked {
 				gs.Logger.Debug("Zug " + t.Name + ": Blocked Tile found: []" + strconv.Itoa(path[i][0]) + ", " + strconv.Itoa(path[i][1]) + ", " + strconv.Itoa(path[i][2]) + ". Waiting")
 
@@ -110,7 +126,7 @@ func (t *Train) Move(wasRecalculated bool, gs *GameState) [2]int {
 		}
 		//da nichts geblocked war, blockt dieser Zug jetzt die Strecke zum nächsten Signal
 		var blockedTilesPositions [][2]int
-		for i := 0; newGenNoSignal && path[i] != signals[0] || !newGenNoSignal && path[i] != signals[1] && i < len(path); i++ {
+		for i := 0; path[i] != signals[1]; i++ {
 			gs.Tiles[path[i][0]][path[i][1]].IsBlocked = true
 			blockedTilesPositions = append(blockedTilesPositions, [2]int{path[i][0], path[i][1]})
 		}
@@ -124,7 +140,6 @@ func (t *Train) Move(wasRecalculated bool, gs *GameState) [2]int {
 			fmt.Sprint(t.Waggons[0].Position) + " auf grün geschaltet werden soll. Irgnoriere das beim laden bitte xD")
 
 		t.Waiting = false
-
 	}
 
 	//entblocken des letzten Tiles, wenn letzter Waggon sich rausbewegt (x oder y vom letzten unterschiedlich ist zum 2. letzten)
@@ -156,7 +171,7 @@ func (t *Train) Move(wasRecalculated bool, gs *GameState) [2]int {
 
 	// for alle waggons {clients.schickeNachtricht(waggong x,y, hat sich bewegt)}
 
-	// Alles was bis hier gekmmen ist hat sich bewegt (laut wilken beim döner essen)
+	// Alles was bis hier gekommen ist hat sich bewegt (laut wilken beim döner essen) || xD
 	gs.BroadcastChannel <- WsEnvelope{Type: "train.move", Msg: TrainMoveMSG{Id: t.Id, Waggons: t.Waggons}}
 
 	return entblocken
@@ -165,52 +180,28 @@ func (t *Train) Move(wasRecalculated bool, gs *GameState) [2]int {
 // returned Tile zum entblcken
 // wenn fertig mit Laden/entladen passiert ein Tick nichts und dann fährt er los
 func (t *Train) CalculateTrain(gs *GameState) [2]int {
-
-	//bestimmt, ob man beim letzten Pathfining erfolgreich war. wenn ja und man den nächsten sucht, dann wird der nächste Stop ausgewählt
-	//sonst wird neu versucht
-	pathfindToNextAndMove := func() [2]int {
-		//wie in Variablennamen beschrieben
-		if t.FoundPathToNext {
-			t.NextStop = t.Schedule.nextStop(t.NextStop)
-		}
-		t.RecalculatePath(gs)
-		//aktualisierung der Variable (siehe Variablenbeschreibung)
-		if len(t.CurrentPath) == 0 {
-			t.FoundPathToNext = false
-		} else {
-			t.FoundPathToNext = true
-			return t.Move(true, gs)
-		}
-		return [2]int{-1, -1}
-	}
-
 	var r [2]int
 
 	//ist gerade in die Staion eingefahren, also speichern der aktuellen Station. Nächste Station wird bei neuberechen überschrieben
-	if t.NextStop.IsPlattform && t.LoadingTime == 0 && t.NextGoal == t.Waggons[0].Position {
-		t.CurrentStop = t.NextStop
-		t.LastGoal = t.NextGoal
-		gs.Logger.Debug("Zug " + t.Name + " in " + t.CurrentStop.Plattform.Station.Name + " eingefahren.")
+	if t.NextStop.IsPlattform && t.LoadingTime == 0 && t.NextStop.Goal == t.Waggons[0].Position {
+		t.LastStop = t.NextStop
+		gs.Logger.Debug("Zug " + t.Name + " in " + t.LastStop.Plattform.Station.Name + " eingefahren.")
 	} else if !t.NextStop.IsPlattform && len(t.CurrentPath) == 0 {
 		//wenn das nächste Ziel ein Wegpunkt ist und man angekommen ist, braucht man einfach den nächsten Stop aussuchen und fahren
-		return pathfindToNextAndMove()
+		return t.Move(gs)
 	}
 
 	//wenn der aktuelle Stop eine Plattform ist und man an der an der Station steht
-	if t.CurrentStop.IsPlattform && t.LastGoal == t.Waggons[0].Position {
+	if t.LastStop.IsPlattform && t.LastStop.Goal == t.Waggons[0].Position {
 		//wenn min Zeit erreicht ist überprüfen und man fertig mit laden ist, ob man fahren kann
 		if t.LoadingTime >= gs.MinLoadUloadTicks && t.FinishedLoading {
-			gs.Logger.Debug("Zug " + t.Name + " versucht aus " + t.CurrentStop.Plattform.Station.Name + " auszufahren.")
+			gs.Logger.Debug("Zug " + t.Name + " versucht aus " + t.LastStop.Plattform.Station.Name + " auszufahren.")
 
-			if len(t.CurrentPath) == 0 {
-				r = pathfindToNextAndMove()
-			} else {
-				r = t.Move(false, gs)
-			}
+			r = t.Move(gs)
 
 			//Ist Zug losgefahren, also Reset der Werte fürs nächste Laden
 			if !t.Waiting {
-				gs.Logger.Debug("Zug " + t.Name + " aus " + t.CurrentStop.getName() + "ausgefahren.")
+				gs.Logger.Debug("Zug " + t.Name + " aus " + t.LastStop.getName() + "ausgefahren.")
 				t.LoadingTime = 0
 				t.FinishedLoading = false
 				return r
@@ -227,10 +218,8 @@ func (t *Train) CalculateTrain(gs *GameState) [2]int {
 		//wenn er sich nicht bewegt hat
 		return [2]int{-1, -1}
 	}
-	if len(t.CurrentPath) == 0 {
-		return pathfindToNextAndMove()
-	}
-	return t.Move(false, gs)
+
+	return t.Move(gs)
 }
 
 // returnt ob der Zug voll ist oder nichts mehr zu laden ist, also abfahrtsbereit ist
@@ -238,19 +227,19 @@ func (t *Train) LoadUndload(gs *GameState) bool {
 	var r bool
 
 	//station, in die der Zug steht
-	sta := t.CurrentStop.Plattform.Station
+	sta := t.LastStop.Plattform.Station
 
 	//es wird durch die Reihenfolge der Commands zuerst geladen, dann entladen.
 	// Dabei wird nur beladen, wenn entladen fertig ist, bzw. noch kapazität von Gütern bewegt pro Tick über gelassen hat
 	avaliableLoadUnloadSpeed := gs.LoadUnloadSpeed //misst, wie viel noch geladen und entladen werden darf
-	for _, command := range t.CurrentStop.LoadUnloadCommand {
+	for _, command := range t.LastStop.LoadUnloadCommand {
 		//wenn man nichts mehr verladen darf, dann kann man noch nicht fertig sein
 		if avaliableLoadUnloadSpeed == 0 {
 			return false
 		}
 		if command.Loading {
 			//loading the train
-			for _, cargo := range command.CargoType {
+			for _, cargo := range command.CargoTypes {
 				var loaded int
 				//Berücksichtigung, dass max LoadUnloadSpeed pro Vorgang verladen wird
 				if sta.Storage[cargo] >= avaliableLoadUnloadSpeed {
@@ -279,7 +268,7 @@ func (t *Train) LoadUndload(gs *GameState) bool {
 			}
 		} else {
 			//unloading the train
-			for _, cargo := range command.CargoType {
+			for _, cargo := range command.CargoTypes {
 				var removed int
 				//ausladen was geht aus den Züge, max LoadUnloadSpeed
 				if sta.Capacity-sta.GetFillLevel() >= avaliableLoadUnloadSpeed {

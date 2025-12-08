@@ -1,5 +1,9 @@
 package main
 
+/*
+	Nur zum Verwalten von Zügen, nicht für funktionsweise
+*/
+
 import (
 	"encoding/json"
 	"fmt"
@@ -10,6 +14,7 @@ import (
 
 // Fügt einen Zug hinzu, anhand eines namens und der position sowie des typen und positionen der waggons
 func addTrain(update ds.TrainCreateMSG, gs *ds.GameState) (*ds.Train, error) {
+
 	// Weg muss ja frei sein, und alles müssen zusammenhängen
 	err := checkIfWaggonsAreValid(update.Waggons, gs)
 	if err != nil {
@@ -30,7 +35,7 @@ func addTrain(update ds.TrainCreateMSG, gs *ds.GameState) (*ds.Train, error) {
 	return train, nil
 }
 
-// Überprüft ob alle waggons eine Valide Position haben, also das Gleis nicht blockiert ist, das gleis existiert und die Waggons zusammenhänend sind
+// Überprüft ob alle waggons eine Valide Position haben, also das Gleis nicht blockiert ist, das gleis existiert und die Waggons zusammenhängend sind
 func checkIfWaggonsAreValid(waggons []ds.TrainCreateWaggons, gs *ds.GameState) error {
 	for i, waggon := range waggons {
 		if gs.Tiles[waggon.Position[0]][waggon.Position[1]].IsBlocked {

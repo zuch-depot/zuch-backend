@@ -2,12 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 	"log/slog"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
 	"zuch-backend/internal/ds"
 	"zuch-backend/internal/utils"
 
@@ -15,35 +15,37 @@ import (
 	"github.com/telemachus/humane"
 )
 
+// Zum Debuggen: LevelInfo zu LevelDebug wechseln
 var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true, Level: slog.LevelInfo}))
 
 func main() {
-
 	utils.Logger = logger
 
 	gs := ds.GameState{UserInputs: make(chan ds.RecieveWSEnvelope, 300), BroadcastChannel: make(chan ds.WsEnvelope, 100), UnPause: make(chan bool), SizeSubtile: 4, Trains: make(map[int]*ds.Train), Logger: logger}
-	godotenv.Load("main.env")
-
-	//loading global variables
+	err := godotenv.Load("main.env")
+	if err != nil {
+		logger.Error("Oh oh ein fehler in den environment variables", slog.String("Error", err.Error()))
+	}
+	// loading global variables
 	tempVar, err := strconv.ParseInt(os.Getenv("LOADUNLOADSPEED"), 10, 64)
 	if err != nil {
-		log.Println("Error while loading LoadUnloadSpeed", err)
+		logger.Error("Error while loading LoadUnloadSpeed", slog.String("Error", err.Error()))
 	}
 	gs.LoadUnloadSpeed = int(tempVar)
 
 	tempVar, err = strconv.ParseInt(os.Getenv("MINLOADUNLOADTICKS"), 10, 64)
 	if err != nil {
-		log.Println("Error while loading minLoadUloadTicks", err)
+		logger.Error("Error while loading MinLoadUloadTicks", slog.String("Error", err.Error()))
 	}
 	gs.MinLoadUloadTicks = int(tempVar)
 
 	tempVar, err = strconv.ParseInt(os.Getenv("MAXDISTANCEACTIVETILETOSTATION"), 10, 64)
 	if err != nil {
-		log.Println("Error while loading the radius of the station, where aktive Tiles are detected", err)
+		logger.Error("Error while loading the radius of the station, where aktive Tiles are detected", slog.String("Error", err.Error()))
 	}
 	gs.StationRange = int(tempVar)
 
-	//wichtig als initialisierung, bevor Züge verarbeitet werden
+	// wichtig als initialisierung, bevor Züge verarbeitet werden
 	loadConfig(&gs)
 
 	// Ablauf
@@ -58,15 +60,15 @@ func main() {
 	go startServer(&gs)
 	// Anfangen aus events an clients zu schicken
 	go startListiningToBroadcast(gs.BroadcastChannel, &gs)
-	//Zeit pro Tick bestimmen
+	// Zeit pro Tick bestimmen
 	ticksMilisec, err := strconv.Atoi(os.Getenv("TICKTIMEMILISEC"))
 	if err != nil {
-		logger.Error("Failed to convert Ticktime to Int", slog.String("Error", err.Error())) //anderes Log?
+		logger.Error("Failed to convert Ticktime to Int", slog.String("Error", err.Error())) // anderes Log?
 	}
 
 	gs.Ticker = time.NewTicker(time.Duration(ticksMilisec) * time.Millisecond)
 
-	//jeder Tick
+	// jeder Tick
 	for gs.Tick = 0; ; gs.Tick++ {
 		// Wenn pausiert wurde, warten bis entpausiert signal kommt
 		if gs.IsPaused {
@@ -76,23 +78,22 @@ func main() {
 			logger.Info("continuing after Pause")
 		}
 
-		//Client Inputs
+		// Client Inputs
 		processClientInputs(&gs)
 
-		//Train calculate (Läd/Entläd oder bewegt) und entblocken
+		// Train calculate (Läd/Entläd oder bewegt) und entblocken
 		if gs.Tick%10 == 0 {
 			// printTrains()
 			calculateTrains(&gs)
 		}
 
-		//process factorys
+		// process factorys
 		if gs.Tick%10 == 1 {
 			processActiveTiles(&gs)
 		}
 
-		//anzeigen Testing
+		// anzeigen Testing
 		if gs.Tick%10 == 0 {
-			// printMap()
 			// fmt.Println("tick", tick)
 		}
 		// das wartet hier bis ein tick ausgelöst wird,
@@ -127,7 +128,7 @@ func processClientInputs(gs *ds.GameState) {
 }
 
 func calculateTrains(gs *ds.GameState) {
-	//Speichern, welche Tiles am Ende des Threads entblocked werden muss
+	// Speichern, welche Tiles am Ende des Threads entblocked werden muss
 	var tilesToUnblock [][2]int
 
 	for i := range gs.Trains {
@@ -137,7 +138,7 @@ func calculateTrains(gs *ds.GameState) {
 		}
 	}
 
-	//entblocken
+	// entblocken
 	for _, i := range tilesToUnblock {
 		gs.Tiles[i[0]][i[1]].IsBlocked = false
 	}
@@ -147,7 +148,6 @@ func calculateTrains(gs *ds.GameState) {
 }
 
 func loadConfig(gs *ds.GameState) {
-
 	// JSON-Datei öffnen
 	file, err := os.ReadFile("config.json")
 	if err != nil {
@@ -170,7 +170,6 @@ func startListiningToBroadcast(broadcastChannel <-chan ds.WsEnvelope, gs *ds.Gam
 					user.WebSocketQueue <- envelope
 				}
 			}
-
 		}
 	}
 }

@@ -1,9 +1,11 @@
+// Package df  das packet macht einfach alle datenstrukturen damit wir die nett als go doc dokumentation haben können, und damit das geht muss es auch alle funktionen die auf den datenstrukturen definiert wurde nbeinhalten
 package ds
 
 import (
 	"log/slog"
 	"sync/atomic"
 	"time"
+	"zuch-backend/internal/utils"
 )
 
 // ds = Datastructure, GS = gamestate, beides abgekürzt weil es oft vorkommen wird
@@ -25,13 +27,18 @@ type GameState struct {
 
 	LoadUnloadSpeed   int
 	MinLoadUloadTicks int
-	ConfigData        ConfigData //übergeordetes Struct, in das alles aus config.json reingeladen wird
+	ConfigData        ConfigData // übergeordetes Struct, in das alles aus config.json reingeladen wird
 
-	StationRange   int
-	CurrentTrainID atomic.Uint64
-	Ticker         *time.Ticker
-	Tick           int
-	IsPaused       bool
+	StationRange int
+	//ALLE IDs MÜSSEN BEI 1 ANFANGEN
+	CurrentTrainID     atomic.Uint64
+	CurrentScheduleID  atomic.Uint64
+	CurrentStopID      atomic.Uint64
+	CurrentStationID   atomic.Uint64
+	CurrentPlattformID atomic.Uint64
+	Ticker             *time.Ticker
+	Tick               int
+	IsPaused           bool
 
 	BroadcastChannel chan WsEnvelope
 	UserInputs       chan RecieveWSEnvelope
@@ -50,4 +57,38 @@ type SendAbleGamestate struct {
 	Stations  []*Station
 	Tiles     [][]*Tile
 	Trains    map[int]*Train
+}
+
+func (gs *GameState) addSchedule(name string) (*Schedule, error) {
+	s := Schedule{Name: name, Id: int(gs.CurrentScheduleID.Load())}
+	gs.CurrentScheduleID.Add(1)
+
+	gs.Schedules = append(gs.Schedules, &s)
+	return &s, nil
+}
+
+func (gs *GameState) removeSchedule(Id int) error {
+	var err error
+
+	for i, schedule := range gs.Schedules {
+		if schedule.Id == Id {
+
+			gs.Schedules, err = utils.RemoveElementFromSlice(gs.Schedules, i)
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (gs *GameState) addStation(name string, capacity int) error {
+
+	if name == "" {
+		name = string(rune(gs.CurrentStationID.Load()))
+	}
+
+	gs.Stations = append(gs.Stations, &Station{Id: int(gs.CurrentStationID.Load()), Name: name, Capacity: capacity})
+	gs.CurrentStationID.Add(1)
+
+	return nil
 }

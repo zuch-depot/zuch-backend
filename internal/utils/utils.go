@@ -1,13 +1,16 @@
 package utils
 
 import (
+	"fmt"
 	"log/slog"
+	"time"
 )
 
 var Logger *slog.Logger
 
 // entfernt ntes Element aus slice
-func RemoveElementFromSlice[T any](slice []T, n int) []T {
+// ToDo error
+func RemoveElementFromSlice[T any](slice []T, n int) ([]T, error) {
 	if n >= len(slice) {
 		Logger.Debug("Index out of Bounds. Tried to remove the not existing Element " + string(rune(n)))
 	}
@@ -22,7 +25,8 @@ func RemoveElementFromSlice[T any](slice []T, n int) []T {
 	}
 	tempSlice = first
 	tempSlice = append(tempSlice, last...)
-	return tempSlice
+
+	return tempSlice, nil
 }
 
 // bestimmt den absoluten Wert eines Ints
@@ -31,4 +35,11 @@ func Abs(x int) int {
 		return -x
 	}
 	return x
+}
+
+func Timer(name string) func() {
+	start := time.Now()
+	return func() {
+		fmt.Printf("%s took %v\n", name, time.Since(start))
+	}
 }

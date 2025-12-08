@@ -31,7 +31,7 @@ func startServer(gs *ds.GameState) {
 		handleUnpauseGame(w, r, gs)
 	})
 
-	logger.Error("error running Webserver", slog.String("Error", http.ListenAndServe("localhost:"+os.Getenv("PORT"), nil).Error()))
+	logger.Error("error running Webserver", slog.String("Error", http.ListenAndServe("0.0.0.0:"+os.Getenv("PORT"), nil).Error()))
 
 }
 
