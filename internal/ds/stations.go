@@ -208,7 +208,7 @@ func (s Station) ChangeStationTile(remove bool, position [2]int, gs *GameState) 
 			left = gs.Tiles[position[0]-1][position[1]]
 			if left.IsPlattform {
 				var temp Plattform
-				temp, err = getPlattform(position, gs)
+				temp, err = getPlattform([2]int{position[0] - 1, position[1]}, gs)
 				if err != nil {
 					return err
 				}
@@ -219,7 +219,7 @@ func (s Station) ChangeStationTile(remove bool, position [2]int, gs *GameState) 
 			above = gs.Tiles[position[0]][position[1]-1]
 			if above.IsPlattform {
 				var temp Plattform
-				temp, err = getPlattform(position, gs)
+				temp, err = getPlattform([2]int{position[0], position[1] - 1}, gs)
 				if err != nil {
 					return err
 				}
@@ -230,7 +230,7 @@ func (s Station) ChangeStationTile(remove bool, position [2]int, gs *GameState) 
 			right = gs.Tiles[position[0]+1][position[1]]
 			if right.IsPlattform {
 				var temp Plattform
-				temp, err = getPlattform(position, gs)
+				temp, err = getPlattform([2]int{position[0] + 1, position[1]}, gs)
 				if err != nil {
 					return err
 				}
@@ -241,7 +241,7 @@ func (s Station) ChangeStationTile(remove bool, position [2]int, gs *GameState) 
 			under = gs.Tiles[position[0]][position[1]+1]
 			if under.IsPlattform {
 				var temp Plattform
-				temp, err = getPlattform(position, gs)
+				temp, err = getPlattform([2]int{position[0], position[1] + 1}, gs)
 				if err != nil {
 					return err
 				}
