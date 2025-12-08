@@ -29,7 +29,8 @@ type GameState struct {
 	MinLoadUloadTicks int
 	ConfigData        ConfigData // übergeordetes Struct, in das alles aus config.json reingeladen wird
 
-	StationRange       int
+	StationRange int
+	//ALLE IDs MÜSSEN BEI 1 ANFANGEN
 	CurrentTrainID     atomic.Uint64
 	CurrentScheduleID  atomic.Uint64
 	CurrentStopID      atomic.Uint64
