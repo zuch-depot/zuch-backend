@@ -10,11 +10,12 @@ type Station struct {
 	Name     string
 	Storage  map[string]int //von was ist wieviel gelagert: CargoType? Hinzufügen nur mit Methode, rausnehmen direkt. MUSS mit make komplett initiiert werden
 	Capacity int            //was ist die maximale Kapazität
-	User     *User
+	//User     *User
 }
 
 // ist einzigartig durch station & name zusammen (ggf. id?)
 type Plattform struct {
+	Id      int //neu, muss ggf. implementiert werden
 	Name    string
 	Tiles   [][2]int // nur x & y, muss in Order sein. KEIN DIREKTER ZUGRIFF?
 	Station *Station
@@ -127,7 +128,13 @@ func (p *Plattform) GetPathToOpposite(initial [3]int) [][3]int {
 // remove = true -> referenz wird entfernt, = false -> wird hinzugefügt;
 // findet alle Aktiven Tiles im validen Radius um das neue Tile der Station und verknüpft/entfernt entsprechend die Station, falls noch nicht geschehen
 // egal ob neue Station oder nicht
-func (s Station) ChangeStationTile(remove bool, position [2]int, gs *GameState) {
+// TODO dynamische Zuweisung zu Gleisen anhand Ausrichtung und nachbarn
+func (s Station) ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
+	var err error
+
+	//überprüfen, ob das Tile die anderen berührt
+	//überprüfen, zu welchem gleis das hinzugefügt werden, wenn nicht, dann Fehler
+
 	//minimum bestimmen, maximum wird in schleife geprüft, dass nicht out of bounds
 	xMin := position[0] - gs.StationRange
 	if xMin < 0 {
@@ -162,7 +169,10 @@ func (s Station) ChangeStationTile(remove bool, position [2]int, gs *GameState) 
 					if tile.ActiveTile.Stations[i].Id == s.Id {
 						stationFound = true
 						if remove {
-							tile.ActiveTile.Stations = utils.RemoveElementFromSlice(tile.ActiveTile.Stations, i)
+							tile.ActiveTile.Stations, err = utils.RemoveElementFromSlice(tile.ActiveTile.Stations, i)
+							if err != nil {
+								return err
+							}
 						}
 						break
 					}
@@ -175,6 +185,7 @@ func (s Station) ChangeStationTile(remove bool, position [2]int, gs *GameState) 
 			}
 		}
 	}
+	return nil
 }
 
 // return Restwert, der keinen Platz gefunden hat
@@ -204,5 +215,3 @@ func (s Station) GetFillLevel() int {
 	}
 	return filled
 }
-
-//-------------------------------------------------------------------------------------

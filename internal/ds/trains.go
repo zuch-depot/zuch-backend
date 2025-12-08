@@ -239,7 +239,7 @@ func (t *Train) LoadUndload(gs *GameState) bool {
 		}
 		if command.Loading {
 			//loading the train
-			for _, cargo := range command.CargoType {
+			for _, cargo := range command.CargoTypes {
 				var loaded int
 				//Berücksichtigung, dass max LoadUnloadSpeed pro Vorgang verladen wird
 				if sta.Storage[cargo] >= avaliableLoadUnloadSpeed {
@@ -268,7 +268,7 @@ func (t *Train) LoadUndload(gs *GameState) bool {
 			}
 		} else {
 			//unloading the train
-			for _, cargo := range command.CargoType {
+			for _, cargo := range command.CargoTypes {
 				var removed int
 				//ausladen was geht aus den Züge, max LoadUnloadSpeed
 				if sta.Capacity-sta.GetFillLevel() >= avaliableLoadUnloadSpeed {

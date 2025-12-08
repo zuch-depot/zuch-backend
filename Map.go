@@ -51,12 +51,12 @@ func createDemoTrains(gs *ds.GameState) {
 	//Zug eins mit Schedule
 	Stops := []ds.Stop{
 		{Id: 1, Plattform: &plattforms[0], IsPlattform: true, LoadUnloadCommand: [2]ds.LoadUnloadCommand{
-			{CargoType: []string{"Pommes"}},
-			{Loading: true, CargoType: []string{"Kartoffeln", "Sonnenblumenöl"}}}},
+			{CargoTypes: []string{"Pommes"}},
+			{Loading: true, CargoTypes: []string{"Kartoffeln", "Sonnenblumenöl"}}}},
 		// {Id: 2, Goal: [3]int{1, 3, 4}, Name: "Wegpunkt 1"},
 		{Id: 3, Plattform: &plattforms[1], IsPlattform: true, LoadUnloadCommand: [2]ds.LoadUnloadCommand{
-			{CargoType: []string{"Kartoffeln", "Sonnenblumenöl"}},
-			{Loading: true, CargoType: []string{"Pommes"}}}}}
+			{CargoTypes: []string{"Kartoffeln", "Sonnenblumenöl"}},
+			{Loading: true, CargoTypes: []string{"Pommes"}}}}}
 	schedule := &ds.Schedule{Stops: Stops, Name: "Schedule 1"}
 	gs.Schedules = append(gs.Schedules, schedule)
 	// gs.Trains[int()] = &ds.Train{Waggons: temp, Schedule: *gs.Schedules[0], Name: "RE1", NextStop: Stops[0], Id: int(gs.CurrentTrainID.Load())}
@@ -69,7 +69,6 @@ func createDemoTrains(gs *ds.GameState) {
 	}, gs)
 	train.Schedule = *schedule
 	train.NextStop = Stops[0]
-	//gs.CurrentTrainID.Add(1)
 	if err != nil {
 		gs.Logger.Error("Fehler, aber ist im demo ding egal")
 	}
@@ -87,7 +86,6 @@ func createDemoTrains(gs *ds.GameState) {
 	if err != nil {
 		gs.Logger.Error("Fehler, aber ist im demo ding egal")
 	}
-	//gs.CurrentTrainID.Add(1)
 }
 
 func initializeTiles(gs *ds.GameState) {
