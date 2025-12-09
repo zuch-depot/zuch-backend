@@ -10,8 +10,8 @@ import (
 type Train struct {
 	Name               string    // Nicht eindeutig, dafür siehe ID
 	Waggons            []*Waggon //Alle müssen nebeneinander spawnen
-	Schedule           Schedule
-	NextStop           Stop     //der Stop, in dem der Zug gerade hinfährt oder plant hinzufahren
+	Schedule           *Schedule
+	NextStop           Stop     //der Stop, in dem der Zug gerade hinfährt oder plant hinzufahren. Wenn 0, dann nächster Stop aus Schedule
 	LastStop           Stop     //der Stop, in dem der Zug gerade ist oder gerade war || Überflüssig??
 	CurrentPath        [][3]int //neu berechnen bei laden
 	CurrentPathSignals [][3]int

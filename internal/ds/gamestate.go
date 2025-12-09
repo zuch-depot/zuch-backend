@@ -2,6 +2,7 @@
 package ds
 
 import (
+	"fmt"
 	"log/slog"
 	"sync/atomic"
 	"time"
@@ -60,7 +61,7 @@ type SendAbleGamestate struct {
 	Trains    map[int]*Train
 }
 
-func (gs *GameState) addSchedule(name string) (*Schedule, error) {
+func (gs *GameState) AddSchedule(name string) (*Schedule, error) {
 	s := Schedule{Name: name, Id: int(gs.CurrentScheduleID.Load())}
 	gs.CurrentScheduleID.Add(1)
 
@@ -68,7 +69,7 @@ func (gs *GameState) addSchedule(name string) (*Schedule, error) {
 	return &s, nil
 }
 
-func (gs *GameState) removeSchedule(Id int) error {
+func (gs *GameState) RemoveSchedule(Id int) error {
 	var err error
 
 	for i, schedule := range gs.Schedules {
@@ -83,20 +84,20 @@ func (gs *GameState) removeSchedule(Id int) error {
 }
 
 // nur Erstellung einer Station, hinzufügen der Tiles muss extra gemacht werden. Id ist Standardname
-func (gs *GameState) addStation(name string) (*Station, error) {
+func (gs *GameState) AddStation(name string) (*Station, error) {
 
 	if name == "" {
-		name = string(rune(gs.CurrentStationID.Load()))
+		name = fmt.Sprint(gs.CurrentStationID.Load())
 	}
 
 	gs.Stations = append(gs.Stations, &Station{Id: int(gs.CurrentStationID.Load()), Name: name})
 	gs.CurrentStationID.Add(1)
 
-	return gs.Stations[len(gs.Stations)], nil
+	return gs.Stations[len(gs.Stations)-1], nil
 }
 
 // Entfernt die Station und alle Referenzen (Stops, Plattform Tiles, etc)
-func (gs *GameState) removeStation(Id int) error {
+func (gs *GameState) RemoveStation(Id int) error {
 	var err error
 
 	for i, station := range gs.Stations {
@@ -109,7 +110,7 @@ func (gs *GameState) removeStation(Id int) error {
 			//Enfernung des Plattform Tags aller Tiles der Station, Löschung der Plattformen findet beim Löschenn des jeweils letzten Tiles statt
 			for _, plattform := range station.Plattforms {
 				for _, tilePos := range plattform.Tiles {
-					station.ChangeStationTile(true, tilePos, gs)
+					ChangeStationTile(true, tilePos, gs)
 				}
 			}
 		}

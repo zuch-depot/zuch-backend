@@ -49,13 +49,13 @@ func (s Stop) getName() string {
 }
 
 // TODO errors/Validierung
-func (s Stop) changeLoadCommand(cargoTypes []string, waitTillFull bool) error {
+func (s Stop) ChangeLoadCommand(cargoTypes []string, waitTillFull bool) error {
 	s.LoadUnloadCommand[1] = LoadUnloadCommand{Loading: true, WaitTillFull: waitTillFull, CargoTypes: cargoTypes}
 	return nil
 }
 
 // TODO errors/validierung
-func (s Stop) changeUnloadCommand(cargoTypes []string, waitTillEmpty bool) error {
+func (s Stop) ChangeUnloadCommand(cargoTypes []string, waitTillEmpty bool) error {
 	s.LoadUnloadCommand[1] = LoadUnloadCommand{Loading: false, WaitTillFull: waitTillEmpty, CargoTypes: cargoTypes}
 	return nil
 }
@@ -73,7 +73,7 @@ func (s *Schedule) nextStop(currentStop Stop) Stop {
 
 // Entfernt den Stop mit der passenden Id
 // TODO errors
-func (s *Schedule) removeStop(Id int, gs *GameState) error {
+func (s *Schedule) RemoveStop(Id int, gs *GameState) error {
 	var err error
 
 	for i, stop := range s.Stops {
@@ -88,19 +88,19 @@ func (s *Schedule) removeStop(Id int, gs *GameState) error {
 }
 
 // TODO errors
-// fügt eine Station zu. Damit Waren geladen oder entladen werden sollen müssen dem Stop ein Load, bzw. Unload Befehle mit entsprechender Methode hinzugefügt werden
+// fügt eine Station zu. Damit Waren geladen oder entladen werden sollen müssen dem Stop ein Load, bzw. Unload Befehle mit entsprechender Methode hinzugefügt werden.
 // Id ist Standardname
-func (s *Schedule) AddStopStation(plattform Plattform, gs *GameState) (Stop, error) {
+func (s *Schedule) AddStopStation(plattform *Plattform, gs *GameState) (*Stop, error) {
 	var err error
 
 	if plattform.Id == 0 {
-		return Stop{}, err
+		return &Stop{}, err
 	}
 
-	s.Stops = append(s.Stops, Stop{Id: int(gs.CurrentStopID.Load()), Plattform: &plattform, IsPlattform: true})
+	s.Stops = append(s.Stops, Stop{Id: int(gs.CurrentStopID.Load()), Plattform: plattform, IsPlattform: true})
 	gs.CurrentStopID.Add(1)
 
-	return s.Stops[len(s.Stops)-1], nil
+	return &s.Stops[len(s.Stops)-1], nil
 }
 
 // TODO errors

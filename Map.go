@@ -36,20 +36,44 @@ var (
 
 // nur fürs Testen, inkl. Schedule
 func createDemoTrains(gs *ds.GameState) {
+	//TEMP
+	gs.CurrentPlattformID.Add(1)
+	gs.CurrentStationID.Add(1)
+	gs.CurrentScheduleID.Add(1)
+	gs.CurrentStopID.Add(1)
+	gs.CurrentTrainID.Add(1)
+
 	//stations inkl. Initialisieren
-	gs.Stations = append(gs.Stations, &ds.Station{Name: "Station Nord", Id: 1, Capacity: 100, Storage: map[string]int{}})
+	/*gs.Stations = append(gs.Stations, &ds.Station{Name: "Station Nord", Id: 1, Capacity: 100, Storage: map[string]int{}})
 	plattforms := []ds.Plattform{{Name: "Gleis 1", Tiles: [][2]int{{2, 0}, {3, 0}}, Station: gs.Stations[0]}}
 	gs.Stations[0].ChangeStationTile(false, [2]int{2, 0}, gs)
-	gs.Stations[0].ChangeStationTile(false, [2]int{3, 0}, gs)
+	gs.Stations[0].ChangeStationTile(false, [2]int{3, 0}, gs)*/
 
-	gs.Stations = append(gs.Stations, &ds.Station{Name: "Station Süd", Id: 2, Capacity: 150, Storage: map[string]int{}})
+	pos := [2]int{2, 0}
+	ds.ChangeStationTile(false, pos, gs) //hier wird auch die Station und Plattform erstellt
+	//Bestimmung der Station zum umbenennen
+	plattform, _ := ds.GetPlattform(pos, gs)
+	plattform.Station.Name = "Station Nord"
+	plattform.Name = "Gleis 1"
+
+	ds.ChangeStationTile(false, [2]int{3, 0}, gs)
+
+	/*gs.Stations = append(gs.Stations, &ds.Station{Name: "Station Süd", Id: 2, Capacity: 150, Storage: map[string]int{}})
 	plattforms = append(plattforms, ds.Plattform{Name: "Gleis 31", Tiles: [][2]int{{3, 7}, {4, 7}, {5, 7}}, Station: gs.Stations[1]})
 	gs.Stations[1].ChangeStationTile(false, [2]int{3, 7}, gs)
 	gs.Stations[1].ChangeStationTile(false, [2]int{4, 7}, gs)
-	gs.Stations[1].ChangeStationTile(false, [2]int{5, 7}, gs)
+	gs.Stations[1].ChangeStationTile(false, [2]int{5, 7}, gs)*/
+
+	pos = [2]int{3, 7}
+	ds.ChangeStationTile(false, pos, gs)
+	plattform, _ = ds.GetPlattform(pos, gs)
+	plattform.Station.Name = "Station Süd"
+	plattform.Name = "Gleis 31"
+	ds.ChangeStationTile(false, [2]int{4, 7}, gs)
+	ds.ChangeStationTile(false, [2]int{5, 7}, gs)
 
 	//Zug eins mit Schedule
-	Stops := []ds.Stop{
+	/*Stops := []ds.Stop{
 		{Id: 1, Plattform: &plattforms[0], IsPlattform: true, LoadUnloadCommand: [2]ds.LoadUnloadCommand{
 			{CargoTypes: []string{"Pommes"}},
 			{Loading: true, CargoTypes: []string{"Kartoffeln", "Sonnenblumenöl"}}}},
@@ -58,8 +82,19 @@ func createDemoTrains(gs *ds.GameState) {
 			{CargoTypes: []string{"Kartoffeln", "Sonnenblumenöl"}},
 			{Loading: true, CargoTypes: []string{"Pommes"}}}}}
 	schedule := &ds.Schedule{Stops: Stops, Name: "Schedule 1"}
-	gs.Schedules = append(gs.Schedules, schedule)
-	// gs.Trains[int()] = &ds.Train{Waggons: temp, Schedule: *gs.Schedules[0], Name: "RE1", NextStop: Stops[0], Id: int(gs.CurrentTrainID.Load())}
+	gs.Schedules = append(gs.Schedules, schedule)*/
+
+	var schedule *ds.Schedule
+	schedule, _ = gs.AddSchedule("Schdule 1")
+	var stop *ds.Stop
+	stop, _ = schedule.AddStopStation(gs.Stations[0].Plattforms[0], gs)
+	stop.ChangeLoadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false)
+	stop.ChangeUnloadCommand([]string{"Pommes"}, false)
+
+	stop, _ = schedule.AddStopStation(gs.Stations[1].Plattforms[0], gs)
+	stop.ChangeLoadCommand([]string{"Pommes"}, false)
+	stop.ChangeUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false)
+
 	train, err := addTrain(ds.TrainCreateMSG{Name: "RE1",
 		Waggons: []ds.TrainCreateWaggons{
 			{Position: [3]int{3, 4, 3}, Typ: "Lebensmittel"},
@@ -67,8 +102,7 @@ func createDemoTrains(gs *ds.GameState) {
 			{Position: [3]int{2, 4, 3}, Typ: "Lebensmittel"},
 			{Position: [3]int{2, 4, 1}, Typ: "Lebensmittel"}},
 	}, gs)
-	train.Schedule = *schedule
-	train.NextStop = Stops[0]
+	train.Schedule = schedule
 	if err != nil {
 		gs.Logger.Error("Fehler, aber ist im demo ding egal")
 	}
@@ -80,8 +114,7 @@ func createDemoTrains(gs *ds.GameState) {
 			{Position: [3]int{6, 6, 2}, Typ: "Lebensmittel"},
 			{Position: [3]int{6, 5, 4}, Typ: "Lebensmittel"},
 			{Position: [3]int{6, 5, 2}, Typ: "Lebensmittel"}}}, gs)
-	train.Schedule = *gs.Schedules[0]
-	train.NextStop = Stops[1]
+	train.Schedule = schedule
 
 	if err != nil {
 		gs.Logger.Error("Fehler, aber ist im demo ding egal")
