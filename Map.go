@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"zuch-backend/internal/ds"
 )
 
 // nur testing
@@ -34,44 +35,63 @@ var (
 )
 
 // nur fürs Testen, inkl. Schedule
-func createTrains() {
+func createDemoTrains(gs *ds.GameState) {
 	//stations inkl. Initialisieren
-	stations = append(stations, &Station{Name: "Station Nord", Id: 1, Capacity: 100, Storage: map[string]int{}})
-	plattforms := []Plattform{{Name: "Gleis 1", Tiles: [][2]int{{2, 0}, {3, 0}}, station: stations[0]}}
-	stations[0].changeStationTile(false, [2]int{2, 0})
-	stations[0].changeStationTile(false, [2]int{3, 0})
+	gs.Stations = append(gs.Stations, &ds.Station{Name: "Station Nord", Id: 1, Capacity: 100, Storage: map[string]int{}})
+	plattforms := []ds.Plattform{{Name: "Gleis 1", Tiles: [][2]int{{2, 0}, {3, 0}}, Station: gs.Stations[0]}}
+	gs.Stations[0].ChangeStationTile(false, [2]int{2, 0}, gs)
+	gs.Stations[0].ChangeStationTile(false, [2]int{3, 0}, gs)
 
-	stations = append(stations, &Station{Name: "Station Süd", Id: 2, Capacity: 150, Storage: map[string]int{}})
-	plattforms = append(plattforms, Plattform{Name: "Gleis 31", Tiles: [][2]int{{3, 7}, {4, 7}, {5, 7}}, station: stations[1]})
-	stations[1].changeStationTile(false, [2]int{3, 7})
-	stations[1].changeStationTile(false, [2]int{4, 7})
-	stations[1].changeStationTile(false, [2]int{5, 7})
+	gs.Stations = append(gs.Stations, &ds.Station{Name: "Station Süd", Id: 2, Capacity: 150, Storage: map[string]int{}})
+	plattforms = append(plattforms, ds.Plattform{Name: "Gleis 31", Tiles: [][2]int{{3, 7}, {4, 7}, {5, 7}}, Station: gs.Stations[1]})
+	gs.Stations[1].ChangeStationTile(false, [2]int{3, 7}, gs)
+	gs.Stations[1].ChangeStationTile(false, [2]int{4, 7}, gs)
+	gs.Stations[1].ChangeStationTile(false, [2]int{5, 7}, gs)
 
 	//Zug eins mit Schedule
-	Stops := []Stop{
-		{Id: 1, Plattform: &plattforms[0], IsPlattform: true, LoadUnloadCommand: [2]LoadUnloadCommand{
-			{CargoType: []string{"Pommes"}},
-			{Loading: true, CargoType: []string{"Kartoffeln", "Sonnenblumenöl"}}}},
-		{Id: 2, Goal: [3]int{1, 3, 4}, Name: "Wegpunkt 1"},
-		{Id: 3, Plattform: &plattforms[1], IsPlattform: true, LoadUnloadCommand: [2]LoadUnloadCommand{
-			{CargoType: []string{"Kartoffeln", "Sonnenblumenöl"}},
-			{Loading: true, CargoType: []string{"Pommes"}}}}}
-	schedules = append(schedules, &Schedule{Stops: Stops})
-	temp := []*TrainType{
-		{Position: [3]int{4, 4, 1}},
-		{Position: [3]int{3, 4, 3}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}},
-		{Position: [3]int{3, 4, 1}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}},
-		{Position: [3]int{2, 4, 3}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}}}
-	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE1", NextStop: Stops[0], Id: 0})
+	Stops := []ds.Stop{
+		{Id: 1, Plattform: &plattforms[0], IsPlattform: true, LoadUnloadCommand: [2]ds.LoadUnloadCommand{
+			{CargoTypes: []string{"Pommes"}},
+			{Loading: true, CargoTypes: []string{"Kartoffeln", "Sonnenblumenöl"}}}},
+		// {Id: 2, Goal: [3]int{1, 3, 4}, Name: "Wegpunkt 1"},
+		{Id: 3, Plattform: &plattforms[1], IsPlattform: true, LoadUnloadCommand: [2]ds.LoadUnloadCommand{
+			{CargoTypes: []string{"Kartoffeln", "Sonnenblumenöl"}},
+			{Loading: true, CargoTypes: []string{"Pommes"}}}}}
+	schedule := &ds.Schedule{Stops: Stops, Name: "Schedule 1"}
+	gs.Schedules = append(gs.Schedules, schedule)
+	// gs.Trains[int()] = &ds.Train{Waggons: temp, Schedule: *gs.Schedules[0], Name: "RE1", NextStop: Stops[0], Id: int(gs.CurrentTrainID.Load())}
+	train, err := addTrain(ds.TrainCreateMSG{Name: "RE1",
+		Waggons: []ds.TrainCreateWaggons{
+			{Position: [3]int{3, 4, 3}, Typ: "Lebensmittel"},
+			{Position: [3]int{3, 4, 1}, Typ: "Lebensmittel"},
+			{Position: [3]int{2, 4, 3}, Typ: "Lebensmittel"},
+			{Position: [3]int{2, 4, 1}, Typ: "Lebensmittel"}},
+	}, gs)
+	train.Schedule = *schedule
+	train.NextStop = Stops[0]
+	if err != nil {
+		gs.Logger.Error("Fehler, aber ist im demo ding egal")
+	}
+
 	// Zug zwei
-	temp = []*TrainType{
-		{Position: [3]int{6, 4, 2}},
-		{Position: [3]int{6, 3, 4}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}},
-		{Position: [3]int{6, 3, 2}, CargoStorage: &CargoStorage{capacity: 30, CargoCategory: "Lebensmittel"}}}
-	trains = append(trains, &Train{Waggons: temp, Schedule: *schedules[0], Name: "RE2", NextStop: Stops[2], Id: 1})
+	train, err = addTrain(ds.TrainCreateMSG{
+		Name: "RE2",
+		Waggons: []ds.TrainCreateWaggons{
+			{Position: [3]int{6, 6, 2}, Typ: "Lebensmittel"},
+			{Position: [3]int{6, 5, 4}, Typ: "Lebensmittel"},
+			{Position: [3]int{6, 5, 2}, Typ: "Lebensmittel"}}}, gs)
+	train.Schedule = *gs.Schedules[0]
+	train.NextStop = Stops[1]
+
+	if err != nil {
+		gs.Logger.Error("Fehler, aber ist im demo ding egal")
+	}
 }
 
-func initializeTiles() {
+func initializeTiles(gs *ds.GameState) {
+	// Setzt die erste Zug ID, pass hier halbwegs zum initialisieren
+	gs.CurrentTrainID.Store(0)
+
 	//Map Größe aus config laden
 	sizeX, err := strconv.ParseInt(os.Getenv("XSIZE"), 10, 64)
 	if err != nil {
@@ -84,21 +104,21 @@ func initializeTiles() {
 	}
 
 	//initalising 2d slice
-	tiles = make([][]*Tile, sizeX)
-	for i := range tiles {
-		tiles[i] = make([]*Tile, sizeY)
+	gs.Tiles = make([][]*ds.Tile, sizeX)
+	for i := range gs.Tiles {
+		gs.Tiles[i] = make([]*ds.Tile, sizeY)
 	}
 
 	//Erstellung der Tiles
-	for i := range sizeY {
-		line := strings.Split(testMap[i], ".") //testing
-		for o := range sizeX {
+	for y := range sizeY {
+		line := strings.Split(testMap[y], ".") //testing
+		for x := range sizeX {
 			//hier die Infos für das Tile laden
 
 			//testing
-			var aktiveTile ActiveTile
+			var aktiveTile ds.ActiveTile
 			var tracks [4]bool
-			switch line[o] {
+			switch line[x] {
 			case "-":
 				tracks = [4]bool{true, false, true, false}
 			case "|":
@@ -106,60 +126,47 @@ func initializeTiles() {
 			case "+":
 				tracks = [4]bool{true, true, true, true}
 			case "B":
-				temp := configData.ActiveTileCategories["Bauernhof"]
-				aktiveTile = ActiveTile{Name: "Bauernhof Nord", Category: &temp, maxStorage: 150}
-				activeTiles = append(activeTiles, &aktiveTile)
+				temp := gs.ConfigData.ActiveTileCategories["Bauernhof"]
+				aktiveTile = ds.ActiveTile{Name: "Bauernhof Nord", Category: &temp, MaxStorage: 150}
+				gs.ActiveTiles = append(gs.ActiveTiles, &aktiveTile)
 			case "L":
-				temp := configData.ActiveTileCategories["Lebensmittelfabrik"]
-				aktiveTile = ActiveTile{Name: "Lebensmittelfabrik Süd", Category: &temp, maxStorage: 50, Storage: map[string]int{"Kartoffeln": 100}}
-				activeTiles = append(activeTiles, &aktiveTile)
+				temp := gs.ConfigData.ActiveTileCategories["Lebensmittelfabrik"]
+				aktiveTile = ds.ActiveTile{Name: "Lebensmittelfabrik Süd", Category: &temp, MaxStorage: 50, Storage: map[string]int{"Kartoffeln": 100}}
+				gs.ActiveTiles = append(gs.ActiveTiles, &aktiveTile)
 			}
 
 			//signals testing
 			var signals [4]bool
 			for p := range testSignals {
-				if testSignals[p][0] == int(o) && testSignals[p][1] == int(i) {
+				if testSignals[p][0] == int(x) && testSignals[p][1] == int(y) {
 					signals[testSignals[p][2]-1] = true
 				}
 			}
 
-			isLocked := aktiveTile.Stations == nil
-
-			tiles[o][i] = &Tile{IsPlattform: false, Tracks: tracks, Signals: signals, ActiveTile: &aktiveTile, IsLocked: isLocked}
+			gs.Tiles[x][y] = &ds.Tile{IsPlattform: false, Tracks: tracks, Signals: signals, ActiveTile: &aktiveTile, IsLocked: aktiveTile.Stations == nil, X: int(x), Y: int(y)}
 		}
 	}
-
-	fmt.Println("Tiles initialised with a Map size of", sizeX, sizeY)
-}
-
-// testing
-func printTrains() {
-	for _, i := range trains {
-		fmt.Print("Train", i.Name)
-		for _, waggon := range i.Waggons {
-			fmt.Print(waggon.CargoStorage, "")
-		}
-		fmt.Println("")
-	}
-	fmt.Println("-----------------------")
+	gs.SizeX = int(sizeX)
+	gs.SizeY = int(sizeY)
+	logger.Info("Tiles initialised with a Map size of", slog.Int64("SizeX", sizeX), slog.Int64("SizeY", sizeY))
 }
 
 // nur fürs Testen
-func printMap() {
+func printMap(gs *ds.GameState) {
 	//i = y
-	for i := range tiles {
+	for i := range gs.Tiles {
 		fmt.Print(".")
-		for o := range tiles {
+		for o := range gs.Tiles {
 
-			isSignal, s := isSignalAt(o, i)
+			isSignal, s := isSignalAt(o, i, gs)
 
-			isTrain, t := isTrainAt(o, i)
+			isTrain, t := isTrainAt(o, i, gs)
 			if isTrain {
 				fmt.Print(t)
 			} else if isSignal {
 				fmt.Print(s)
 			} else {
-				switch tiles[o][i].Tracks {
+				switch gs.Tiles[o][i].Tracks {
 				case [4]bool{true, true, true, true}:
 					fmt.Print("+")
 				case [4]bool{true, false, true, false}:
@@ -178,9 +185,9 @@ func printMap() {
 }
 
 // fürs testen (printMap)
-func isTrainAt(x int, y int) (bool, int) {
-	for i := range trains {
-		waggons := trains[i].Waggons
+func isTrainAt(x int, y int, gs *ds.GameState) (bool, int) {
+	for i := range gs.Trains {
+		waggons := gs.Trains[i].Waggons
 		for o := range waggons {
 			pos := waggons[o].Position
 			if pos[0] == x && pos[1] == y {
@@ -192,8 +199,8 @@ func isTrainAt(x int, y int) (bool, int) {
 }
 
 // nur 1 Signal pro Tile anzeigen
-func isSignalAt(x int, y int) (bool, int) {
-	signals := tiles[x][y].Signals
+func isSignalAt(x int, y int, gs *ds.GameState) (bool, int) {
+	signals := gs.Tiles[x][y].Signals
 	for i := range signals {
 		if signals[i] {
 			return true, i + 1
@@ -202,55 +209,56 @@ func isSignalAt(x int, y int) (bool, int) {
 	return false, 0
 }
 
-func handleTileUpdate(envelope recieveWSEnvelope, tiles [][]*Tile) {
-	var update tileUpdateMSG
-	err := json.Unmarshal(envelope.Msg, &update)
+func unpackEnvelope[T any](envelope ds.RecieveWSEnvelope, typ T) (T, error) {
+	var dest T
+	err := json.Unmarshal(envelope.Msg, &dest)
 	if err != nil {
-		logger.Error("EROOR", slog.String("error", err.Error()))
+		logger.Error("error", slog.String("error", err.Error()))
+		return dest, fmt.Errorf("%s", err.Error())
 	}
-
-	sizeX, err := strconv.ParseInt(os.Getenv("XSIZE"), 10, 64)
-	if err != nil {
-		logger.Error("Error while loading Size of Map in the x dimension", slog.String("error", err.Error()))
-	}
-
-	sizeY, err := strconv.ParseInt(os.Getenv("YSIZE"), 10, 64)
-	if err != nil {
-		logger.Error("Error while loading Size of Map in the y dimension", slog.String("error", err.Error()))
-	}
-
-	if !((0 <= update.X && update.X < int(sizeX)) && (0 <= update.Y && update.Y < int(sizeY)) && (1 <= update.Subtile && update.Subtile <= 4)) {
-		logger.Error("Invalid coordinates in wsEnvolope, ignoring this envolpe and continuing", slog.String("username", envelope.user.username))
-		return
-	}
-
-	switch update.Action {
-	case "build":
-		switch update.Subject {
-		case "rail":
-			executeAndReply(tiles[update.X][update.Y].addTrack, &envelope, &update)
-		case "signal":
-			executeAndReply(tiles[update.X][update.Y].addSignal, &envelope, &update)
-
-		}
-	case "remove":
-		switch update.Subject {
-		case "rail":
-			executeAndReply(tiles[update.X][update.Y].removeTrack, &envelope, &update)
-		case "signal":
-			executeAndReply(tiles[update.X][update.Y].removeSignal, &envelope, &update)
-
-		}
-	}
-
+	return dest, nil
 }
 
-func executeAndReply(callback func(int) (bool, string), envelope *recieveWSEnvelope, update *tileUpdateMSG) {
-	success, msg := callback(update.Subtile)
-	if success {
-		broadcastChannel <- wsEnvelope{Type: envelope.Type, Username: "Server", Msg: &tileUpdateMSG{X: update.X, Y: update.Y, Subtile: update.Subtile, Subject: update.Subject, Action: update.Action}}
-		envelope.reply(success, "")
+func checkIfCoordinatesAreValid(position [3]int, gs *ds.GameState) error {
+	if !((0 <= position[0] && position[0] < int(gs.SizeX)) && (0 <= position[1] && position[1] < int(gs.SizeY)) && (0 < position[2] && position[2] <= gs.SizeSubtile)) {
+		return fmt.Errorf("coordinates are invalid")
 	} else {
-		envelope.reply(success, msg)
+		return nil
+	}
+}
+
+func handleTileUpdate(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error {
+	update, err := unpackEnvelope(envelope, ds.TileUpdateMSG{})
+	if err != nil {
+		return fmt.Errorf("could not unpack Envelope; %s", slog.String("error", err.Error()))
+
+	}
+	err = checkIfCoordinatesAreValid(update.Position, gs)
+	if err != nil {
+		return fmt.Errorf("envelope contains invalid Coordinates; %s", slog.String("error", err.Error()))
+	}
+
+	switch envelope.Type {
+	case "rail.create":
+		return executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].AddTrack, &envelope, &update, gs)
+	case "rail.remove":
+		return executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].RemoveTrack, &envelope, &update, gs)
+	case "signal.create":
+		return executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].AddSignal, &envelope, &update, gs)
+	case "signal.remove":
+		return executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].RemoveSignal, &envelope, &update, gs)
+	default:
+		return fmt.Errorf("unknown envelope Tyoe")
+	}
+}
+
+// Führt das callback mit den daten des envelopes aus, tritt ein fehler aus wird der zurück gegeben, andererseits wird die nachricht an alle geschickt
+func executeAndReply(callback func(int, *ds.GameState) (bool, string), envelope *ds.RecieveWSEnvelope, update *ds.TileUpdateMSG, gs *ds.GameState) error {
+	success, msg := callback(update.Position[2], gs)
+	if success {
+		envelope.Reply(success, "", gs)
+		return nil
+	} else {
+		return fmt.Errorf("%s", msg)
 	}
 }

@@ -1,0 +1,13 @@
+type: folder
+model: folder
+id: fl_bgxodGfD9k
+createdAt: 2025-10-28T20:42:06.795123056
+updatedAt: 2025-10-28T20:42:28.366181209
+workspaceId: wk_UugpzjqKHn
+folderId: null
+authentication: {}
+authenticationType: null
+description: ''
+headers: []
+name: Send
+sortPriority: 2000.0

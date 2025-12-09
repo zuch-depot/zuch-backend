@@ -1,0 +1,57 @@
+type: websocket_request
+model: websocket_request
+id: wr_UKcBCN5wuh
+createdAt: 2025-10-28T20:43:05.927083822
+updatedAt: 2025-10-28T20:43:16.010999309
+workspaceId: wk_UugpzjqKHn
+folderId: fl_PYda82ew9k
+authentication: {}
+authenticationType: null
+description: ''
+headers: []
+message: |-
+  {
+    "Type": "train.move",
+    "Username": "",
+    "TransactionID": "",
+    "Msg": {
+      "Id": 1,
+      "Waggons": [
+        {
+          "Position": [
+            5,
+            4,
+            1
+          ],
+          "MaxSpeed": 0,
+          "CargoStorage": null
+        },
+        {
+          "Position": [
+            4,
+            4,
+            3
+          ],
+          "MaxSpeed": 0,
+          "CargoStorage": {
+            "CargoCategory": "Lebensmittel"
+          }
+        },
+        {
+          "Position": [
+            4,
+            4,
+            1
+          ],
+          "MaxSpeed": 0,
+          "CargoStorage": {
+            "CargoCategory": "Lebensmittel"
+          }
+        }
+      ]
+    }
+  }
+name: train.move
+sortPriority: 4000.0
+url: ''
+urlParameters: []
