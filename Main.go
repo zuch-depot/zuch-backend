@@ -45,6 +45,12 @@ func main() {
 	}
 	gs.StationRange = int(tempVar)
 
+	tempVar, err = strconv.ParseInt(os.Getenv("CAPACITYPERSTATIONTILE"), 10, 64)
+	if err != nil {
+		logger.Error("Error while loading the capacity per station tile", slog.String("Error", err.Error()))
+	}
+	gs.CapacityPerStationTile = int(tempVar)
+
 	// wichtig als initialisierung, bevor Züge verarbeitet werden
 	loadConfig(&gs)
 

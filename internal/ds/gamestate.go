@@ -25,9 +25,10 @@ type GameState struct {
 	Trains      map[int]*Train
 	ActiveTiles []*ActiveTile
 
-	LoadUnloadSpeed   int
-	MinLoadUloadTicks int
-	ConfigData        ConfigData // übergeordetes Struct, in das alles aus config.json reingeladen wird
+	LoadUnloadSpeed        int
+	MinLoadUloadTicks      int
+	CapacityPerStationTile int
+	ConfigData             ConfigData // übergeordetes Struct, in das alles aus config.json reingeladen wird
 
 	StationRange int
 	//ALLE IDs MÜSSEN BEI 1 ANFANGEN
@@ -81,14 +82,37 @@ func (gs *GameState) removeSchedule(Id int) error {
 	return nil
 }
 
-func (gs *GameState) addStation(name string, capacity int) error {
+// nur Erstellung einer Station, hinzufügen der Tiles muss extra gemacht werden. Id ist Standardname
+func (gs *GameState) addStation(name string) (*Station, error) {
 
 	if name == "" {
 		name = string(rune(gs.CurrentStationID.Load()))
 	}
 
-	gs.Stations = append(gs.Stations, &Station{Id: int(gs.CurrentStationID.Load()), Name: name, Capacity: capacity})
+	gs.Stations = append(gs.Stations, &Station{Id: int(gs.CurrentStationID.Load()), Name: name})
 	gs.CurrentStationID.Add(1)
 
-	return nil
+	return gs.Stations[len(gs.Stations)], nil
+}
+
+// Entfernt die Station und alle Referenzen (Stops, Plattform Tiles, etc)
+func (gs *GameState) removeStation(Id int) error {
+	var err error
+
+	for i, station := range gs.Stations {
+		if station.Id == Id {
+			gs.Stations, err = utils.RemoveElementFromSlice(gs.Stations, i)
+			if err != nil {
+				return err
+			}
+
+			//Enfernung des Plattform Tags aller Tiles der Station, Löschung der Plattformen findet beim Löschenn des jeweils letzten Tiles statt
+			for _, plattform := range station.Plattforms {
+				for _, tilePos := range plattform.Tiles {
+					station.ChangeStationTile(true, tilePos, gs)
+				}
+			}
+		}
+	}
+	return err
 }

@@ -1,6 +1,7 @@
 package ds
 
 import (
+	"fmt"
 	"slices"
 	"zuch-backend/internal/utils"
 )
@@ -31,9 +32,9 @@ type LoadUnloadCommand struct {
 	CargoTypes   []string //welche Güter abgeladen/aufgeladen werden dürfen
 }
 
-func (s Stop) getGoals() [][3]int {
+func (s Stop) getGoals(gs *GameState) [][3]int {
 	if s.IsPlattform {
-		r := s.Plattform.GetFirstLast()
+		r := s.Plattform.GetFirstLast(gs)
 		return [][3]int{r[0], r[1]}
 	}
 	return [][3]int{s.Goal}
@@ -88,6 +89,7 @@ func (s *Schedule) removeStop(Id int, gs *GameState) error {
 
 // TODO errors
 // fügt eine Station zu. Damit Waren geladen oder entladen werden sollen müssen dem Stop ein Load, bzw. Unload Befehle mit entsprechender Methode hinzugefügt werden
+// Id ist Standardname
 func (s *Schedule) AddStopStation(plattform Plattform, gs *GameState) (Stop, error) {
 	var err error
 
@@ -102,11 +104,15 @@ func (s *Schedule) AddStopStation(plattform Plattform, gs *GameState) (Stop, err
 }
 
 // TODO errors
-// fügt einen Wegpunkt hinzu. Wird angefahren, es werden aber keine Load oder Unload Befehle benötigt
+// fügt einen Wegpunkt hinzu. Wird angefahren, es werden aber keine Load oder Unload Befehle benötigt. Id ist Standardname
 func (s *Schedule) AddStopWaypoint(position [3]int, name string, gs *GameState) (Stop, error) {
 	var err error
 
-	//überprüfen koordinaten?
+	//TODO überprüfen koordinaten?
+
+	if name == "" {
+		name = fmt.Sprint(gs.CurrentStopID.Load())
+	}
 
 	s.Stops = append(s.Stops, Stop{Id: int(gs.CurrentStopID.Load()), IsPlattform: false, Goal: position, Name: name})
 	gs.CurrentStopID.Add(1)

@@ -21,7 +21,12 @@ func addTrain(update ds.TrainCreateMSG, gs *ds.GameState) (*ds.Train, error) {
 		return nil, err
 	}
 
-	train := &ds.Train{Name: update.Name, Id: int(gs.CurrentTrainID.Load())}
+	name := update.Name
+	if name == "" {
+		name = fmt.Sprint(gs.CurrentTrainID.Load())
+	}
+
+	train := &ds.Train{Name: name, Id: int(gs.CurrentTrainID.Load())}
 	gs.CurrentTrainID.Add(1)
 
 	for _, waggon := range update.Waggons {

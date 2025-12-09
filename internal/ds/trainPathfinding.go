@@ -227,7 +227,7 @@ func (t *Train) RecalculatePath(gs *GameState) {
 	//sucht einen Weg zu beiden Enden der Zielplattform und nimmt den kürzeren
 	// (Optimierung: brich ab, wenn der Weg sicher länger als der andere ist
 	// ODER paralelles Pathfinding)
-	goals := t.NextStop.getGoals()
+	goals := t.NextStop.getGoals(gs)
 	var paths, pathsSignals [2][][3]int
 	paths[0] = make([][3]int, 0)
 

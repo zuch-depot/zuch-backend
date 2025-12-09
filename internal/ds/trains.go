@@ -15,7 +15,6 @@ type Train struct {
 	LastStop           Stop     //der Stop, in dem der Zug gerade ist oder gerade war || Überflüssig??
 	CurrentPath        [][3]int //neu berechnen bei laden
 	CurrentPathSignals [][3]int
-	//FoundPathToNext    bool //ob das letzte Pathfinding nicht erfolgreich war, dann muss erneut veruscht werden, ohne neuen Stop auszuwählen, NEIN??
 
 	Waiting         bool //hat letzten Tick ein geblockes Tile gefunden oder keinen Weg gefunden und wartet
 	LoadingTime     int  //Wie lange ist der Zug schon am be-/entladen? 0 == nicht am laden. Zeiteinheit ist wie oft methode aufgerufen wurde
