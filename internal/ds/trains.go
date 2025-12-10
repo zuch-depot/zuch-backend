@@ -67,6 +67,9 @@ func (t *Train) Move(gs *GameState) [2]int {
 		//nächstes Ziel auswählen und den WEg dorthin berechnen
 		t.LastStop = t.NextStop
 		t.NextStop = t.Schedule.nextStop(t.NextStop)
+		if t.NextStop.Id == 0 {
+			return entblocken
+		}
 		t.RecalculatePath(gs)
 
 		//war das erfolgreich?
@@ -184,7 +187,7 @@ func (t *Train) CalculateTrain(gs *GameState) [2]int {
 	//ist gerade in die Staion eingefahren, also speichern der aktuellen Station. Nächste Station wird bei neuberechen überschrieben
 	if t.NextStop.IsPlattform && t.LoadingTime == 0 && t.NextStop.Goal == t.Waggons[0].Position {
 		t.LastStop = t.NextStop
-		gs.Logger.Debug("Zug " + t.Name + " in " + t.LastStop.Plattform.Station.Name + " eingefahren.")
+		gs.Logger.Debug("Zug " + t.Name + " in " + t.LastStop.Plattform.GetStation(gs).Name + " eingefahren.")
 	} else if !t.NextStop.IsPlattform && len(t.CurrentPath) == 0 {
 		//wenn das nächste Ziel ein Wegpunkt ist und man angekommen ist, braucht man einfach den nächsten Stop aussuchen und fahren
 		return t.Move(gs)
@@ -194,13 +197,13 @@ func (t *Train) CalculateTrain(gs *GameState) [2]int {
 	if t.LastStop.IsPlattform && t.LastStop.Goal == t.Waggons[0].Position {
 		//wenn min Zeit erreicht ist überprüfen und man fertig mit laden ist, ob man fahren kann
 		if t.LoadingTime >= gs.MinLoadUloadTicks && t.FinishedLoading {
-			gs.Logger.Debug("Zug " + t.Name + " versucht aus " + t.LastStop.Plattform.Station.Name + " auszufahren.")
+			gs.Logger.Debug("Zug " + t.Name + " versucht aus " + t.LastStop.Plattform.GetStation(gs).Name + " auszufahren.")
 
 			r = t.Move(gs)
 
 			//Ist Zug losgefahren, also Reset der Werte fürs nächste Laden
 			if !t.Waiting {
-				gs.Logger.Debug("Zug " + t.Name + " aus " + t.LastStop.getName() + "ausgefahren.")
+				gs.Logger.Debug("Zug " + t.Name + " aus " + t.LastStop.getName(gs) + "ausgefahren.")
 				t.LoadingTime = 0
 				t.FinishedLoading = false
 				return r
@@ -226,7 +229,7 @@ func (t *Train) LoadUndload(gs *GameState) bool {
 	var r bool
 
 	//station, in die der Zug steht
-	sta := t.LastStop.Plattform.Station
+	sta := t.LastStop.Plattform.GetStation(gs)
 
 	//es wird durch die Reihenfolge der Commands zuerst geladen, dann entladen.
 	// Dabei wird nur beladen, wenn entladen fertig ist, bzw. noch kapazität von Gütern bewegt pro Tick über gelassen hat

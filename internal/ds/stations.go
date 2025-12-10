@@ -16,10 +16,10 @@ type Station struct {
 
 // alle Tiles müssen aneinander in der gleichen Richtung sein und dürfen keine Kurven haben
 type Plattform struct {
-	Id      int //neu, muss ggf. implementiert werden
-	Name    string
-	Tiles   [][2]int // nur x & y, muss in Order sein. KEIN DIREKTER ZUGRIFF?
-	Station *Station
+	Id    int //neu, muss ggf. implementiert werden
+	Name  string
+	Tiles [][2]int // nur x & y, muss in Order sein. KEIN DIREKTER ZUGRIFF?
+	//Station *Station
 }
 
 type Produktionszyklus struct {
@@ -37,6 +37,20 @@ type ActiveTileCategory struct {
 type ConfigData struct {
 	TrainCategories      map[string][]string           `json:"Train Categories"`
 	ActiveTileCategories map[string]ActiveTileCategory `json:"Aktive Tiles"`
+}
+
+// returnt die Station einer Plattform. Ist notwendig, da die Kommunikation nicht mit Zirkelverweisen klar kommt
+func (p *Plattform) GetStation(gs *GameState) *Station {
+
+	for _, station := range gs.Stations {
+		for _, plattform := range station.Plattforms {
+			if plattform.Id == p.Id {
+				return station
+			}
+		}
+	}
+
+	return nil
 }
 
 // returns die erste und letzte Sub-Tile Koordinate, sollte auch Länge 1 supporten
@@ -101,7 +115,7 @@ func (p *Plattform) removeTile(position [2]int, gs *GameState) error {
 
 	if len(p.Tiles) == 0 {
 		//Plattform löschen
-		p.Station.RemovePlattform(p.Id, gs)
+		p.GetStation(gs).RemovePlattform(p.Id, gs)
 
 	}
 
@@ -202,7 +216,7 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
 			return err
 		}
 
-		station = plattform.Station
+		station = plattform.GetStation(gs)
 
 		//Entfernung des Tags und weitere Berechnungen
 		err = plattform.removeTile(position, gs)
@@ -224,7 +238,7 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
 					return err
 				}
 
-				stationBordering = temp.Station
+				stationBordering = temp.GetStation(gs)
 			}
 		}
 		if position[1] > 0 {
@@ -236,11 +250,11 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
 					return err
 				}
 				//wenn eine andere Station schon angegrenzt, dann Fehler
-				if stationBordering != nil && stationBordering.Id != temp.Station.Id {
+				if stationBordering != nil && stationBordering.Id != temp.GetStation(gs).Id {
 					//TODO Error, grenzt an 2 Stationen an
 					return nil
 				}
-				stationBordering = temp.Station
+				stationBordering = temp.GetStation(gs)
 			}
 		}
 		if position[0] < gs.SizeX-1 {
@@ -252,11 +266,11 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
 					return err
 				}
 				//wenn eine andere Station schon angegrenzt, dann Fehler
-				if stationBordering != nil && stationBordering.Id != temp.Station.Id {
+				if stationBordering != nil && stationBordering.Id != temp.GetStation(gs).Id {
 					//TODO Error, grenzt an 2 Stationen an
 					return nil
 				}
-				stationBordering = temp.Station
+				stationBordering = temp.GetStation(gs)
 			}
 		}
 		if position[0] < gs.SizeY-1 {
@@ -268,11 +282,11 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
 					return err
 				}
 				//wenn eine andere Station schon angegrenzt, dann Fehler
-				if stationBordering != nil && stationBordering.Id != temp.Station.Id {
+				if stationBordering != nil && stationBordering.Id != temp.GetStation(gs).Id {
 					//TODO Error, grenzt an 2 Stationen an
 					return nil
 				}
-				stationBordering = temp.Station
+				stationBordering = temp.GetStation(gs)
 			}
 		}
 
@@ -478,7 +492,7 @@ func (s *Station) AddPlattform(name string, tiles [][2]int, gs *GameState) error
 		name = fmt.Sprint(gs.CurrentPlattformID.Load())
 	}
 
-	s.Plattforms = append(s.Plattforms, &Plattform{Id: int(gs.CurrentPlattformID.Load()), Name: name, Tiles: tiles, Station: s})
+	s.Plattforms = append(s.Plattforms, &Plattform{Id: int(gs.CurrentPlattformID.Load()), Name: name, Tiles: tiles /*, Station: s*/})
 	gs.CurrentPlattformID.Add(1)
 
 	return nil

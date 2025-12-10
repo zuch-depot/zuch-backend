@@ -41,9 +41,9 @@ func (s Stop) getGoals(gs *GameState) [][3]int {
 }
 
 // Returnt Name des Wegpunktes oder Station + Plattform
-func (s Stop) getName() string {
+func (s Stop) getName(gs *GameState) string {
 	if s.IsPlattform {
-		return s.Plattform.Station.Name + " " + s.Plattform.Name
+		return s.Plattform.GetStation(gs).Name + " " + s.Plattform.Name
 	}
 	return s.Name
 }
@@ -62,6 +62,9 @@ func (s Stop) ChangeUnloadCommand(cargoTypes []string, waitTillEmpty bool) error
 
 // returnt nächsten Stop, wenn 0 übergeben wird der erste
 func (s *Schedule) nextStop(currentStop Stop) Stop {
+	if len(s.Stops) == 0 {
+		return Stop{}
+	}
 	index := slices.IndexFunc(s.Stops, func(stop Stop) bool {
 		return stop.Id == currentStop.Id
 	})

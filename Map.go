@@ -44,30 +44,31 @@ func createDemoTrains(gs *ds.GameState) {
 	gs.CurrentTrainID.Add(1)
 
 	//stations inkl. Initialisieren
-	/*gs.Stations = append(gs.Stations, &ds.Station{Name: "Station Nord", Id: 1, Capacity: 100, Storage: map[string]int{}})
-	plattforms := []ds.Plattform{{Name: "Gleis 1", Tiles: [][2]int{{2, 0}, {3, 0}}, Station: gs.Stations[0]}}
-	gs.Stations[0].ChangeStationTile(false, [2]int{2, 0}, gs)
-	gs.Stations[0].ChangeStationTile(false, [2]int{3, 0}, gs)*/
+	// gs.Stations = append(gs.Stations, &ds.Station{Name: "Station Nord", Id: 1, Capacity: 100, Storage: map[string]int{}})
+	// plattforms := []*ds.Plattform{{Name: "Gleis 1", Tiles: [][2]int{{2, 0}, {3, 0}}, Station: gs.Stations[0]}}
+	// gs.Stations[0].Plattforms = []*ds.Plattform{plattforms[0]}
+	// ds.ChangeStationTile(false, [2]int{2, 0}, gs)
+	// ds.ChangeStationTile(false, [2]int{3, 0}, gs)
 
 	pos := [2]int{2, 0}
 	ds.ChangeStationTile(false, pos, gs) //hier wird auch die Station und Plattform erstellt
 	//Bestimmung der Station zum umbenennen
 	plattform, _ := ds.GetPlattform(pos, gs)
-	plattform.Station.Name = "Station Nord"
+	plattform.GetStation(gs).Name = "Station Nord"
 	plattform.Name = "Gleis 1"
-
 	ds.ChangeStationTile(false, [2]int{3, 0}, gs)
 
-	/*gs.Stations = append(gs.Stations, &ds.Station{Name: "Station Süd", Id: 2, Capacity: 150, Storage: map[string]int{}})
-	plattforms = append(plattforms, ds.Plattform{Name: "Gleis 31", Tiles: [][2]int{{3, 7}, {4, 7}, {5, 7}}, Station: gs.Stations[1]})
-	gs.Stations[1].ChangeStationTile(false, [2]int{3, 7}, gs)
-	gs.Stations[1].ChangeStationTile(false, [2]int{4, 7}, gs)
-	gs.Stations[1].ChangeStationTile(false, [2]int{5, 7}, gs)*/
+	// gs.Stations = append(gs.Stations, &ds.Station{Name: "Station Süd", Id: 2, Capacity: 150, Storage: map[string]int{}})
+	// plattforms = append(plattforms, &ds.Plattform{Name: "Gleis 31", Tiles: [][2]int{{3, 7}, {4, 7}, {5, 7}}, Station: gs.Stations[1]})
+	// gs.Stations[1].Plattforms = []*ds.Plattform{plattforms[1]}
+	// ds.ChangeStationTile(false, [2]int{3, 7}, gs)
+	// ds.ChangeStationTile(false, [2]int{4, 7}, gs)
+	// ds.ChangeStationTile(false, [2]int{5, 7}, gs)
 
 	pos = [2]int{3, 7}
 	ds.ChangeStationTile(false, pos, gs)
 	plattform, _ = ds.GetPlattform(pos, gs)
-	plattform.Station.Name = "Station Süd"
+	plattform.GetStation(gs).Name = "Station Süd"
 	plattform.Name = "Gleis 31"
 	ds.ChangeStationTile(false, [2]int{4, 7}, gs)
 	ds.ChangeStationTile(false, [2]int{5, 7}, gs)

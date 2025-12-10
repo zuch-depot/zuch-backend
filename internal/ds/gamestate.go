@@ -90,9 +90,8 @@ func (gs *GameState) AddStation(name string) (*Station, error) {
 		name = fmt.Sprint(gs.CurrentStationID.Load())
 	}
 
-	gs.Stations = append(gs.Stations, &Station{Id: int(gs.CurrentStationID.Load()), Name: name})
+	gs.Stations = append(gs.Stations, &Station{Id: int(gs.CurrentStationID.Load()), Name: name, Storage: map[string]int{}, Plattforms: []*Plattform{}})
 	gs.CurrentStationID.Add(1)
-
 	return gs.Stations[len(gs.Stations)-1], nil
 }
 
