@@ -180,6 +180,13 @@ func (p *Plattform) GetPathToOpposite(initial [3]int) [][3]int {
 
 //-------------------------------Ist unter Station, soll das verallgemeinert werden, damit Stationen automatisch erstellt werden?-----------------------
 
+func AddStationTile(position [2]int, gs *GameState) error {
+	return ChangeStationTile(false, position, gs)
+}
+func RemoveStationTile(position [2]int, gs *GameState) error {
+	return ChangeStationTile(true, position, gs)
+}
+
 // remove = true -> referenz wird entfernt, = false -> wird hinzugefügt;
 // findet alle Aktiven Tiles im validen Radius um das neue Tile der Station und verknüpft/entfernt entsprechend die Station, falls noch nicht geschehen
 // egal ob neue Station oder nicht
