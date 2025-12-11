@@ -22,6 +22,14 @@ var (
 	tilesUnblock = WsEnvelope{Type: "tiles.unblock", Msg: &BlockedTilesMSG{}}
 
 	// #endregion Map & Tiles
+	// #region Stationen
+	addStation    = WsEnvelope{Type: "station.create", Msg: &TileUpdateMSG{}}
+	removeStation = WsEnvelope{Type: "station.remove", Msg: &TileUpdateMSG{}}
+	// und zurück
+	addStationOut    = WsEnvelope{Type: "station.create", Msg: &Station{}}
+	removeStationOut = WsEnvelope{Type: "station.remove", Msg: &Station{}}
+
+	// #endregion Stationen
 
 	// #region Trains
 	// wird bisher genutzt um die bewegung von zügen darzustellen

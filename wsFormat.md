@@ -48,6 +48,14 @@ type wsEnvelope struct {
 - anfragen und antworten per `tileUpdateMSG`
 #### rail.remove
 - anfragen und antworten per `tileUpdateMSG`
+### Stationen
+#### station.create
+- anfragen per `tileUpdateMSG`
+- Als Antwort wird erstmal die ganze neue `Station` gesendet, da die etwas komplexer sind
+#### station.remove
+- anfragen per `tileUpdateMSG`
+- Als Antwort wird erstmal die ganze neue `Station` gesendet, da die etwas komplexer sind, also nicht nur der teil der jettz gelöscht ist, sondern einmal alles was jetzt noch da ist, der aktuelle stand
+
 ## Datenformate Bauwerke
 ### tileUpdateMSG
 ```golang
@@ -79,10 +87,6 @@ type trainCreateWaggons struct {
 	Typ      string
 }
 
-TODO assignScheduleMsg struct {
-	trainId 	int
-	scheduleId 	int 
-}
 ```
 ```json
 
@@ -107,7 +111,8 @@ type trainRemoveMSG struct {
 	id int
 }
 ```
-## Erstellen und löschen von Schedules
+
+<!-- ## Erstellen und löschen von Schedules
 ### schedule.create
 - genutzt um basierend auf einer liste an stops eine schedule zu erstellen
 - es erfolgt keine prüfung ob die wirklich fahrbar ist
@@ -120,7 +125,7 @@ type scheduleCreateMsg struct {
 	Name 	string
 	Stops	[]Stop
 }
-```
+``` -->
 ## Blockieren und entblocken von Tiles 
 - wenn  züge sich einen weg reservieren wird dieser blockiert
 - wäre nett das irgendwie sehen zu können

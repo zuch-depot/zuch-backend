@@ -80,3 +80,7 @@ type RelpyMSG struct {
 	Msg     string
 	Success bool
 }
+
+type StationUpdateMsg struct {
+	Position [2]int
+}

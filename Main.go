@@ -120,6 +120,8 @@ func processClientInputs(gs *ds.GameState) {
 			err = handleTileUpdate(input, gs)
 		case "train":
 			err = handleTrainUpdate(input, gs)
+		case "station":
+			err = handleStationUpdate(input, gs)
 		default:
 			input.Reply(false, "Invalid Envelope Type", gs)
 		}
