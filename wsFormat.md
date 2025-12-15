@@ -37,6 +37,22 @@ type wsEnvelope struct {
 # Mögliche Nachrichten
 - Die überschriften stellen die typen der anfrage dar
 - dann folgen details zu anfrage und antwort
+## Initialer Stand
+### game.initialLoad
+- game.initialLoad übermittelt zunächst den aktuellen stand des Spiels. Dieser soll vom client dann kontinuirlich aktualisiert werden. 
+- Nutzt als daten Struktur den `SendAbleGamestate`
+## Datenformate Initlialer Stand
+### SendableGameState
+``` go
+type SendAbleGamestate struct {
+	Users     []*User
+	Schedules []*Schedule
+	Stations  map[int]*Station
+	Tiles     [][]*Tile
+	Trains    map[int]*Train
+}
+``` 
+
 ## erstellen und löschen von Bauwerken (signale Schienen und später Bahnhöfe)
 ### Signale
 #### signal.create
@@ -52,9 +68,12 @@ type wsEnvelope struct {
 #### station.create
 - anfragen per `tileUpdateMSG`
 - Als Antwort wird erstmal die ganze neue `Station` gesendet, da die etwas komplexer sind
+- Stationen können nur gebaut werden wenn da bereits gleise liegen
 #### station.remove
 - anfragen per `tileUpdateMSG`
 - Als Antwort wird erstmal die ganze neue `Station` gesendet, da die etwas komplexer sind, also nicht nur der teil der jettz gelöscht ist, sondern einmal alles was jetzt noch da ist, der aktuelle stand
+- **entfernt nur ein tile der station, um die station komplett zu löschen muss jedes tile einzeln entfernt werden**
+- **Beim entfernen des letzten Tiles läuft es noch nicht so run**
 
 ## Datenformate Bauwerke
 ### tileUpdateMSG
@@ -155,3 +174,7 @@ type blockedTilesMSG struct {
   }
 }
 ```
+## Erstellen und zuordnen von Schedules
+- Eine schedule besteht aus mehreren Stops, bei den Stops können die züge jeweils eineen Load oder Unload command haben und nehmen dementsprechend dort ware auf oder geben sie ab 
+### schedule.create 
+- erstellt eine neue schedule mit den gegebenen stops und 

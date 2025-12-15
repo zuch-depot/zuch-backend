@@ -94,7 +94,12 @@ func initializeClient(user *ds.User, gs *ds.GameState) {
 	logger.Info("Sending Client Gamestate", slog.String("Username", user.Username))
 
 	//  Das hier wird noch geändert werden müssen, gs hat eventuell zu viele infos, da müsste man mal schauen welche gesendet werden sollen
-	envelope := ds.WsEnvelope{Type: "game.initialLoad", Username: "Server", TransactionID: "", Msg: ds.SendAbleGamestate{Users: gs.Users, Schedules: gs.Schedules, Stations: gs.Stations, Tiles: gs.Tiles, Trains: gs.Trains}}
+	stationMap := make(map[int]*ds.Station)
+	for _, v := range gs.Stations {
+		stationMap[v.Id] = v
+	}
+
+	envelope := ds.WsEnvelope{Type: "game.initialLoad", Username: "Server", TransactionID: "", Msg: ds.SendAbleGamestate{Users: gs.Users, Schedules: gs.Schedules, Stations: stationMap, Tiles: gs.Tiles, Trains: gs.Trains}}
 	err := user.Connection.WriteJSON(envelope)
 	if err != nil {
 		logger.Error("Failed parsing state to JSON", slog.String("Error", err.Error()))

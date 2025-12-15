@@ -56,7 +56,7 @@ type GameState struct {
 type SendAbleGamestate struct {
 	Users     []*User
 	Schedules []*Schedule
-	Stations  []*Station
+	Stations  map[int]*Station
 	Tiles     [][]*Tile
 	Trains    map[int]*Train
 }

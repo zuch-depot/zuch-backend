@@ -26,7 +26,7 @@ func handleRemoveStation(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error 
 	}
 	station, err := ds.RemoveStationTile(update.Position, gs)
 	if err != nil {
-		return fmt.Errorf("error Remove station; %s", err.Error())
+		return fmt.Errorf("error removing station; %s", err.Error())
 	}
 
 	if err == nil {
@@ -37,6 +37,8 @@ func handleRemoveStation(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error 
 			TransactionID: envelope.TransactionID,
 			Msg:           station,
 		}
+	} else {
+		return fmt.Errorf("error removing station; %s", err.Error())
 	}
 	return err
 }
@@ -52,7 +54,7 @@ func handleCreateStation(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error 
 		return fmt.Errorf("error Creating Station; %s", err.Error())
 	}
 
-	if err != nil {
+	if err == nil {
 		gs.Logger.Info("Creating Station", slog.String("Username", envelope.User.Username), slog.Int("x", update.Position[0]), slog.Int("y", update.Position[1]))
 		gs.BroadcastChannel <- ds.WsEnvelope{
 			Type:          "station.create",
@@ -60,6 +62,8 @@ func handleCreateStation(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error 
 			TransactionID: envelope.TransactionID,
 			Msg:           station,
 		}
+	} else {
+		return fmt.Errorf("error removing station; %s", err.Error())
 	}
 	return err
 }
