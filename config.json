@@ -38,6 +38,13 @@
                 "Produktion": {"Pommes": 2},
                 "verfügbareLevelUndScaling": [2,2]
             }]
+        },
+        "Stadt": {
+            "Produktionszyklen": [{
+                "Verbrauch": {"Pommes": 4},
+                "Produktion": {}, 
+                "verfügbareLevelUndScaling": [2,2]
+            }]
         }
     }
 }

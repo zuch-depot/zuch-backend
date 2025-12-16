@@ -89,13 +89,29 @@ func main() {
 
 		// Train calculate (Läd/Entläd oder bewegt) und entblocken
 		if gs.Tick%10 == 0 {
-			// printTrains()
 			calculateTrains(&gs)
+			// for _, train := range gs.Trains {
+			// 	fmt.Print(train.Name, " ")
+			// 	for _, waggon := range train.Waggons {
+			// 		fmt.Print(waggon.CargoStorage.FilledCargoType, " ", waggon.CargoStorage.Filled, " ")
+			// 	}
+			// 	fmt.Println()
+			// }
 		}
 
 		// process factorys
 		if gs.Tick%10 == 1 {
 			processActiveTiles(&gs)
+			// for _, station := range gs.Stations {
+			// 	fmt.Println(station.Name, station.Storage)
+			// }
+			// for _, active := range gs.ActiveTiles {
+			// 	fmt.Println(active.Name, " ", active.Storage)
+			// }
+		}
+
+		if gs.Tick%10 == 2 {
+			gs.CalculateCargoPaths()
 		}
 
 		// anzeigen Testing

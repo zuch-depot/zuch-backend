@@ -14,13 +14,40 @@ type Tile struct {
 	IsLocked bool
 }
 
+// Definiert werden muss: Id, Category, Name, MaxStorage?
 type ActiveTile struct {
+	Id         int
 	Category   *ActiveTileCategory
 	Name       string
 	Level      int
 	Stations   []*Station //Stationen, die in der Nähe sind. wird mit changeStationTile verwaltet
 	Storage    map[string]int
-	MaxStorage int //maximum Lager pro Gut -> sonst kann es zu unwiederruflichen auffüllen kommen
+	MaxStorage int //STANDARD für alle gleich? maximum Lager pro Gut -> sonst kann es zu unwiederruflichen auffüllen kommen. Nur für Verbrauchsgüter der Produktion
+}
+
+// returnt alle Produktionstypen mit der kumulierten maximalen Produktion pro Tick
+func (a *ActiveTile) getProductionCategorys() map[string]int {
+	var productionTypes = make(map[string]int)
+
+	for _, prodCycle := range a.Category.Productioncycles {
+		for prodType, prodTypeAmmount := range prodCycle.Produktion {
+			productionTypes[prodType] += prodTypeAmmount //TODO Level berücksichtigen
+		}
+	}
+
+	return productionTypes
+}
+
+// returnt alle Verbrauchstypen mit der kumulierten maximalen Verbrauch pro Tick
+func (a *ActiveTile) getConsumptionCategorys() map[string]int {
+	var consumptionTypes = make(map[string]int)
+
+	for _, prodCycle := range a.Category.Productioncycles {
+		for consType, consTypeAmmount := range prodCycle.Consumtion {
+			consumptionTypes[consType] += consTypeAmmount //TODO Level berücksichtigen
+		}
+	}
+	return consumptionTypes
 }
 
 // Fügt bei i ein gleis hinzu, wenn da keins ist und das Tile nicht locked ist
@@ -66,8 +93,9 @@ func (t *Tile) AddSignal(subtile int, gs *GameState) (bool, string) {
 	return false, "There may be no Track to place the signal onto, or there is already a signal at that location."
 }
 
-// Fügt bei i ein Signal hinzu, wenn da keins ist und das Tile nicht locked ist
+// Entfernt bei i das Signal, wenn da keins ist und das Tile nicht locked ist
 // returnt true bei erfolg und false bei error
+// TODO error
 func (t *Tile) RemoveSignal(subtile int, gs *GameState) (bool, string) {
 	if t.Signals[subtile-1] {
 		t.Signals[subtile-1] = false
@@ -76,8 +104,4 @@ func (t *Tile) RemoveSignal(subtile int, gs *GameState) (bool, string) {
 	}
 	return false, "There is no Signal to remove."
 
-}
-
-// uhhh dunno was genau das hier ist
-func (A *ActiveTile) calculateCargoPaths() {
 }

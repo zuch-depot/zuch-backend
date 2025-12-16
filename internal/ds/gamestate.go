@@ -33,14 +33,15 @@ type GameState struct {
 
 	StationRange int
 	//ALLE IDs MÜSSEN BEI 1 ANFANGEN
-	CurrentTrainID     atomic.Uint64
-	CurrentScheduleID  atomic.Uint64
-	CurrentStopID      atomic.Uint64
-	CurrentStationID   atomic.Uint64
-	CurrentPlattformID atomic.Uint64
-	Ticker             *time.Ticker
-	Tick               int
-	IsPaused           bool
+	CurrentTrainID      atomic.Uint64
+	CurrentScheduleID   atomic.Uint64
+	CurrentStopID       atomic.Uint64
+	CurrentStationID    atomic.Uint64
+	CurrentPlattformID  atomic.Uint64
+	CurrentActiveTileID atomic.Uint64
+	Ticker              *time.Ticker
+	Tick                int
+	IsPaused            bool
 
 	BroadcastChannel chan WsEnvelope
 	UserInputs       chan RecieveWSEnvelope
@@ -62,6 +63,11 @@ type SendAbleGamestate struct {
 }
 
 func (gs *GameState) AddSchedule(name string) (*Schedule, error) {
+
+	if name == "" {
+		name = fmt.Sprint("Schedule ", gs.CurrentScheduleID.Load())
+	}
+
 	s := Schedule{Name: name, Id: int(gs.CurrentScheduleID.Load())}
 	gs.CurrentScheduleID.Add(1)
 
@@ -83,11 +89,11 @@ func (gs *GameState) RemoveSchedule(Id int) error {
 	return nil
 }
 
-// nur Erstellung einer Station, hinzufügen der Tiles muss extra gemacht werden. Id ist Standardname
+// nur Erstellung einer Station, hinzufügen der Tiles muss extra gemacht werden. Id ist Standardname, standard Kapazität = 0
 func (gs *GameState) AddStation(name string) (*Station, error) {
 
 	if name == "" {
-		name = fmt.Sprint(gs.CurrentStationID.Load())
+		name = fmt.Sprint("Station ", gs.CurrentStationID.Load())
 	}
 
 	gs.Stations = append(gs.Stations, &Station{Id: int(gs.CurrentStationID.Load()), Name: name, Storage: map[string]int{}, Plattforms: []*Plattform{}})
@@ -112,6 +118,7 @@ func (gs *GameState) RemoveStation(Id int) error {
 					ChangeStationTile(true, tilePos, gs)
 				}
 			}
+			return nil
 		}
 	}
 	return err

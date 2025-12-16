@@ -20,7 +20,7 @@ type Stop struct {
 	Goal              [3]int //(?Signal als) Wegpunkt
 	IsPlattform       bool
 	Name              string               //Name Wegpunkt
-	LoadUnloadCommand [2]LoadUnloadCommand //einmal zum Laden, einmal zum entladen (0 entladen, 1 beladen)
+	LoadUnloadCommand [2]LoadUnloadCommand //einmal zum Laden, einmal zum entladen (0 entladen, 1 beladen). Können auch jeweils leer sein, dann wird alles geladen/entladen
 }
 
 // braucht keine Id, weil nur an einer Stelle gespeichert mit statischer Positionierung
@@ -32,7 +32,8 @@ type LoadUnloadCommand struct {
 	CargoTypes   []string //welche Güter abgeladen/aufgeladen werden dürfen
 }
 
-func (s Stop) getGoals(gs *GameState) [][3]int {
+// returnt beide Enden der Plattform, wenn es eine ist, und sonst nur den Wegpunkt
+func (s *Stop) getGoals(gs *GameState) [][3]int {
 	if s.IsPlattform {
 		r := s.Plattform.GetFirstLast(gs)
 		return [][3]int{r[0], r[1]}
@@ -41,7 +42,7 @@ func (s Stop) getGoals(gs *GameState) [][3]int {
 }
 
 // Returnt Name des Wegpunktes oder Station + Plattform
-func (s Stop) getName(gs *GameState) string {
+func (s *Stop) getName(gs *GameState) string {
 	if s.IsPlattform {
 		return s.Plattform.GetStation(gs).Name + " " + s.Plattform.Name
 	}
@@ -49,14 +50,14 @@ func (s Stop) getName(gs *GameState) string {
 }
 
 // TODO errors/Validierung
-func (s Stop) ChangeLoadCommand(cargoTypes []string, waitTillFull bool) error {
+func (s *Stop) SetLoadCommand(cargoTypes []string, waitTillFull bool) error {
 	s.LoadUnloadCommand[1] = LoadUnloadCommand{Loading: true, WaitTillFull: waitTillFull, CargoTypes: cargoTypes}
 	return nil
 }
 
 // TODO errors/validierung
-func (s Stop) ChangeUnloadCommand(cargoTypes []string, waitTillEmpty bool) error {
-	s.LoadUnloadCommand[1] = LoadUnloadCommand{Loading: false, WaitTillFull: waitTillEmpty, CargoTypes: cargoTypes}
+func (s *Stop) SetUnloadCommand(cargoTypes []string, waitTillEmpty bool) error {
+	s.LoadUnloadCommand[0] = LoadUnloadCommand{Loading: false, WaitTillFull: waitTillEmpty, CargoTypes: cargoTypes}
 	return nil
 }
 
@@ -96,7 +97,7 @@ func (s *Schedule) RemoveStop(Id int, gs *GameState) error {
 func (s *Schedule) AddStopStation(plattform *Plattform, gs *GameState) (*Stop, error) {
 	var err error
 
-	if plattform.Id == 0 {
+	if plattform == nil || plattform.Id == 0 {
 		return &Stop{}, err
 	}
 
@@ -114,7 +115,7 @@ func (s *Schedule) AddStopWaypoint(position [3]int, name string, gs *GameState) 
 	//TODO überprüfen koordinaten?
 
 	if name == "" {
-		name = fmt.Sprint(gs.CurrentStopID.Load())
+		name = fmt.Sprint("Wegpunkt ", gs.CurrentStopID.Load())
 	}
 
 	s.Stops = append(s.Stops, Stop{Id: int(gs.CurrentStopID.Load()), IsPlattform: false, Goal: position, Name: name})

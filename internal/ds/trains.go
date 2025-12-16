@@ -12,7 +12,6 @@ type Train struct {
 	Waggons            []*Waggon //Alle müssen nebeneinander spawnen
 	Schedule           *Schedule
 	NextStop           Stop     //der Stop, in dem der Zug gerade hinfährt oder plant hinzufahren. Wenn 0, dann nächster Stop aus Schedule
-	LastStop           Stop     //der Stop, in dem der Zug gerade ist oder gerade war || Überflüssig??
 	CurrentPath        [][3]int //neu berechnen bei laden
 	CurrentPathSignals [][3]int
 
@@ -63,9 +62,9 @@ func (t *Train) Move(gs *GameState) [2]int {
 	entblocken := [2]int{-1, -1}
 
 	// wenn ein Zug an einem Ziel angekommen ist und er nicht am ein/ausladen ist oder fertig damit ist, dann neu berechnen
-	if len(t.CurrentPath) == 0 && (t.LoadingTime == 0 || t.LoadingTime > 0 && t.FinishedLoading) {
+	if len(t.CurrentPath) == 0 && (t.LoadingTime == 0 || (t.LoadingTime > 0 && t.FinishedLoading)) {
 		//nächstes Ziel auswählen und den WEg dorthin berechnen
-		t.LastStop = t.NextStop
+		//t.LastStop = t.NextStop
 		t.NextStop = t.Schedule.nextStop(t.NextStop)
 		if t.NextStop.Id == 0 {
 			return entblocken
@@ -185,32 +184,32 @@ func (t *Train) CalculateTrain(gs *GameState) [2]int {
 	var r [2]int
 
 	//ist gerade in die Staion eingefahren, also speichern der aktuellen Station. Nächste Station wird bei neuberechen überschrieben
-	if t.NextStop.IsPlattform && t.LoadingTime == 0 && t.NextStop.Goal == t.Waggons[0].Position {
-		t.LastStop = t.NextStop
-		gs.Logger.Debug("Zug " + t.Name + " in " + t.LastStop.Plattform.GetStation(gs).Name + " eingefahren.")
+	if t.NextStop.IsPlattform && t.LoadingTime == 0 && len(t.CurrentPath) == 0 {
+		gs.Logger.Debug("Zug " + t.Name + " in " + t.NextStop.Plattform.GetStation(gs).Name + " eingefahren.")
+		fmt.Println("Zug " + t.Name + " in " + t.NextStop.Plattform.GetStation(gs).Name + " eingefahren.")
 	} else if !t.NextStop.IsPlattform && len(t.CurrentPath) == 0 {
-		//wenn das nächste Ziel ein Wegpunkt ist und man angekommen ist, braucht man einfach den nächsten Stop aussuchen und fahren
+		//wenn das aktuelle Ziel ein Wegpunkt ist und man angekommen ist, braucht man einfach den nächsten Stop aussuchen und fahren
 		return t.Move(gs)
 	}
 
 	//wenn der aktuelle Stop eine Plattform ist und man an der an der Station steht
-	if t.LastStop.IsPlattform && t.LastStop.Goal == t.Waggons[0].Position {
+	if t.NextStop.IsPlattform && len(t.CurrentPath) == 0 {
 		//wenn min Zeit erreicht ist überprüfen und man fertig mit laden ist, ob man fahren kann
 		if t.LoadingTime >= gs.MinLoadUloadTicks && t.FinishedLoading {
-			gs.Logger.Debug("Zug " + t.Name + " versucht aus " + t.LastStop.Plattform.GetStation(gs).Name + " auszufahren.")
+			gs.Logger.Debug("Zug " + t.Name + " versucht aus " + t.NextStop.Plattform.GetStation(gs).Name + " auszufahren.")
 
 			r = t.Move(gs)
 
 			//Ist Zug losgefahren, also Reset der Werte fürs nächste Laden
 			if !t.Waiting {
-				gs.Logger.Debug("Zug " + t.Name + " aus " + t.LastStop.getName(gs) + "ausgefahren.")
+				gs.Logger.Debug("Zug " + t.Name + " aus " + t.NextStop.getName(gs) + "ausgefahren.")
 				t.LoadingTime = 0
 				t.FinishedLoading = false
 				return r
 			}
 		}
-		//laden/entladen, wenn er noch warten muss oder noch laden muss
-		if t.Waiting || t.LoadingTime < gs.MinLoadUloadTicks || !t.FinishedLoading {
+		//laden/entladen, wenn er noch laden muss
+		if t.LoadingTime < gs.MinLoadUloadTicks || !t.FinishedLoading {
 			t.FinishedLoading = t.LoadUndload(gs)
 
 			printTrains(gs)
@@ -229,12 +228,12 @@ func (t *Train) LoadUndload(gs *GameState) bool {
 	var r bool
 
 	//station, in die der Zug steht
-	sta := t.LastStop.Plattform.GetStation(gs)
+	sta := t.NextStop.Plattform.GetStation(gs)
 
 	//es wird durch die Reihenfolge der Commands zuerst geladen, dann entladen.
 	// Dabei wird nur beladen, wenn entladen fertig ist, bzw. noch kapazität von Gütern bewegt pro Tick über gelassen hat
 	avaliableLoadUnloadSpeed := gs.LoadUnloadSpeed //misst, wie viel noch geladen und entladen werden darf
-	for _, command := range t.LastStop.LoadUnloadCommand {
+	for _, command := range t.NextStop.LoadUnloadCommand {
 		//wenn man nichts mehr verladen darf, dann kann man noch nicht fertig sein
 		if avaliableLoadUnloadSpeed == 0 {
 			return false
@@ -256,12 +255,12 @@ func (t *Train) LoadUndload(gs *GameState) bool {
 					gs.Logger.Debug("Zug: " + t.Name + " hat " + strconv.Itoa(loaded) + " Tonnen " + string(cargo) + " geladen")
 				}
 
-				//wenn man nicht bis Voll wartet und nichts verladen wurde, ist man fertig
+				//wenn man nicht bis Voll wartet und nicht max. aufgeladen wurde, ist man fertig
 				if !command.WaitTillFull && loaded <= 0 && avaliableLoadUnloadSpeed != 0 {
 					r = true
 					continue
 				}
-				//ist fertig, wenn warten auf voll sein und zug voll ist ------------------> EINGÜGEN!
+				//ist fertig, wenn warten auf voll sein und zug voll ist ------------------> TODO EINGÜGEN!
 				if loaded <= 0 && avaliableLoadUnloadSpeed != 0 {
 					r = true
 					continue
@@ -284,6 +283,7 @@ func (t *Train) LoadUndload(gs *GameState) bool {
 
 				if removed > 0 {
 					gs.Logger.Debug("Zug: " + t.Name + " hat " + strconv.Itoa(removed) + " Tonnen " + string(cargo) + " entladen")
+					fmt.Println("Zug: " + t.Name + " hat " + strconv.Itoa(removed) + " Tonnen " + string(cargo) + " entladen")
 				}
 				//wenn nichts bewegt wurde und man nicht bis leer sein wartet, ist der Ladevorgang beendet
 				//(damit ist immer einmal überprüfen, ohne, dass was passiert -> eig. nicht schlimm)
@@ -299,6 +299,10 @@ func (t *Train) LoadUndload(gs *GameState) bool {
 				r = false
 			}
 		}
+	}
+
+	if avaliableLoadUnloadSpeed < gs.LoadUnloadSpeed {
+		r = true
 	}
 
 	return r
