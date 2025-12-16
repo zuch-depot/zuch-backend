@@ -19,9 +19,9 @@ type GamestateTemp struct {
 }
 
 type GameState struct {
-	Users       []*User
-	Schedules   []*Schedule
-	Stations    []*Station
+	Users       map[string]*User // einzigartiger name
+	Schedules   map[int]*Schedule
+	Stations    map[int]*Station
 	Tiles       [][]*Tile
 	Trains      map[int]*Train
 	ActiveTiles []*ActiveTile
@@ -55,9 +55,9 @@ type GameState struct {
 }
 
 type SendAbleGamestate struct {
-	Users     []*User
-	Schedules []*Schedule
-	Stations  []*Station
+	Users     map[string]*User // der name ist einzigartig
+	Schedules map[int]*Schedule
+	Stations  map[int]*Station
 	Tiles     [][]*Tile
 	Trains    map[int]*Train
 }

@@ -21,7 +21,16 @@ var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: tr
 func main() {
 	utils.Logger = logger
 
-	gs := ds.GameState{UserInputs: make(chan ds.RecieveWSEnvelope, 300), BroadcastChannel: make(chan ds.WsEnvelope, 100), UnPause: make(chan bool), SizeSubtile: 4, Trains: make(map[int]*ds.Train), Logger: logger}
+	gs := ds.GameState{UserInputs: make(chan ds.RecieveWSEnvelope, 300),
+		BroadcastChannel: make(chan ds.WsEnvelope, 100),
+		UnPause:          make(chan bool),
+		SizeSubtile:      4,
+		Trains:           make(map[int]*ds.Train),
+		Users:            make(map[string]*ds.User),
+		Stations:         make(map[int]*ds.Station),
+		Schedules:        make(map[int]*ds.Schedule),
+		Logger:           logger,
+	}
 	err := godotenv.Load("main.env")
 	if err != nil {
 		logger.Error("Oh oh ein fehler in den environment variables", slog.String("Error", err.Error()))
@@ -136,6 +145,10 @@ func processClientInputs(gs *ds.GameState) {
 			err = handleTileUpdate(input, gs)
 		case "train":
 			err = handleTrainUpdate(input, gs)
+		case "station":
+			err = handleStationUpdate(input, gs)
+		case "schedule":
+			err = handleScheduleUpdate(input, gs)
 		default:
 			input.Reply(false, "Invalid Envelope Type", gs)
 		}

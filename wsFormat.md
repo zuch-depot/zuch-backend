@@ -37,6 +37,22 @@ type wsEnvelope struct {
 # Mögliche Nachrichten
 - Die überschriften stellen die typen der anfrage dar
 - dann folgen details zu anfrage und antwort
+## Initialer Stand
+### game.initialLoad
+- game.initialLoad übermittelt zunächst den aktuellen stand des Spiels. Dieser soll vom client dann kontinuirlich aktualisiert werden. 
+- Nutzt als daten Struktur den `SendAbleGamestate`
+## Datenformate Initlialer Stand
+### SendableGameState
+``` go
+type SendAbleGamestate struct {
+	Users     []*User
+	Schedules []*Schedule
+	Stations  map[int]*Station
+	Tiles     [][]*Tile
+	Trains    map[int]*Train
+}
+``` 
+
 ## erstellen und löschen von Bauwerken (signale Schienen und später Bahnhöfe)
 ### Signale
 #### signal.create
@@ -48,6 +64,17 @@ type wsEnvelope struct {
 - anfragen und antworten per `tileUpdateMSG`
 #### rail.remove
 - anfragen und antworten per `tileUpdateMSG`
+### Stationen
+#### station.create
+- anfragen per `tileUpdateMSG`
+- Als Antwort wird erstmal die ganze neue `Station` gesendet, da die etwas komplexer sind
+- Stationen können nur gebaut werden wenn da bereits gleise liegen
+#### station.remove
+- anfragen per `tileUpdateMSG`
+- Als Antwort wird erstmal die ganze neue `Station` gesendet, da die etwas komplexer sind, also nicht nur der teil der jettz gelöscht ist, sondern einmal alles was jetzt noch da ist, der aktuelle stand
+- **entfernt nur ein tile der station, um die station komplett zu löschen muss jedes tile einzeln entfernt werden**
+- **Beim entfernen des letzten Tiles läuft es noch nicht so run**
+
 ## Datenformate Bauwerke
 ### tileUpdateMSG
 ```golang
@@ -56,7 +83,7 @@ type tileUpdateMSG struct {
 }
 ```
 - die stellt nur eine Position dar, was dort passiert wird durch den typen bestimmt 
-## Hinzufügen, entfernen und setzen von Schedules bei Zügen
+## Hinzufügen, entfernen und bewegen von Zügen
 ### train.create
 - nutzt die `trainCreateMSG` 
 	- bei Typ kann angegeben werden was für ein waggong, dies bestimmt bspw. die kapazität. Muss mich da mit wilken aber noch absprechen
@@ -65,7 +92,9 @@ type tileUpdateMSG struct {
 ### train.remove
 - nutzt die `trainRemoveMSG`
 - antwortet mit einer `trainRemoveMSG`
-### train.assignSchedule
+### train.move
+- nutzt die trainMoveMSG
+- wird nur vom server ausgehend gesendet
 ## Datenformate hinzufügen und entfernen Züge
 ### trainCreateMSG
 ```go
@@ -78,14 +107,12 @@ type trainCreateWaggons struct {
 	Position [3]int
 	Typ      string
 }
-
-TODO assignScheduleMsg struct {
-	trainId 	int
-	scheduleId 	int 
+type TrainMoveMSG struct {
+	Id      int
+	Waggons []*Waggon
 }
 ```
 ```json
-
 {
   "Type": "train.create",
   "TransactionID":"edabad9e-e1a7-4e91-977a-119daaa8775e",
@@ -105,20 +132,6 @@ TODO assignScheduleMsg struct {
 ```go
 type trainRemoveMSG struct {
 	id int
-}
-```
-## Erstellen und löschen von Schedules
-### schedule.create
-- genutzt um basierend auf einer liste an stops eine schedule zu erstellen
-- es erfolgt keine prüfung ob die wirklich fahrbar ist
-
-### schedule.remove
-## Datenformate Erstellen und löschen von Schedules
-## Schedule.create
-```go
-type scheduleCreateMsg struct {
-	Name 	string
-	Stops	[]Stop
 }
 ```
 ## Blockieren und entblocken von Tiles 
@@ -150,3 +163,10 @@ type blockedTilesMSG struct {
   }
 }
 ```
+## Erstellen und zuordnen von Schedules
+- Eine schedule besteht aus mehreren Stops, bei den Stops können die züge jeweils eineen Load oder Unload command haben und nehmen dementsprechend dort ware auf oder geben sie ab 
+### schedule.create 
+- erstellt eine neue schedule mit den gegebenen stops und 
+- nutzt die `ScheduleCreateMsg` zum erstellen
+- antwortet mit der neuen `Schedule` 
+## Datenformate erstellen und zuordnen von schedules

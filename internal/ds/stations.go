@@ -11,7 +11,7 @@ type Station struct {
 	Name       string
 	Storage    map[string]int //von was ist wieviel gelagert: CargoType? Hinzufügen nur mit Methode, rausnehmen direkt. MUSS mit make komplett initiiert werden
 	Capacity   int            //was ist die maximale Kapazität
-	Plattforms []*Plattform
+	Plattforms map[int]*Plattform
 }
 
 // alle Tiles müssen aneinander in der gleichen Richtung sein und dürfen keine Kurven haben
@@ -37,6 +37,36 @@ type ActiveTileCategory struct {
 type ConfigData struct {
 	TrainCategories      map[string][]string           `json:"Train Categories"`
 	ActiveTileCategories map[string]ActiveTileCategory `json:"Aktive Tiles"`
+}
+
+// nur Erstellung einer Station, hinzufügen der Tiles muss extra gemacht werden. Id ist Standardname
+func AddStation(name string, gs *GameState) (*Station, error) {
+
+	if name == "" {
+		name = fmt.Sprint(gs.CurrentStationID.Load())
+	}
+
+	station := &Station{Id: int(gs.CurrentStationID.Load()), Name: name, Storage: make(map[string]int), Plattforms: make(map[int]*Plattform)}
+	gs.Stations[int(gs.CurrentTrainID.Load())] = station
+	gs.CurrentStationID.Add(1)
+	return station, nil // ich glaube bisher kann hier kein fehler kommen? surelly jaja
+}
+
+// Entfernt die Station und alle Referenzen (Stops, Plattform Tiles, etc)
+func (s *Station) RemoveStation(gs *GameState) error {
+	var err error
+	before := len(gs.Stations)
+	delete(gs.Stations, s.Id)
+	if !(before > len(gs.Stations)) {
+		return fmt.Errorf("couldn't find station in map")
+	}
+	//Enfernung des Plattform Tags aller Tiles der Station, Löschung der Plattformen findet beim Löschenn des jeweils letzten Tiles statt
+	for _, plattform := range s.Plattforms {
+		for _, tilePos := range plattform.Tiles {
+			ChangeStationTile(true, tilePos, gs)
+		}
+	}
+	return err
 }
 
 // returnt die Station einer Plattform. Ist notwendig, da die Kommunikation nicht mit Zirkelverweisen klar kommt
@@ -190,12 +220,19 @@ func (p *Plattform) GetPathToOpposite(initial [3]int) [][3]int {
 
 //-------------------------------Ist unter Station, soll das verallgemeinert werden, damit Stationen automatisch erstellt werden?-----------------------
 
+func AddStationTile(position [2]int, gs *GameState) (*Station, error) {
+	return ChangeStationTile(false, position, gs)
+}
+func RemoveStationTile(position [2]int, gs *GameState) (*Station, error) {
+	return ChangeStationTile(true, position, gs)
+}
+
 // remove = true -> referenz wird entfernt, = false -> wird hinzugefügt;
 // findet alle Aktiven Tiles im validen Radius um das neue Tile der Station und verknüpft/entfernt entsprechend die Station, falls noch nicht geschehen
 // egal ob neue Station oder nicht
 // baut nur neue Staion, baut keine Schienen
 // TODO dynamische Zuweisung zu Gleisen anhand Ausrichtung und nachbarn
-func ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
+func ChangeStationTile(remove bool, position [2]int, gs *GameState) (*Station, error) {
 	var err error
 	tile := gs.Tiles[position[0]][position[1]]
 	var station *Station //die Station des Tiles, wird bestimmt
@@ -208,7 +245,8 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
 		horizontal = false
 	} else {
 		//TODO error
-		return nil
+		// ich glaube der fehler hier ist wenn da noch keine gleise liegen?
+		return nil, fmt.Errorf("keine gleise vorhanden")
 	}
 
 	// Ich war mal so frech - Jannis
@@ -216,14 +254,14 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
 	if remove {
 		if !tile.IsPlattform {
 			//TODO Error, kann nicht von nichts entfernen
-			return nil
+			return nil, nil
 		}
 
 		//Bestimmung der Plattform
 		var plattform *Plattform
 		plattform, err = GetPlattform(position, gs)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		station = plattform.GetStation(gs)
@@ -234,7 +272,7 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
 		//Entfernung des Tags und weitere Berechnungen
 		err = plattform.removeTile(position, gs)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		//gucken
@@ -254,7 +292,7 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
 				var temp *Plattform
 				temp, err = GetPlattform([2]int{position[0] - 1, position[1]}, gs)
 				if err != nil {
-					return err
+					return nil, err
 				}
 
 				stationBordering = temp.GetStation(gs)
@@ -266,12 +304,12 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
 				var temp *Plattform
 				temp, err = GetPlattform([2]int{position[0], position[1] - 1}, gs)
 				if err != nil {
-					return err
+					return nil, err
 				}
 				//wenn eine andere Station schon angegrenzt, dann Fehler
 				if stationBordering != nil && stationBordering.Id != temp.GetStation(gs).Id {
 					//TODO Error, grenzt an 2 Stationen an
-					return nil
+					return nil, nil
 				}
 				stationBordering = temp.GetStation(gs)
 			}
@@ -282,12 +320,12 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
 				var temp *Plattform
 				temp, err = GetPlattform([2]int{position[0] + 1, position[1]}, gs)
 				if err != nil {
-					return err
+					return nil, err
 				}
 				//wenn eine andere Station schon angegrenzt, dann Fehler
 				if stationBordering != nil && stationBordering.Id != temp.GetStation(gs).Id {
 					//TODO Error, grenzt an 2 Stationen an
-					return nil
+					return nil, nil
 				}
 				stationBordering = temp.GetStation(gs)
 			}
@@ -298,12 +336,12 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
 				var temp *Plattform
 				temp, err = GetPlattform([2]int{position[0], position[1] + 1}, gs)
 				if err != nil {
-					return err
+					return nil, err
 				}
 				//wenn eine andere Station schon angegrenzt, dann Fehler
 				if stationBordering != nil && stationBordering.Id != temp.GetStation(gs).Id {
 					//TODO Error, grenzt an 2 Stationen an
-					return nil
+					return nil, nil
 				}
 				stationBordering = temp.GetStation(gs)
 			}
@@ -311,9 +349,9 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
 
 		if stationBordering == nil {
 			//neue Station mit Standartwerten
-			station, err = gs.AddStation("")
+			station, err = AddStation("", gs)
 			if err != nil {
-				return err
+				return nil, err
 			}
 			gs.Tiles[position[0]][position[1]].IsPlattform = true
 		} else {
@@ -345,7 +383,7 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
 				if right.Tracks[0] && right.IsPlattform {
 					if first {
 						//TODO Error, grenzt an 2 Gleise an
-						return nil
+						return nil, nil
 					}
 					last = true
 				}
@@ -355,7 +393,7 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
 				//grenzt nur links an
 				plattform, err = GetPlattform([2]int{position[0] - 1, position[1]}, gs)
 				if err != nil {
-					return err
+					return nil, err
 				}
 				//hinzufügen zur Plattform am Anfang
 				plattform.addTile(position, true, gs)
@@ -364,7 +402,7 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
 				//grenzt nur rechts an
 				plattform, err = GetPlattform([2]int{position[0] + 1, position[1]}, gs)
 				if err != nil {
-					return err
+					return nil, err
 				}
 				//hinzufügen zur Plattform am Ende
 				plattform.addTile(position, false, gs)
@@ -372,7 +410,7 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
 				// TODO neues Gleis
 				err = station.AddPlattform("", [][2]int{position}, gs)
 				if err != nil {
-					return nil
+					return nil, nil
 				}
 				gs.Tiles[position[0]][position[1]].IsPlattform = true
 			}
@@ -398,7 +436,7 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
 				if under.Tracks[1] && under.IsPlattform {
 					if first {
 						//TODO Error, grenzt an 2 Gleise an
-						return nil
+						return nil, nil
 					}
 					last = true
 				}
@@ -407,7 +445,7 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
 				//grenzt nur links an
 				plattform, err = GetPlattform([2]int{position[0], position[1] - 1}, gs)
 				if err != nil {
-					return err
+					return nil, err
 				}
 				//hinzufügen zur Plattform am Anfang
 				plattform.addTile(position, true, gs)
@@ -415,7 +453,7 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
 				//grenzt nur rechts an
 				plattform, err = GetPlattform([2]int{position[0], position[1] + 1}, gs)
 				if err != nil {
-					return err
+					return nil, err
 				}
 				//hinzufügen zur Plattform am Ende
 				plattform.addTile(position, false, gs)
@@ -423,7 +461,7 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
 				// TODO neues Gleis
 				err = station.AddPlattform("", [][2]int{position}, gs)
 				if err != nil {
-					return nil
+					return nil, nil
 				}
 				gs.Tiles[position[0]][position[1]].IsPlattform = true
 			}
@@ -461,7 +499,7 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
 						if remove {
 							tile.ActiveTile.Stations, err = utils.RemoveElementFromSlice(tile.ActiveTile.Stations, i)
 							if err != nil {
-								return err
+								return nil, err
 							}
 						}
 						break
@@ -476,7 +514,7 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) error {
 		}
 	}
 
-	return nil
+	return station, nil
 }
 
 // return Restwert, der keinen Platz gefunden hat
@@ -515,7 +553,7 @@ func (s *Station) AddPlattform(name string, tiles [][2]int, gs *GameState) error
 		name = fmt.Sprint("Plattform ", gs.CurrentPlattformID.Load())
 	}
 
-	s.Plattforms = append(s.Plattforms, &Plattform{Id: int(gs.CurrentPlattformID.Load()), Name: name, Tiles: tiles /*, Station: s*/})
+	s.Plattforms[int(gs.CurrentPlattformID.Load())] = &Plattform{Id: int(gs.CurrentPlattformID.Load()), Name: name, Tiles: tiles /*, Station: s*/}
 	gs.CurrentPlattformID.Add(1)
 
 	return nil
@@ -528,26 +566,16 @@ func (s *Station) RemovePlattform(Id int, gs *GameState) error {
 	var err error
 	var plattformI int
 
-	//sucht die Plattform
-	var plattform *Plattform
-	for i, p := range s.Plattforms {
-		if p.Id == Id {
-			plattform = p
-			plattformI = i
-			break
-		}
-	}
-	//wenn die Plattform nicht gefunden wurde
-	if plattform == nil {
-		//TODO error
-		return nil
+	plattform, ok := s.Plattforms[Id]
+	if !ok {
+		return fmt.Errorf("could not find plattform")
 	}
 
 	//Entfernt alle Tiles mit der Plattform
 	//(wichtig, damit die ActiveTiles der Station aktualisiert werden)
 	if len(plattform.Tiles) == 0 {
 		for _, pos := range plattform.Tiles {
-			err = ChangeStationTile(true, pos, gs)
+			_, err = ChangeStationTile(true, pos, gs)
 			if err != nil {
 				return err
 			}

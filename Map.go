@@ -56,9 +56,9 @@ func createDemoTrains(gs *ds.GameState) {
 
 	pos = [2]int{3, 7}
 	ds.ChangeStationTile(false, pos, gs)
-	plattform, _ = ds.GetPlattform(pos, gs)
-	plattform.GetStation(gs).Name = "Station Süd"
-	plattform.Name = "Gleis 31"
+	plattform2, _ := ds.GetPlattform(pos, gs)
+	plattform2.GetStation(gs).Name = "Station Süd"
+	plattform2.Name = "Gleis 31"
 	ds.ChangeStationTile(false, [2]int{4, 7}, gs)
 	ds.ChangeStationTile(false, [2]int{5, 7}, gs)
 
