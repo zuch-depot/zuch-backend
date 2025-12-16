@@ -32,6 +32,23 @@ type LoadUnloadCommand struct {
 	CargoTypes   []string //welche Güter abgeladen/aufgeladen werden dürfen
 }
 
+func (gs *GameState) AddSchedule(name string) (*Schedule, error) {
+	s := Schedule{Name: name, Id: int(gs.CurrentScheduleID.Load())}
+	gs.Schedules[int(gs.CurrentScheduleID.Load())] = &s
+	gs.CurrentScheduleID.Add(1)
+	return &s, nil
+}
+
+func (gs *GameState) RemoveSchedule(Id int) error {
+	before := len(gs.Schedules)
+	delete(gs.Schedules, Id)
+	if !(before > len(gs.Schedules)) {
+		return fmt.Errorf("couldn't find schedule in map")
+	}
+
+	return nil
+}
+
 func (s Stop) getGoals(gs *GameState) [][3]int {
 	if s.IsPlattform {
 		r := s.Plattform.GetFirstLast(gs)

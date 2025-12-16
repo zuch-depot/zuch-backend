@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"sync/atomic"
 	"time"
-	"zuch-backend/internal/utils"
 )
 
 // ds = Datastructure, GS = gamestate, beides abgekürzt weil es oft vorkommen wird
@@ -19,7 +18,7 @@ type GamestateTemp struct {
 
 type GameState struct {
 	Users       []*User
-	Schedules   []*Schedule
+	Schedules   map[int]*Schedule
 	Stations    map[int]*Station
 	Tiles       [][]*Tile
 	Trains      map[int]*Train
@@ -54,30 +53,8 @@ type GameState struct {
 
 type SendAbleGamestate struct {
 	Users     []*User
-	Schedules []*Schedule
+	Schedules map[int]*Schedule
 	Stations  map[int]*Station
 	Tiles     [][]*Tile
 	Trains    map[int]*Train
-}
-
-func (gs *GameState) AddSchedule(name string) (*Schedule, error) {
-	s := Schedule{Name: name, Id: int(gs.CurrentScheduleID.Load())}
-	gs.CurrentScheduleID.Add(1)
-
-	gs.Schedules = append(gs.Schedules, &s)
-	return &s, nil
-}
-
-func (gs *GameState) RemoveSchedule(Id int) error {
-	var err error
-
-	for i, schedule := range gs.Schedules {
-		if schedule.Id == Id {
-
-			gs.Schedules, err = utils.RemoveElementFromSlice(gs.Schedules, i)
-			return err
-		}
-	}
-
-	return nil
 }
