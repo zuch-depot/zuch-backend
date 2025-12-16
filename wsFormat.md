@@ -130,21 +130,6 @@ type trainRemoveMSG struct {
 	id int
 }
 ```
-
-<!-- ## Erstellen und löschen von Schedules
-### schedule.create
-- genutzt um basierend auf einer liste an stops eine schedule zu erstellen
-- es erfolgt keine prüfung ob die wirklich fahrbar ist
-
-### schedule.remove
-## Datenformate Erstellen und löschen von Schedules
-## Schedule.create
-```go
-type scheduleCreateMsg struct {
-	Name 	string
-	Stops	[]Stop
-}
-``` -->
 ## Blockieren und entblocken von Tiles 
 - wenn  züge sich einen weg reservieren wird dieser blockiert
 - wäre nett das irgendwie sehen zu können
@@ -178,3 +163,6 @@ type blockedTilesMSG struct {
 - Eine schedule besteht aus mehreren Stops, bei den Stops können die züge jeweils eineen Load oder Unload command haben und nehmen dementsprechend dort ware auf oder geben sie ab 
 ### schedule.create 
 - erstellt eine neue schedule mit den gegebenen stops und 
+- nutzt die `ScheduleCreateMsg` zum erstellen
+- antwortet mit der neuen `Schedule` 
+## Datenformate erstellen und zuordnen von schedules

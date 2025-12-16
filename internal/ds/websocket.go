@@ -84,3 +84,15 @@ type RelpyMSG struct {
 type StationUpdateMsg struct {
 	Position [2]int
 }
+
+type ScheduleCreateMsg struct {
+	Name    string
+	Entries []ScheduleEntry
+}
+
+type ScheduleEntry struct {
+	PlattformId  int
+	StationId    int
+	LoadStrings  []string
+	UnloadString []string
+}

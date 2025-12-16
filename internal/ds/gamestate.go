@@ -2,7 +2,6 @@
 package ds
 
 import (
-	"fmt"
 	"log/slog"
 	"sync/atomic"
 	"time"
@@ -21,7 +20,7 @@ type GamestateTemp struct {
 type GameState struct {
 	Users       []*User
 	Schedules   []*Schedule
-	Stations    []*Station
+	Stations    map[int]*Station
 	Tiles       [][]*Tile
 	Trains      map[int]*Train
 	ActiveTiles []*ActiveTile
@@ -81,38 +80,4 @@ func (gs *GameState) RemoveSchedule(Id int) error {
 	}
 
 	return nil
-}
-
-// nur Erstellung einer Station, hinzufügen der Tiles muss extra gemacht werden. Id ist Standardname
-func (gs *GameState) AddStation(name string) (*Station, error) {
-
-	if name == "" {
-		name = fmt.Sprint(gs.CurrentStationID.Load())
-	}
-
-	gs.Stations = append(gs.Stations, &Station{Id: int(gs.CurrentStationID.Load()), Name: name, Storage: map[string]int{}, Plattforms: []*Plattform{}})
-	gs.CurrentStationID.Add(1)
-	return gs.Stations[len(gs.Stations)-1], nil
-}
-
-// Entfernt die Station und alle Referenzen (Stops, Plattform Tiles, etc)
-func (gs *GameState) RemoveStation(Id int) error {
-	var err error
-
-	for i, station := range gs.Stations {
-		if station.Id == Id {
-			gs.Stations, err = utils.RemoveElementFromSlice(gs.Stations, i)
-			if err != nil {
-				return err
-			}
-
-			//Enfernung des Plattform Tags aller Tiles der Station, Löschung der Plattformen findet beim Löschenn des jeweils letzten Tiles statt
-			for _, plattform := range station.Plattforms {
-				for _, tilePos := range plattform.Tiles {
-					ChangeStationTile(true, tilePos, gs)
-				}
-			}
-		}
-	}
-	return err
 }

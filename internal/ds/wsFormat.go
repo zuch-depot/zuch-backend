@@ -42,6 +42,9 @@ var (
 	trainCreateOut = WsEnvelope{Type: "train.create", Msg: &Train{}}
 
 	// #endregion Trains
+	// #region Schedule
+	scheduleCreate = WsEnvelope{Type: "schedule.create", Msg: ScheduleCreateMsg{}}
+	// #endregion Schedule
 
 // map.updateTile
 

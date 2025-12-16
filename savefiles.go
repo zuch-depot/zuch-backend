@@ -29,11 +29,8 @@ func saveGame(gs *ds.GameState) {
 	pauseGame(gs)
 
 	// Einzelnes Object das hoffentlich den ganzen status des Spiels darstellt
-	stationMap := make(map[int]*ds.Station)
-	for _, v := range gs.Stations {
-		stationMap[v.Id] = v
-	}
-	state := ds.SendAbleGamestate{Users: gs.Users, Schedules: gs.Schedules, Stations: stationMap, Tiles: gs.Tiles, Trains: gs.Trains}
+
+	state := ds.SendAbleGamestate{Users: gs.Users, Schedules: gs.Schedules, Stations: gs.Stations, Tiles: gs.Tiles, Trains: gs.Trains}
 	// Die Objekte werden in einer netten JSON verpackt
 
 	// Dateiname wird ggf. abgeändert wenn es nicht compressed wird
