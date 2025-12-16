@@ -83,7 +83,7 @@ type tileUpdateMSG struct {
 }
 ```
 - die stellt nur eine Position dar, was dort passiert wird durch den typen bestimmt 
-## Hinzufügen, entfernen und setzen von Schedules bei Zügen
+## Hinzufügen, entfernen und bewegen von Zügen
 ### train.create
 - nutzt die `trainCreateMSG` 
 	- bei Typ kann angegeben werden was für ein waggong, dies bestimmt bspw. die kapazität. Muss mich da mit wilken aber noch absprechen
@@ -92,7 +92,9 @@ type tileUpdateMSG struct {
 ### train.remove
 - nutzt die `trainRemoveMSG`
 - antwortet mit einer `trainRemoveMSG`
-### train.assignSchedule
+### train.move
+- nutzt die trainMoveMSG
+- wird nur vom server ausgehend gesendet
 ## Datenformate hinzufügen und entfernen Züge
 ### trainCreateMSG
 ```go
@@ -105,7 +107,10 @@ type trainCreateWaggons struct {
 	Position [3]int
 	Typ      string
 }
-
+type TrainMoveMSG struct {
+	Id      int
+	Waggons []*Waggon
+}
 ```
 ```json
 
