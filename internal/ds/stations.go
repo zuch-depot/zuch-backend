@@ -46,10 +46,11 @@ func AddStation(name string, gs *GameState) (*Station, error) {
 		name = fmt.Sprint(gs.CurrentStationID.Load())
 	}
 
-	station := &Station{Id: int(gs.CurrentStationID.Load()), Name: name, Storage: make(map[string]int), Plattforms: make(map[int]*Plattform)}
-	gs.Stations[int(gs.CurrentTrainID.Load())] = station
+	station := Station{Id: int(gs.CurrentStationID.Load()), Name: name, Storage: make(map[string]int), Plattforms: make(map[int]*Plattform)}
+	gs.Stations[int(gs.CurrentStationID.Load())] = &station
+
 	gs.CurrentStationID.Add(1)
-	return station, nil // ich glaube bisher kann hier kein fehler kommen? surelly jaja
+	return &station, nil // ich glaube bisher kann hier kein fehler kommen? surelly jaja
 }
 
 // Entfernt die Station und alle Referenzen (Stops, Plattform Tiles, etc)
@@ -564,7 +565,6 @@ func (s *Station) AddPlattform(name string, tiles [][2]int, gs *GameState) error
 func (s *Station) RemovePlattform(Id int, gs *GameState) error {
 
 	var err error
-	var plattformI int
 
 	plattform, ok := s.Plattforms[Id]
 	if !ok {
@@ -597,7 +597,7 @@ func (s *Station) RemovePlattform(Id int, gs *GameState) error {
 	}
 
 	//Entfernung der Plattform aus der Station
-	s.Plattforms, err = utils.RemoveElementFromSlice(s.Plattforms, plattformI)
+	delete(s.Plattforms, Id)
 	if err != nil {
 		return err
 	}
@@ -606,7 +606,7 @@ func (s *Station) RemovePlattform(Id int, gs *GameState) error {
 	if len(s.Plattforms) == 0 {
 		//TODO error
 		//Station löschen
-		gs.RemoveStation(s.Id)
+		s.RemoveStation(gs)
 	}
 
 	return nil

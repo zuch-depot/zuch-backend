@@ -69,15 +69,17 @@ func createDemoTrains(gs *ds.GameState) {
 	plattform.Name = "Gleis 2"
 	ds.ChangeStationTile(false, [2]int{9, 5}, gs)
 
+	fmt.Println(gs.Stations)
+
 	//Zug eins mit Schedule
 	var schedule *ds.Schedule
 	schedule, _ = gs.AddSchedule("Schdule Nord")
 	var stop *ds.Stop
-	stop, _ = schedule.AddStopStation(gs.Stations[0].Plattforms[0], gs)
+	stop, _ = schedule.AddStopStation(gs.Stations[1].Plattforms[1], gs)
 	stop.SetLoadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false)
 	stop.SetUnloadCommand([]string{"Pommes"}, false)
 
-	stop, _ = schedule.AddStopStation(gs.Stations[2].Plattforms[0], gs)
+	stop, _ = schedule.AddStopStation(gs.Stations[3].Plattforms[3], gs)
 	stop.SetLoadCommand([]string{"Pommes"}, false)
 	stop.SetUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false)
 
@@ -95,11 +97,11 @@ func createDemoTrains(gs *ds.GameState) {
 
 	// Zug zwei mit eigenem Schedule
 	schedule, _ = gs.AddSchedule("Schedule Süd")
-	stop, _ = schedule.AddStopStation(gs.Stations[2].Plattforms[0], gs)
+	stop, _ = schedule.AddStopStation(gs.Stations[3].Plattforms[3], gs)
 	stop.SetLoadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false)
 	stop.SetUnloadCommand([]string{"Pommes"}, false)
 
-	stop, _ = schedule.AddStopStation(gs.Stations[1].Plattforms[0], gs)
+	stop, _ = schedule.AddStopStation(gs.Stations[2].Plattforms[2], gs)
 	stop.SetLoadCommand([]string{"Pommes"}, false)
 	stop.SetUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false)
 
