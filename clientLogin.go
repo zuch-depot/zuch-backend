@@ -77,11 +77,11 @@ func acceptNewClient(w http.ResponseWriter, r *http.Request, gs *ds.GameState) {
 
 		logger.Info("Accepted new Client, with username "+username, slog.String("Username", username))
 
-		user := ds.User{Username: username, IsConnected: true, Connection: conn, WebSocketQueue: make(chan ds.WsEnvelope, 100)}
-		gs.Users = append(gs.Users, &user)
+		user := &ds.User{Username: username, IsConnected: true, Connection: conn, WebSocketQueue: make(chan ds.WsEnvelope, 100)}
+		gs.Users[username] = user
 
-		initializeClient(&user, gs)
-		go checkForClientInput(&user, gs)
+		initializeClient(user, gs)
+		go checkForClientInput(user, gs)
 	}
 }
 

@@ -26,6 +26,7 @@ func main() {
 		UnPause:          make(chan bool),
 		SizeSubtile:      4,
 		Trains:           make(map[int]*ds.Train),
+		Users:            make(map[string]*ds.User),
 		Stations:         make(map[int]*ds.Station),
 		Schedules:        make(map[int]*ds.Schedule),
 		Logger:           logger,
