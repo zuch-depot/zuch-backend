@@ -113,7 +113,6 @@ type TrainMoveMSG struct {
 }
 ```
 ```json
-
 {
   "Type": "train.create",
   "TransactionID":"edabad9e-e1a7-4e91-977a-119daaa8775e",
