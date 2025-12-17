@@ -39,12 +39,19 @@ func (gs *GameState) AddSchedule(name string) (*Schedule, error) {
 	return &s, nil
 }
 
+// Löscht alle Stops und danach den Schedule aus der Map
 func (gs *GameState) RemoveSchedule(Id int) error {
-	before := len(gs.Schedules)
-	delete(gs.Schedules, Id)
-	if !(before > len(gs.Schedules)) {
+	schedule := gs.Schedules[Id]
+
+	if schedule == nil {
 		return fmt.Errorf("couldn't find schedule in map")
 	}
+
+	for _, stop := range schedule.Stops {
+		schedule.RemoveStop(stop.Id, gs)
+	}
+
+	delete(gs.Schedules, Id)
 
 	return nil
 }
@@ -92,15 +99,26 @@ func (s *Schedule) nextStop(currentStop Stop) Stop {
 	return s.Stops[index+1]
 }
 
-// Entfernt den Stop mit der passenden Id
-// TODO errors
+// Entfernt den Stop mit der passenden Id. Löscht nicht den Schedule, wenn es der letzte Stop war. Die kann man nur mit der Funktion löschen
+// TODO errors, TODO was passiert, wenn letzter Stop war?
 func (s *Schedule) RemoveStop(Id int, gs *GameState) error {
 	var err error
 
 	for i, stop := range s.Stops {
 		if stop.Id == Id {
-			//TODO Irgendwie die Züge aktualisieren?, dass die nicht mehr weiterfahren
 			s.Stops, err = utils.RemoveElementFromSlice(s.Stops, i)
+			if err != nil {
+				return err
+			}
+
+			//Bei allen Zügen, die den Stop als nächsten Stop gerade haben, wird der nächste Stop ausgewählt und der Weg neu berechenet
+			for _, train := range gs.Trains {
+				if train.NextStop.Id == Id {
+					train.NextStop = train.Schedule.nextStop(train.NextStop)
+					train.RecalculatePath(gs)
+				}
+			}
+
 			return err
 		}
 	}
