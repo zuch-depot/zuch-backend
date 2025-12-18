@@ -1,6 +1,8 @@
 package main
 
-import "zuch-backend/internal/ds"
+import (
+	"zuch-backend/internal/ds"
+)
 
 // bis jetzt noch keine Level implementiert
 func processActiveTiles(gs *ds.GameState) {
@@ -75,31 +77,7 @@ func processActiveTiles(gs *ds.GameState) {
 
 		}
 
-		//Verteile Ergebnis an umliegende Stationen
-		//an der Stelle richtig
-		//MUSS ersetzt werden mit CargoPathfinding
-
-		for _, prodCyle := range activeTile.Category.Productioncycles {
-			//macht eine Liste aller Güter, die in dem Tile produziert werden
-			var typesProducing []string
-			for cargoTypeToProduce := range prodCyle.Produktion {
-				typesProducing = append(typesProducing, cargoTypeToProduce)
-			}
-
-			//geht die Stationen durch und versucht so so viel einzufügen von den CargoTypes,
-			//die produziert werden, wie gelagert ist, durch die Anzahl der Stationen
-			//das wird natürlich aus dem Lager des Tiles entfernt
-			numberStations := len(activeTile.Stations)
-			for _, station := range activeTile.Stations {
-				for _, cargoTypeProducing := range typesProducing {
-					quantityToAdd := activeTile.Storage[cargoTypeProducing] / numberStations
-					activeTile.Storage[cargoTypeProducing] -= quantityToAdd - station.AddCargo(cargoTypeProducing, quantityToAdd)
-				}
-			}
-		}
+		//Verteile Ergebnis an umliegende Stationen -> jetzt in CalculateCargoPaths
 
 	}
-}
-
-type Car struct {
 }

@@ -31,14 +31,15 @@ type GameState struct {
 
 	StationRange int
 	//ALLE IDs MÜSSEN BEI 1 ANFANGEN
-	CurrentTrainID     atomic.Uint64
-	CurrentScheduleID  atomic.Uint64
-	CurrentStopID      atomic.Uint64
-	CurrentStationID   atomic.Uint64
-	CurrentPlattformID atomic.Uint64
-	Ticker             *time.Ticker
-	Tick               int
-	IsPaused           bool
+	CurrentTrainID      atomic.Uint64
+	CurrentScheduleID   atomic.Uint64
+	CurrentStopID       atomic.Uint64
+	CurrentStationID    atomic.Uint64
+	CurrentPlattformID  atomic.Uint64
+	CurrentActiveTileID atomic.Uint64
+	Ticker              *time.Ticker
+	Tick                int
+	IsPaused            bool
 
 	BroadcastChannel chan WsEnvelope
 	UserInputs       chan RecieveWSEnvelope

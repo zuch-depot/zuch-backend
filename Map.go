@@ -20,9 +20,9 @@ var (
 		" .|.B. .+.+. . . .|", //1
 		" .|. . . .+.+. . .|", //2
 		" .|. . . . .|. .+.+", //3
-		" .+.-.-.+.-.+. .|.|", //4
-		" . .+.-.+. .|. .|.|", //5
-		" . .|. . . .|. .+.+", //6
+		" .+.-.-.+.-.+.+.+.|", //4
+		" . .+.-.+. .|.|.S.|", //5
+		" . .|. . . .|.+.-.+", //6
 		" . .+.-.-.-.+. . .|", //7
 		" .+.+. . . .|. . .|", //8
 		" .+.+. . .L.|. . . ", //9
@@ -31,6 +31,7 @@ var (
 		{1, 3, 4},
 		{4, 5, 2},
 		{4, 5, 2},
+		{7, 5, 2},
 	}
 )
 
@@ -42,14 +43,9 @@ func createDemoTrains(gs *ds.GameState) {
 	gs.CurrentScheduleID.Add(1)
 	gs.CurrentStopID.Add(1)
 	gs.CurrentTrainID.Add(1)
+	gs.CurrentActiveTileID.Add(1)
 
 	//stations inkl. Initialisieren
-	// gs.Stations = append(gs.Stations, &ds.Station{Name: "Station Nord", Id: 1, Capacity: 100, Storage: map[string]int{}})
-	// plattforms := []*ds.Plattform{{Name: "Gleis 1", Tiles: [][2]int{{2, 0}, {3, 0}}, Station: gs.Stations[0]}}
-	// gs.Stations[0].Plattforms = []*ds.Plattform{plattforms[0]}
-	// ds.ChangeStationTile(false, [2]int{2, 0}, gs)
-	// ds.ChangeStationTile(false, [2]int{3, 0}, gs)
-
 	pos := [2]int{2, 0}
 	ds.ChangeStationTile(false, pos, gs) //hier wird auch die Station und Plattform erstellt
 	//Bestimmung der Station zum umbenennen
@@ -57,13 +53,6 @@ func createDemoTrains(gs *ds.GameState) {
 	plattform.GetStation(gs).Name = "Station Nord"
 	plattform.Name = "Gleis 1"
 	ds.ChangeStationTile(false, [2]int{3, 0}, gs)
-
-	// gs.Stations = append(gs.Stations, &ds.Station{Name: "Station Süd", Id: 2, Capacity: 150, Storage: map[string]int{}})
-	// plattforms = append(plattforms, &ds.Plattform{Name: "Gleis 31", Tiles: [][2]int{{3, 7}, {4, 7}, {5, 7}}, Station: gs.Stations[1]})
-	// gs.Stations[1].Plattforms = []*ds.Plattform{plattforms[1]}
-	// ds.ChangeStationTile(false, [2]int{3, 7}, gs)
-	// ds.ChangeStationTile(false, [2]int{4, 7}, gs)
-	// ds.ChangeStationTile(false, [2]int{5, 7}, gs)
 
 	pos = [2]int{3, 7}
 	ds.ChangeStationTile(false, pos, gs)
@@ -73,28 +62,26 @@ func createDemoTrains(gs *ds.GameState) {
 	ds.ChangeStationTile(false, [2]int{4, 7}, gs)
 	ds.ChangeStationTile(false, [2]int{5, 7}, gs)
 
+	pos = [2]int{9, 4}
+	ds.ChangeStationTile(false, pos, gs)
+	plattform, _ = ds.GetPlattform(pos, gs)
+	plattform.GetStation(gs).Name = "Station Ost"
+	plattform.Name = "Gleis 2"
+	ds.ChangeStationTile(false, [2]int{9, 5}, gs)
+
+	fmt.Println(gs.Stations)
+
 	//Zug eins mit Schedule
-	/*Stops := []ds.Stop{
-		{Id: 1, Plattform: &plattforms[0], IsPlattform: true, LoadUnloadCommand: [2]ds.LoadUnloadCommand{
-			{CargoTypes: []string{"Pommes"}},
-			{Loading: true, CargoTypes: []string{"Kartoffeln", "Sonnenblumenöl"}}}},
-		// {Id: 2, Goal: [3]int{1, 3, 4}, Name: "Wegpunkt 1"},
-		{Id: 3, Plattform: &plattforms[1], IsPlattform: true, LoadUnloadCommand: [2]ds.LoadUnloadCommand{
-			{CargoTypes: []string{"Kartoffeln", "Sonnenblumenöl"}},
-			{Loading: true, CargoTypes: []string{"Pommes"}}}}}
-	schedule := &ds.Schedule{Stops: Stops, Name: "Schedule 1"}
-	gs.Schedules = append(gs.Schedules, schedule)*/
-
 	var schedule *ds.Schedule
-	schedule, _ = gs.AddSchedule("Schdule 1")
+	schedule, _ = gs.AddSchedule("Schdule Nord")
 	var stop *ds.Stop
-	stop, _ = schedule.AddStopStation(plattform, gs)
-	stop.ChangeLoadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false)
-	stop.ChangeUnloadCommand([]string{"Pommes"}, false)
+	stop, _ = schedule.AddStopStation(gs.Stations[1].Plattforms[1], gs)
+	stop.SetLoadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false)
+	stop.SetUnloadCommand([]string{"Pommes"}, false)
 
-	stop, _ = schedule.AddStopStation(plattform2, gs)
-	stop.ChangeLoadCommand([]string{"Pommes"}, false)
-	stop.ChangeUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false)
+	stop, _ = schedule.AddStopStation(gs.Stations[3].Plattforms[3], gs)
+	stop.SetLoadCommand([]string{"Pommes"}, false)
+	stop.SetUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false)
 
 	train, err := addTrain(ds.TrainCreateMSG{Name: "RE1",
 		Waggons: []ds.TrainCreateWaggons{
@@ -108,18 +95,29 @@ func createDemoTrains(gs *ds.GameState) {
 		gs.Logger.Error("Fehler, aber ist im demo ding egal")
 	}
 
-	// Zug zwei
+	// Zug zwei mit eigenem Schedule
+	schedule, _ = gs.AddSchedule("Schedule Süd")
+	stop, _ = schedule.AddStopStation(gs.Stations[3].Plattforms[3], gs)
+	stop.SetLoadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false)
+	stop.SetUnloadCommand([]string{"Pommes"}, false)
+
+	stop, _ = schedule.AddStopStation(gs.Stations[2].Plattforms[2], gs)
+	stop.SetLoadCommand([]string{"Pommes"}, false)
+	stop.SetUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false)
+
 	train, err = addTrain(ds.TrainCreateMSG{
 		Name: "RE2",
 		Waggons: []ds.TrainCreateWaggons{
 			{Position: [3]int{6, 6, 2}, Typ: "Lebensmittel"},
 			{Position: [3]int{6, 5, 4}, Typ: "Lebensmittel"},
-			{Position: [3]int{6, 5, 2}, Typ: "Lebensmittel"}}}, gs)
+			{Position: [3]int{6, 5, 2}, Typ: "Lebensmittel"},
+			{Position: [3]int{6, 4, 4}, Typ: "Lebensmittel"}}}, gs)
 	train.Schedule = schedule
 
 	if err != nil {
 		gs.Logger.Error("Fehler, aber ist im demo ding egal")
 	}
+
 }
 
 func initializeTiles(gs *ds.GameState) {
@@ -165,7 +163,11 @@ func initializeTiles(gs *ds.GameState) {
 				gs.ActiveTiles = append(gs.ActiveTiles, &aktiveTile)
 			case "L":
 				temp := gs.ConfigData.ActiveTileCategories["Lebensmittelfabrik"]
-				aktiveTile = ds.ActiveTile{Name: "Lebensmittelfabrik Süd", Category: &temp, MaxStorage: 50, Storage: map[string]int{"Kartoffeln": 100}}
+				aktiveTile = ds.ActiveTile{Name: "Lebensmittelfabrik Süd", Category: &temp, MaxStorage: 50, Storage: map[string]int{"Kartoffeln": 100, "Sonnenblumenöl": 50}}
+				gs.ActiveTiles = append(gs.ActiveTiles, &aktiveTile)
+			case "S":
+				temp := gs.ConfigData.ActiveTileCategories["Stadt"]
+				aktiveTile = ds.ActiveTile{Name: "Wuppertal", Category: &temp, MaxStorage: 50}
 				gs.ActiveTiles = append(gs.ActiveTiles, &aktiveTile)
 			}
 

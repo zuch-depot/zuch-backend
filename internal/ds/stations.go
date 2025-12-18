@@ -46,10 +46,11 @@ func AddStation(name string, gs *GameState) (*Station, error) {
 		name = fmt.Sprint(gs.CurrentStationID.Load())
 	}
 
-	station := &Station{Id: int(gs.CurrentStationID.Load()), Name: name, Storage: make(map[string]int), Plattforms: make(map[int]*Plattform)}
-	gs.Stations[int(gs.CurrentTrainID.Load())] = station
+	station := Station{Id: int(gs.CurrentStationID.Load()), Name: name, Storage: make(map[string]int), Plattforms: make(map[int]*Plattform)}
+	gs.Stations[int(gs.CurrentStationID.Load())] = &station
+
 	gs.CurrentStationID.Add(1)
-	return station, nil // ich glaube bisher kann hier kein fehler kommen? surelly jaja
+	return &station, nil // ich glaube bisher kann hier kein fehler kommen? surelly jaja
 }
 
 // Entfernt die Station und alle Referenzen (Stops, Plattform Tiles, etc)
@@ -126,6 +127,16 @@ func (p *Plattform) addTile(position [2]int, smaller bool, gs *GameState) error 
 
 	gs.Tiles[position[0]][position[1]].IsPlattform = true
 	return nil
+}
+
+// effizientere Methode zu überprüfen, ob die Plattform zu der Station gehört
+func (p *Plattform) isPlattfromFromStation(station *Station) bool {
+	for _, plattform := range station.Plattforms {
+		if plattform.Id == p.Id {
+			return true
+		}
+	}
+	return false
 }
 
 // wenn nicht außen, dann splitting (noch nicht impl). Validität wird nicht geprüft
@@ -256,10 +267,19 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) (*Station, e
 
 		station = plattform.GetStation(gs)
 
+		//verkleinerung der max. Kapazität
+		station.Capacity -= gs.CapacityPerStationTile
+
 		//Entfernung des Tags und weitere Berechnungen
 		err = plattform.removeTile(position, gs)
 		if err != nil {
 			return nil, err
+		}
+
+		//gucken
+		if len(plattform.Tiles) == 0 {
+			//Plattform löschen
+			station.RemovePlattform(plattform.Id, gs)
 		}
 
 	} else {
@@ -311,7 +331,7 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) (*Station, e
 				stationBordering = temp.GetStation(gs)
 			}
 		}
-		if position[0] < gs.SizeY-1 {
+		if position[1] < gs.SizeY-1 {
 			under = gs.Tiles[position[0]][position[1]+1]
 			if under.IsPlattform {
 				var temp *Plattform
@@ -338,7 +358,10 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) (*Station, e
 		} else {
 			station = stationBordering
 		}
-		//es gibt eine Station. Nun wird das Gleis bestimmt
+		//es gibt eine Station. Da ?sicher ein Tile hinzugefügt wird, vergrößere den Platz
+		station.Capacity += gs.CapacityPerStationTile
+
+		// Nun wird das Gleis bestimmt
 		gs.Tiles[position[0]][position[1]].IsPlattform = true
 
 		//Gleis bestimmen und hinzufügen
@@ -496,6 +519,7 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) (*Station, e
 }
 
 // return Restwert, der keinen Platz gefunden hat
+// beachtet max. Lademenge pro Tick nicht
 func (s *Station) AddCargo(cargoType string, quantity int) int {
 	filled := s.GetFillLevel()
 	//ist noch platz?
@@ -527,7 +551,7 @@ func (s Station) GetFillLevel() int {
 func (s *Station) AddPlattform(name string, tiles [][2]int, gs *GameState) error {
 
 	if name == "" {
-		name = fmt.Sprint(gs.CurrentPlattformID.Load())
+		name = fmt.Sprint("Plattform ", gs.CurrentPlattformID.Load())
 	}
 
 	s.Plattforms[int(gs.CurrentPlattformID.Load())] = &Plattform{Id: int(gs.CurrentPlattformID.Load()), Name: name, Tiles: tiles /*, Station: s*/}
@@ -548,6 +572,7 @@ func (s *Station) RemovePlattform(Id int, gs *GameState) error {
 	}
 
 	//Entfernt alle Tiles mit der Plattform
+	//(wichtig, damit die ActiveTiles der Station aktualisiert werden)
 	if len(plattform.Tiles) == 0 {
 		for _, pos := range plattform.Tiles {
 			_, err = ChangeStationTile(true, pos, gs)
@@ -569,6 +594,19 @@ func (s *Station) RemovePlattform(Id int, gs *GameState) error {
 				break
 			}
 		}
+	}
+
+	//Entfernung der Plattform aus der Station
+	delete(s.Plattforms, Id)
+	if err != nil {
+		return err
+	}
+
+	//Kontrolle, ob die Station noch Plattformen hat
+	if len(s.Plattforms) == 0 {
+		//TODO error
+		//Station löschen
+		s.RemoveStation(gs)
 	}
 
 	return nil
