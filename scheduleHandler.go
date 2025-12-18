@@ -69,11 +69,11 @@ func handleCreateSchedule(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error
 			return err
 		}
 
-		err = stop.ChangeLoadCommand(entry.LoadStrings, entry.WaitTillFull)
+		err = stop.SetLoadCommand(entry.LoadStrings, entry.WaitTillFull)
 		if err != nil {
 			return err
 		}
-		err = stop.ChangeUnloadCommand(entry.UnloadString, entry.WaitTillEmpty)
+		err = stop.SetUnloadCommand(entry.UnloadString, entry.WaitTillEmpty)
 		if err != nil {
 			return err
 		}
