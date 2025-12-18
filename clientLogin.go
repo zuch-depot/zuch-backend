@@ -15,19 +15,27 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
+func enableCors(w *http.ResponseWriter) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*") // erstmal bei cors alles erlauben
+}
+
 func startServer(gs *ds.GameState) {
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) { // Muss so gelöst werden damit ich noch die referenz zum Gamestate übertragen kann
+		enableCors(&w)
 		acceptNewClient(w, r, gs)
 	})
 	// die werden später noch als teil des WS umgesetzt (denke ich mal), aber zum testen erstmal so
 	http.HandleFunc("/save", func(w http.ResponseWriter, r *http.Request) { // Muss so gelöst werden damit ich noch die referenz zum Gamestate übertragen kann
+		enableCors(&w)
 		handleSaveRequest(w, r, gs)
 	})
 	http.HandleFunc("/pause", func(w http.ResponseWriter, r *http.Request) { // Muss so gelöst werden damit ich noch die referenz zum Gamestate übertragen kann
+		enableCors(&w)
 		handlePauseGame(w, r, gs)
 	})
 	http.HandleFunc("/unpause", func(w http.ResponseWriter, r *http.Request) { // Muss so gelöst werden damit ich noch die referenz zum Gamestate übertragen kann
+		enableCors(&w)
 		handleUnpauseGame(w, r, gs)
 	})
 
