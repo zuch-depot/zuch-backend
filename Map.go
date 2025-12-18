@@ -117,7 +117,6 @@ func createDemoTrains(gs *ds.GameState) {
 	if err != nil {
 		gs.Logger.Error("Fehler, aber ist im demo ding egal")
 	}
-
 }
 
 func initializeTiles(gs *ds.GameState) {

@@ -46,11 +46,10 @@ func AddStation(name string, gs *GameState) (*Station, error) {
 		name = fmt.Sprint(gs.CurrentStationID.Load())
 	}
 
-	station := Station{Id: int(gs.CurrentStationID.Load()), Name: name, Storage: make(map[string]int), Plattforms: make(map[int]*Plattform)}
-	gs.Stations[int(gs.CurrentStationID.Load())] = &station
-
+	station := &Station{Id: int(gs.CurrentStationID.Load()), Name: name, Storage: make(map[string]int), Plattforms: make(map[int]*Plattform)}
+	gs.Stations[int(gs.CurrentStationID.Load())] = station
 	gs.CurrentStationID.Add(1)
-	return &station, nil // ich glaube bisher kann hier kein fehler kommen? surelly jaja
+	return station, nil // ich glaube bisher kann hier kein fehler kommen? surelly jaja
 }
 
 // Entfernt die Station und alle Referenzen (Stops, Plattform Tiles, etc)

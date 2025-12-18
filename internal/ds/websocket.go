@@ -85,14 +85,20 @@ type StationUpdateMsg struct {
 	Position [2]int
 }
 
-type ScheduleCreateMsg struct {
+type ScheduleCreateMSG struct {
 	Name    string
 	Entries []ScheduleEntry
 }
 
+type ScheduleRemoveMSG struct {
+	Id int
+}
+
 type ScheduleEntry struct {
-	PlattformId  int
-	StationId    int
-	LoadStrings  []string
-	UnloadString []string
+	PlattformId   int
+	StationId     int
+	LoadStrings   []string
+	UnloadString  []string
+	WaitTillFull  bool
+	WaitTillEmpty bool
 }

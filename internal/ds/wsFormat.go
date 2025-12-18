@@ -43,7 +43,8 @@ var (
 
 	// #endregion Trains
 	// #region Schedule
-	scheduleCreate = WsEnvelope{Type: "schedule.create", Msg: ScheduleCreateMsg{}}
+	scheduleCreate = WsEnvelope{Type: "schedule.create", Msg: ScheduleCreateMSG{}}
+	scheduleRemove = WsEnvelope{Type: "schedule.remove", Msg: ScheduleRemoveMSG{}}
 	// #endregion Schedule
 
 // map.updateTile

@@ -169,4 +169,29 @@ type blockedTilesMSG struct {
 - erstellt eine neue schedule mit den gegebenen stops und 
 - nutzt die `ScheduleCreateMsg` zum erstellen
 - antwortet mit der neuen `Schedule` 
+### schedule.remove
+- löscht eine schedule
+- Empfängt und sendet eine `ScheduleRemoveMSG`
 ## Datenformate erstellen und zuordnen von schedules
+### ScheduleCreateMSG
+```go
+type ScheduleCreateMSG struct {
+	Name    string
+	Entries []ScheduleEntry
+}
+
+type ScheduleEntry struct {
+	PlattformId   int
+	StationId     int
+	LoadStrings   []string // gibt an welche güter geladen werden, bspw. "Lebensmittel"
+	WaitTillFull  bool
+	UnloadString  []string
+	WaitTillEmpty bool
+}
+```
+### ScheduleRemoveMSG
+```go
+type ScheduleRemoveMSG struct {
+	Id int
+}
+```
