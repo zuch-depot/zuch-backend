@@ -69,7 +69,7 @@ func createDemoTrains(gs *ds.GameState) {
 	plattform.Name = "Gleis 2"
 	ds.ChangeStationTile(false, [2]int{9, 5}, gs)
 
-	fmt.Println(gs.Stations)
+	// fmt.Println(gs.Stations)
 
 	//Zug eins mit Schedule
 	var schedule *ds.Schedule

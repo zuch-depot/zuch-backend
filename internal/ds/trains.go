@@ -186,7 +186,7 @@ func (t *Train) CalculateTrain(gs *GameState) [2]int {
 	//ist gerade in die Staion eingefahren, also speichern der aktuellen Station. Nächste Station wird bei neuberechen überschrieben
 	if t.NextStop.IsPlattform && t.LoadingTime == 0 && len(t.CurrentPath) == 0 {
 		gs.Logger.Debug("Zug " + t.Name + " in " + t.NextStop.Plattform.GetStation(gs).Name + " eingefahren.")
-		fmt.Println("Zug " + t.Name + " in " + t.NextStop.Plattform.GetStation(gs).Name + " eingefahren.")
+		// fmt.Println("Zug " + t.Name + " in " + t.NextStop.Plattform.GetStation(gs).Name + " eingefahren.")
 	} else if !t.NextStop.IsPlattform && len(t.CurrentPath) == 0 {
 		//wenn das aktuelle Ziel ein Wegpunkt ist und man angekommen ist, braucht man einfach den nächsten Stop aussuchen und fahren
 		return t.Move(gs)
@@ -283,7 +283,7 @@ func (t *Train) LoadUndload(gs *GameState) bool {
 
 				if removed > 0 {
 					gs.Logger.Debug("Zug: " + t.Name + " hat " + strconv.Itoa(removed) + " Tonnen " + string(cargo) + " entladen")
-					fmt.Println("Zug: " + t.Name + " hat " + strconv.Itoa(removed) + " Tonnen " + string(cargo) + " entladen")
+					// fmt.Println("Zug: " + t.Name + " hat " + strconv.Itoa(removed) + " Tonnen " + string(cargo) + " entladen")
 				}
 				//wenn nichts bewegt wurde und man nicht bis leer sein wartet, ist der Ladevorgang beendet
 				//(damit ist immer einmal überprüfen, ohne, dass was passiert -> eig. nicht schlimm)
