@@ -102,3 +102,8 @@ type ScheduleEntry struct {
 	WaitTillFull  bool
 	WaitTillEmpty bool
 }
+
+type ScheduleAssignMSG struct {
+	ScheduleId  int
+	TrainId 	int
+}

@@ -14,12 +14,62 @@ func handleScheduleUpdate(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error
 	case "schedule.remove":
 		return handleRemoveSchedule(envelope, gs)
 	case "schedule.assign":
-		return handleCreateStation(envelope, gs)
+		return handleAssignSchedule(envelope, gs)
 	case "schedule.unassign":
-		return handleRemoveStation(envelope, gs)
+		return handleUnAssignSchdeule(envelope, gs)
 	default:
 		return fmt.Errorf("unknown envelope Type")
 	}
+}
+
+func handleUnAssignSchdeule(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error {
+	var update ds.ScheduleAssignMSG
+	err := json.Unmarshal(envelope.Msg, &update)
+	if err != nil {
+		return fmt.Errorf("could not unpack envelope; %s", err.Error())
+	}
+	train , ok := gs.Trains[update.TrainId]
+	if ok {
+		return fmt.Errorf("could not find train")
+	} 
+	
+	// vielleicht macht das probleme
+	train.Schedule = nil
+	gs.Logger.Info("Unassigned Schedule", slog.Int("Train ID",update.TrainId),slog.Int("Schedule Id", update.ScheduleId), slog.String("Username", envelope.User.Username))
+	gs.BroadcastChannel <- ds.WsEnvelope{
+		Type:          "schedule.unassign",
+		Username:      "Server",
+		TransactionID: envelope.TransactionID,
+		Msg:           train,
+	}
+	return nil
+}
+
+func handleAssignSchedule(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error {
+	var update ds.ScheduleAssignMSG
+	err := json.Unmarshal(envelope.Msg, &update)
+	if err != nil {
+		return fmt.Errorf("could not unpack envelope; %s", err.Error())
+	}
+	train , ok := gs.Trains[update.TrainId]
+	if ok {
+		return fmt.Errorf("could not find train")
+	} 
+	
+	schedule , ok := gs.Schedules[update.ScheduleId]
+	if ok {
+		return fmt.Errorf("could not find schedule")
+	} 
+	
+	train.Schedule = schedule
+	gs.Logger.Info("Assigned Schedule", slog.Int("Train ID",update.TrainId),slog.Int("Schedule Id", update.ScheduleId), slog.String("Username", envelope.User.Username))
+	gs.BroadcastChannel <- ds.WsEnvelope{
+		Type:          "schedule.assign",
+		Username:      "Server",
+		TransactionID: envelope.TransactionID,
+		Msg:           train,
+	}
+	return nil
 }
 
 func handleRemoveSchedule(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error {

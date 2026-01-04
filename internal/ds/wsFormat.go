@@ -45,6 +45,8 @@ var (
 	// #region Schedule
 	scheduleCreate = WsEnvelope{Type: "schedule.create", Msg: ScheduleCreateMSG{}}
 	scheduleRemove = WsEnvelope{Type: "schedule.remove", Msg: ScheduleRemoveMSG{}}
+	scheduleAssign = WsEnvelope{Type: "schedule.assign",Msg:  ScheduleAssignMSG{}}
+	scheduleUnassign = WsEnvelope{Type: "schedule.unassign",Msg:  ScheduleAssignMSG{}}
 	// #endregion Schedule
 
 // map.updateTile
