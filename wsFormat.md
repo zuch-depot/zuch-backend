@@ -140,6 +140,12 @@ type tileUpdateMSG struct {
 - nutzt die trainMoveMSG
 - wird nur vom server ausgehend gesendet
 
+### train.cargochange
+
+- wird ausgesendet wenn der Füllstand eines zuges sich ändert
+- schickt einfach einen neuen `zug`, langsam wirds mir zu bunt
+- wird nur vom server aus getriggert, client kann die nicht schicken
+
 ## Datenformate hinzufügen und entfernen Züge
 
 ### trainCreateMSG
@@ -181,6 +187,39 @@ type TrainMoveMSG struct {
 ```go
 type trainRemoveMSG struct {
 	id int
+}
+```
+
+### ZUCHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH choo choo
+
+```go
+// gesetzt werden müssen: Name, Waggons, Id
+type Train struct {
+	Name               string    // Nicht eindeutig, dafür siehe ID
+	Waggons            []*Waggon //Alle müssen nebeneinander spawnen
+	Schedule           *Schedule
+	NextStop           Stop     //der Stop, in dem der Zug gerade hinfährt oder plant hinzufahren. Wenn 0, dann nächster Stop aus Schedule
+	CurrentPath        [][3]int //neu berechnen bei laden
+	CurrentPathSignals [][3]int
+
+	Waiting         bool //hat letzten Tick ein geblockes Tile gefunden oder keinen Weg gefunden und wartet
+	LoadingTime     int  //Wie lange ist der Zug schon am be-/entladen? 0 == nicht am laden. Zeiteinheit ist wie oft methode aufgerufen wurde
+	FinishedLoading bool //wenn nichts mehr geladen wird true. Kann auch wieder zurückgenommen werden
+	Id              int
+	//User            *User nur ggf., falls wird das implementieren
+}
+
+type Waggon struct {
+	Position     [3]int //x,y,sub
+	MaxSpeed     int
+	CargoStorage *CargoStorage
+}
+
+type CargoStorage struct {
+	Capacity        int //statisch
+	Filled          int
+	FilledCargoType string
+	CargoCategory   string //statisch
 }
 ```
 

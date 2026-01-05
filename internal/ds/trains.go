@@ -305,6 +305,9 @@ func (t *Train) LoadUndload(gs *GameState) bool {
 		r = true
 	}
 
+	// der user kriegt einfach den neuen zuch 
+	gs.BroadcastChannel <- WsEnvelope{Type: "train.cargochange", Username: "server", Msg: t}
+
 	return r
 }
 
