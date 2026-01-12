@@ -127,8 +127,12 @@ func main() {
 		if gs.Tick%10 == 0 {
 			// fmt.Println("tick", tick)
 		}
-		// das wartet hier bis ein tick ausgelöst wird,
 
+		// if gs.Tick == 100 {
+		// 	go saveGame(&gs)
+		// }
+
+		// das wartet hier bis ein tick ausgelöst wird,
 		<-gs.Ticker.C
 	}
 }

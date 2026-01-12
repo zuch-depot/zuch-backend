@@ -21,7 +21,7 @@ func handleUnpauseGame(w http.ResponseWriter, r *http.Request, gs *ds.GameState)
 
 }
 
-// Benutzt um rückmeldung zuu geben das der aktuelle tick vorbei ist und vorm nächsten pausiert wurde
+// Benutzt um Rückmeldung zu geben das der aktuelle Tick vorbei ist und vorm nächsten pausiert wurde
 var confirmPause = make(chan bool)
 
 func pauseGame(gs *ds.GameState) {
