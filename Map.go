@@ -158,15 +158,15 @@ func initializeTiles(gs *ds.GameState) {
 				tracks = [4]bool{true, true, true, true}
 			case "B":
 				temp := gs.ConfigData.ActiveTileCategories["Bauernhof"]
-				aktiveTile = ds.ActiveTile{Name: "Bauernhof Nord", Category: &temp, MaxStorage: 150}
+				aktiveTile = ds.ActiveTile{Id: 3 ,Name: "Bauernhof Nord", Category: &temp, MaxStorage: 150}
 				gs.ActiveTiles = append(gs.ActiveTiles, &aktiveTile)
 			case "L":
 				temp := gs.ConfigData.ActiveTileCategories["Lebensmittelfabrik"]
-				aktiveTile = ds.ActiveTile{Name: "Lebensmittelfabrik Süd", Category: &temp, MaxStorage: 50, Storage: map[string]int{"Kartoffeln": 100, "Sonnenblumenöl": 50}}
+				aktiveTile = ds.ActiveTile{Id:1,Name: "Lebensmittelfabrik Süd", Category: &temp, MaxStorage: 50, Storage: map[string]int{"Kartoffeln": 100, "Sonnenblumenöl": 50}}
 				gs.ActiveTiles = append(gs.ActiveTiles, &aktiveTile)
 			case "S":
 				temp := gs.ConfigData.ActiveTileCategories["Stadt"]
-				aktiveTile = ds.ActiveTile{Name: "Wuppertal", Category: &temp, MaxStorage: 50}
+				aktiveTile = ds.ActiveTile{Id:2,Name: "Wuppertal", Category: &temp, MaxStorage: 50}
 				gs.ActiveTiles = append(gs.ActiveTiles, &aktiveTile)
 			}
 
