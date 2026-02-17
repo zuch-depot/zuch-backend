@@ -14,18 +14,19 @@ import (
 // nur testing
 var (
 	testMap = []string{
-		/*
-		 0.1.2.3.4.5.6.7.8.9*/
-		" .+.-.-.+.+.-. . .|", //0
-		" .|.B. .+.+. . . .|", //1
-		" .|. . . .+.+. . .|", //2
-		" .|. . . . .|. .+.+", //3
-		" .+.-.-.+.-.+.+.+.|", //4
-		" . .+.-.+. .|.|.S.|", //5
-		" . .|. . . .|.+.-.+", //6
-		" . .+.-.-.-.+. . .|", //7
-		" .+.+. . . .|. . .|", //8
-		" .+.+. . .L.|. . . ", //9
+		/* 	für ecken↘↙↗↖, zeigt jeweils in die ecke wo die schiene ist
+			für Ts ↓→↑←, zeigen aud das mittlere der drei subtiles
+		0.1.2.3.4.5.6.7.8.9*/
+		" .↖.-.-.↓.↓.-. . .|", //0
+		" .|.B. .↙.←. . . .|", //1
+		" .|. . . .↙.↗. . .|", //2
+		" .|. . . . .|. .↖.←", //3
+		" .↙.-.-.↓.-.+.↓.↘.|", //4
+		" . .↖.-.↘. .|.|.S.|", //5
+		" . .|. . . .|.↙.-.←", //6
+		" . .→.-.-.-.←. . .|", //7
+		" .↖.←. . . .|. . .|", //8
+		" .↙.↘. . .L.|. . . ", //9
 	}
 	testSignals = [][3]int{
 		{1, 3, 4},
@@ -156,17 +157,33 @@ func initializeTiles(gs *ds.GameState) {
 				tracks = [4]bool{false, true, false, true}
 			case "+":
 				tracks = [4]bool{true, true, true, true}
+			case "↖":
+				tracks = [4]bool{false, false, true, true}
+			case "↗":
+				tracks = [4]bool{true, false, false, true}
+			case "↙":
+				tracks = [4]bool{false, true, true, false}
+			case "↘":
+				tracks = [4]bool{true, true, false, false}
+			case "→":
+				tracks = [4]bool{false, true, true, true}
+			case "↓":
+				tracks = [4]bool{true, false, true, true}
+			case "←":
+				tracks = [4]bool{true, true, false, true}
+			case "↑":
+				tracks = [4]bool{true, true, true, false}
 			case "B":
 				temp := gs.ConfigData.ActiveTileCategories["Bauernhof"]
-				aktiveTile = ds.ActiveTile{Id: 3 ,Name: "Bauernhof Nord", Category: &temp, MaxStorage: 150}
+				aktiveTile = ds.ActiveTile{Id: 3, Name: "Bauernhof Nord", Category: &temp, MaxStorage: 150}
 				gs.ActiveTiles = append(gs.ActiveTiles, &aktiveTile)
 			case "L":
 				temp := gs.ConfigData.ActiveTileCategories["Lebensmittelfabrik"]
-				aktiveTile = ds.ActiveTile{Id:1,Name: "Lebensmittelfabrik Süd", Category: &temp, MaxStorage: 50, Storage: map[string]int{"Kartoffeln": 100, "Sonnenblumenöl": 50}}
+				aktiveTile = ds.ActiveTile{Id: 1, Name: "Lebensmittelfabrik Süd", Category: &temp, MaxStorage: 50, Storage: map[string]int{"Kartoffeln": 100, "Sonnenblumenöl": 50}}
 				gs.ActiveTiles = append(gs.ActiveTiles, &aktiveTile)
 			case "S":
 				temp := gs.ConfigData.ActiveTileCategories["Stadt"]
-				aktiveTile = ds.ActiveTile{Id:2,Name: "Wuppertal", Category: &temp, MaxStorage: 50}
+				aktiveTile = ds.ActiveTile{Id: 2, Name: "Wuppertal", Category: &temp, MaxStorage: 50}
 				gs.ActiveTiles = append(gs.ActiveTiles, &aktiveTile)
 			}
 
