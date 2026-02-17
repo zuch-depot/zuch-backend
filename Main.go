@@ -120,7 +120,7 @@ func main() {
 		}
 
 		if gs.Tick%10 == 2 {
-			gs.CalculateCargoPaths()
+			// gs.CalculateCargoPaths()
 		}
 
 		// anzeigen Testing
