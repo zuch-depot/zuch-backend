@@ -13,12 +13,29 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Backend/Tagebuch Wilken.md",
+                "file": "Welcome.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Tagebuch Wilken"
+              "title": "Welcome"
+            }
+          },
+          {
+            "id": "0e6f94e3e1ac66d5",
+            "type": "leaf",
+            "state": {
+              "type": "canvas",
+              "state": {
+                "file": "CLI Eingabeding Graph.canvas",
+                "viewState": {
+                  "x": 1385.3649602954854,
+                  "y": 3573.6073475608387,
+                  "zoom": -0.5366555007126579
+                }
+              },
+              "icon": "lucide-layout-dashboard",
+              "title": "CLI Eingabeding Graph"
             }
           },
           {
@@ -27,12 +44,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Backend/Tagebuch Wilken.md",
+                "file": "Aufgaben.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Tagebuch Wilken"
+              "title": "Aufgaben"
             }
           }
         ],
@@ -198,15 +215,18 @@
       "bases:Neue Base erstellen": false
     }
   },
-  "active": "6171a3bc308dbf29",
+  "active": "0e6f94e3e1ac66d5",
   "lastOpenFiles": [
+    "CLI Eingabeding da.md",
+    "Archiv.md",
+    "06.03. main package.pdf",
+    "06.03. ds package.pdf",
+    "Welcome.md",
+    "CLI Eingabeding Graph.canvas",
     "Aufgaben.md",
     "Backend/Tagebuch Wilken.md",
-    "CLI Eingabeding da.md",
-    "CLI Eingabeding Graph.canvas",
-    "Welcome.md",
+    "Backend",
     "Allgemein/Allgemein.md",
-    "Allgemein",
-    "Backend"
+    "Allgemein"
   ]
 }

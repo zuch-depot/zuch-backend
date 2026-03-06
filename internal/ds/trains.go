@@ -12,8 +12,8 @@ type Train struct {
 	Waggons            []*Waggon //Alle müssen nebeneinander spawnen
 	Schedule           *Schedule
 	NextStop           Stop     //der Stop, in dem der Zug gerade hinfährt oder plant hinzufahren. Wenn 0, dann nächster Stop aus Schedule
-	CurrentPath        [][3]int //neu berechnen bei laden
-	CurrentPathSignals [][3]int
+	CurrentPath        [][3]int //ggf. nur bis zum nächsten Signal notwendig -> dann andere Bedingung finden, wann man angekommen ist
+	CurrentPathSignals [][3]int //dementsprechend ggf. unnötig -> auch unabhängig davon ggf. unnötig
 
 	Waiting         bool //hat letzten Tick ein geblockes Tile gefunden oder keinen Weg gefunden und wartet
 	LoadingTime     int  //Wie lange ist der Zug schon am be-/entladen? 0 == nicht am laden. Zeiteinheit ist wie oft methode aufgerufen wurde
@@ -35,20 +35,86 @@ type CargoStorage struct {
 	CargoCategory   string //statisch
 }
 
+// Überprüft, ob sich der letzte Wagen rausbewegt, wenn er sich einen weiter bewegt
+// entblocken des letzten Tiles, wenn letzter Waggon sich rausbewegt (x oder y vom letzten unterschiedlich ist zum 2. letzten)
+// oder wenn der Zug nur 1 lang ist, wenn sich die x oder y vom nächsten Tile des Weges unterscheiden
+func (t *Train) checkUnblockOnMove(gs *GameState) [2]int {
+
+	entblocken := [2]int{-1, -1}
+
+	letzterWaggon := t.Waggons[len(t.Waggons)-1]
+	if (len(t.Waggons) == 1 && (t.CurrentPath[0][0] != t.Waggons[0].Position[0] ||
+		t.CurrentPath[0][1] != t.Waggons[0].Position[1])) ||
+		(letzterWaggon.Position[0] != t.Waggons[len(t.Waggons)-2].Position[0] ||
+			letzterWaggon.Position[1] != t.Waggons[len(t.Waggons)-2].Position[1]) {
+
+		entblocken = [2]int{letzterWaggon.Position[0], letzterWaggon.Position[1]}
+
+		//wenn das subTile, aus dem man sich herausbewegt ein Signal hat, hat man ein Signal passiert
+		//das passt, da alle Signal außen an den Tiles stehen
+		if gs.Tiles[letzterWaggon.Position[0]][letzterWaggon.Position[1]].Signals[letzterWaggon.Position[2]-1] {
+			gs.Logger.Debug("Hallo Jannis, hier Nachricht an client, dass das Signal an Stelle " +
+				fmt.Sprint(letzterWaggon.Position) + " auf blau geschaltet werden soll")
+		}
+	}
+
+	return entblocken
+}
+
+// WARENLOGIK UND NEU BERECHNEN NEU machen, da auch doppelungen mit Recalculate Path bestehen -------------------------------------------------------------------------
 // testet selber, ob es einen Weg gibt und berechnet bei Bedarf neu
 // für 2 Wege Signale muss geprüft werden, ob nicht schon ein Zug zum Signal auf der anderen Seite fährt
 // returnt Tile zum unblocken
 func (t *Train) move(gs *GameState) [2]int {
 	entblocken := [2]int{-1, -1}
 
-	// wenn ein Zug an einem Ziel angekommen ist und er nicht am ein/ausladen ist oder fertig damit ist, dann neu berechnen
-	if len(t.CurrentPath) == 0 && (t.LoadingTime == 0 || (t.LoadingTime > 0 && t.FinishedLoading)) {
-		//nächstes Ziel auswählen und den WEg dorthin berechnen
-		//t.LastStop = t.NextStop
-		t.NextStop = t.Schedule.nextStop(t.NextStop)
-		if t.NextStop.Id == 0 {
-			return entblocken
+	/*
+		// wenn ein Zug an einem Ziel angekommen ist und er nicht am ein/ausladen ist oder fertig damit ist, dann neu berechnen
+		if len(t.CurrentPath) == 0 && (t.LoadingTime == 0 || (t.LoadingTime > 0 && t.FinishedLoading)) {
+			//nächstes Ziel auswählen und den WEg dorthin berechnen
+			//t.LastStop = t.NextStop
+			t.NextStop = t.Schedule.nextStop(t.NextStop)
+			if t.NextStop.Id == 0 {
+				return entblocken
+			}
+			t.recalculatePath(gs)
+
+			//war das erfolgreich?
+			if len(t.CurrentPath) == 0 {
+				//TODO Nachricht: konnte das Ziel t.NextStop.Name() nicht erreichen
+				gs.Logger.Debug(fmt.Sprintln("Zug", t.Name, "konnte das Ziel", t.NextStop, "nicht finden."))
+				foundValidStop := false
+				for i := 0; i < len(t.Schedule.Stops)-1; i++ {
+					t.NextStop = t.Schedule.nextStop(t.NextStop)
+					//t.RecalculatePath(gs)
+					if len(t.CurrentPath) > 0 {
+						foundValidStop = true
+						break
+					}
+					//TODO Nachricht: ?Konnte Ziel xy nicht erreichen?
+				}
+				if !foundValidStop {
+					//TODO Nachricht: Konnte kein Ziel erreichen, Zug ist stuck
+					gs.Logger.Debug(fmt.Sprintln("Zug", t.Name, "kann kein Ziel erreichen."))
+					return [2]int{}
+				}
+			}
+		}*/
+
+	// erstmal Warenladen ignorieren
+	// wenn man am Ende des Weges angekommen ist oder bei einem Signal ist, neuberechnen
+	pos := t.Waggons[0].Position
+	if len(t.CurrentPath) == 0 || gs.Tiles[pos[0]][pos[1]].Signals[pos[2]-1] {
+
+		//wenn am Ziel angekommen, nächstes Ziel auswählen, anosten bleibt das Ziel gleich
+		if len(t.CurrentPath) == 0 {
+			t.NextStop = t.Schedule.nextStop(t.NextStop)
+			if t.NextStop.Id == 0 {
+				return entblocken
+			}
 		}
+
+		// den Weg berechnen
 		t.recalculatePath(gs)
 
 		//war das erfolgreich?
@@ -123,22 +189,7 @@ func (t *Train) move(gs *GameState) [2]int {
 		t.Waiting = false
 	}
 
-	//entblocken des letzten Tiles, wenn letzter Waggon sich rausbewegt (x oder y vom letzten unterschiedlich ist zum 2. letzten)
-	// in die Queue schreiben, da entblocken nur am Ende des Ticks
-	letzterWaggon := t.Waggons[len(t.Waggons)-1]
-	if len(t.Waggons) == 1 || (letzterWaggon.Position[0] != t.Waggons[len(t.Waggons)-2].Position[0] ||
-		letzterWaggon.Position[1] != t.Waggons[len(t.Waggons)-2].Position[1]) {
-
-		// tiles[letzterWaggon.Position[0]][letzterWaggon.Position[1]].IsBlocked = false
-		entblocken = [2]int{letzterWaggon.Position[0], letzterWaggon.Position[1]}
-
-		//wenn das subTile, aus dem man sich herausbewegt ein Signal hat, hat man ein Signal passiert
-		//das passt, da alle Signal außen an den Tiles stehen
-		if gs.Tiles[letzterWaggon.Position[0]][letzterWaggon.Position[1]].Signals[letzterWaggon.Position[2]-1] {
-			gs.Logger.Debug("Hallo Jannis, hier Nachricht an client, dass das Signal an Stelle " +
-				fmt.Sprint(letzterWaggon.Position) + " auf blau geschaltet werden soll")
-		}
-	}
+	entblocken = t.checkUnblockOnMove(gs) // in die Queue schreiben, da entblocken nur am Ende des Ticks
 
 	//Bewegung der Waggons
 	for i := len(t.Waggons); i > 1; i-- {
@@ -161,7 +212,7 @@ func (t *Train) move(gs *GameState) [2]int {
 // returned Tile zum entblcken
 // wenn fertig mit Laden/entladen passiert ein Tick nichts und dann fährt er los
 func (t *Train) calculateTrain(gs *GameState) [2]int {
-	var r [2]int
+	//var r [2]int
 
 	//ist gerade in die Staion eingefahren, also speichern der aktuellen Station. Nächste Station wird bei neuberechen überschrieben
 	if t.NextStop.IsPlattform && t.LoadingTime == 0 && len(t.CurrentPath) == 0 {
@@ -172,33 +223,37 @@ func (t *Train) calculateTrain(gs *GameState) [2]int {
 		return t.move(gs)
 	}
 
-	//wenn der aktuelle Stop eine Plattform ist und man an der an der Station steht
-	if t.NextStop.IsPlattform && len(t.CurrentPath) == 0 {
-		//wenn min Zeit erreicht ist überprüfen und man fertig mit laden ist, ob man fahren kann
-		if t.LoadingTime >= gs.MinLoadUloadTicks && t.FinishedLoading {
-			gs.Logger.Debug("Zug " + t.Name + " versucht aus " + t.NextStop.Plattform.GetStation(gs).Name + " auszufahren.")
+	/*
+		Wird neu geschrieben, hate gerade sowieso keinen Einfluss
 
-			r = t.move(gs)
+		//wenn der aktuelle Stop eine Plattform ist und man an der an der Station steht
+		if t.NextStop.IsPlattform && len(t.CurrentPath) == 0 {
+			//wenn min Zeit erreicht ist überprüfen und man fertig mit laden ist, ob man fahren kann
+			if t.LoadingTime >= gs.MinLoadUloadTicks && t.FinishedLoading {
+				gs.Logger.Debug("Zug " + t.Name + " versucht aus " + t.NextStop.Plattform.GetStation(gs).Name + " auszufahren.")
 
-			//Ist Zug losgefahren, also Reset der Werte fürs nächste Laden
-			if !t.Waiting {
-				gs.Logger.Debug("Zug " + t.Name + " aus " + t.NextStop.getName(gs) + "ausgefahren.")
-				t.LoadingTime = 0
-				t.FinishedLoading = false
-				return r
+				r = t.move(gs)
+
+				//Ist Zug losgefahren, also Reset der Werte fürs nächste Laden
+				if !t.Waiting {
+					gs.Logger.Debug("Zug " + t.Name + " aus " + t.NextStop.getName(gs) + "ausgefahren.")
+					t.LoadingTime = 0
+					t.FinishedLoading = false
+					return r
+				}
 			}
-		}
-		//laden/entladen, wenn er noch laden muss
-		if t.LoadingTime < gs.MinLoadUloadTicks || !t.FinishedLoading {
-			t.FinishedLoading = t.loadUndload(gs)
+			//laden/entladen, wenn er noch laden muss
+			if t.LoadingTime < gs.MinLoadUloadTicks || !t.FinishedLoading {
+				t.FinishedLoading = t.loadUndload(gs)
 
-			//gs.printTrains()
-		}
-		t.LoadingTime++
+				//gs.printTrains()
+			}
+			t.LoadingTime++
 
-		//wenn er sich nicht bewegt hat
-		return [2]int{-1, -1}
-	}
+			//wenn er sich nicht bewegt hat
+			return [2]int{-1, -1}
+		}
+	*/
 
 	return t.move(gs)
 }
@@ -357,6 +412,7 @@ func (t *Train) unloadCargo(cargoType string, maxCargoRemoved int) int {
 
 // Fügt einen Wagon zu einem Zug, typ gibt die art des wagongs an, daraus basierend wird capacity und maxSpeed bestimmt, bspw "Lebensmittel"
 // true => Erfolgreich; false => fehler
+// setzt vorraus, dass das
 func (t *Train) AddWaggon(position [3]int, typ string, gs *GameState) error {
 	var capacity, maxSpeed int
 	// Typ gibt kurz als string an was für einen Waggon man will
@@ -375,6 +431,8 @@ func (t *Train) AddWaggon(position [3]int, typ string, gs *GameState) error {
 		return fmt.Errorf("kein Gleis vorhanden")
 	}
 
+	//kontrollieren, dass das Tile
+
 	// Waggons zu zug hinzufügen und entsprechende tiles blockieren
 	t.Waggons = append(t.Waggons, &Waggon{Position: position, MaxSpeed: maxSpeed, CargoStorage: &CargoStorage{Capacity: capacity, CargoCategory: typ}})
 	var blockedTilesPositions [][2]int
@@ -383,6 +441,23 @@ func (t *Train) AddWaggon(position [3]int, typ string, gs *GameState) error {
 	gs.BroadcastChannel <- WsEnvelope{Type: "tiles.block", Username: "Server", Msg: BlockedTilesMSG{Tiles: blockedTilesPositions}}
 
 	gs.Logger.Debug("Blockiertes", slog.Int("Pos 0", position[0]), slog.Int("Pos 1", position[1]), slog.Bool("Blocked", gs.Tiles[position[0]][position[1]].IsBlocked))
+	return nil
+}
+
+// kontrolliert nur, dass der index in range ist. Entblockt auch
+func (t *Train) RemoveWaggon(index int, gs *GameState) error {
+
+	//validieren des Indexes
+	if index > len(t.Waggons)-1 || index < 0 {
+		return fmt.Errorf("Waggon out of bounds. ", strconv.Itoa(index), " not a valid index for ", len(t.Waggons), " Waggons from train ", t.Name)
+	}
+
+	//ggf. enblocken des Tiles, da die Waggons aufrücken
+	entblocken := t.checkUnblockOnMove(gs)
+
+	//entblocken durchführen. Muss nicht in Queue, da nicht ausgeführt wird, während Bewegungen stattfinden
+	gs.Tiles[entblocken[0]][entblocken[1]].IsBlocked = false
+
 	return nil
 }
 
