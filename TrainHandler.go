@@ -8,15 +8,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
-	"slices"
 	"zuch-backend/internal/ds"
 )
 
+/*
 // Fügt einen Zug hinzu, anhand eines namens und der position sowie des typen und positionen der waggons
 func addTrain(update ds.TrainCreateMSG, gs *ds.GameState) (*ds.Train, error) {
 
 	// Weg muss ja frei sein, und alles müssen zusammenhängen
-	err := checkIfWaggonsAreValid(update.Waggons, gs)
+	err := ds.checkIfWaggonsAreValid(update.Waggons, gs)
 	if err != nil {
 		return nil, err
 	}
@@ -38,8 +38,9 @@ func addTrain(update ds.TrainCreateMSG, gs *ds.GameState) (*ds.Train, error) {
 
 	gs.Trains[train.Id] = train
 	return train, nil
-}
+}*/
 
+/*
 // Überprüft ob alle waggons eine Valide Position haben, also das Gleis nicht blockiert ist, das gleis existiert und die Waggons zusammenhängend sind
 func checkIfWaggonsAreValid(waggons []ds.TrainCreateWaggons, gs *ds.GameState) error {
 	for i, waggon := range waggons {
@@ -58,7 +59,7 @@ func checkIfWaggonsAreValid(waggons []ds.TrainCreateWaggons, gs *ds.GameState) e
 	}
 	// Gibt einen Fehler zurück falls
 	return nil
-}
+}*/
 
 func handleTrainUpdate(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error {
 	switch envelope.Type {
@@ -86,7 +87,7 @@ func handleRemoveTrain(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error {
 			TransactionID: envelope.TransactionID,
 			Msg:           ds.TrainRemoveMSG{Id: update.Id},
 		}
-		return train.RemoveTrain(gs)
+		return gs.RemoveTrain(train)
 	} else {
 		return fmt.Errorf("no matching train found, id: %d", update.Id)
 	}
@@ -98,7 +99,7 @@ func handleCreateTrain(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error {
 	if err != nil {
 		return fmt.Errorf("could not unpack envelope; %s", err.Error())
 	}
-	train, err := addTrain(update, gs)
+	train, err := gs.AddTrain(update.Name, update.Waggons)
 	if err != nil {
 		return fmt.Errorf("error creating train; %s", err.Error())
 	}

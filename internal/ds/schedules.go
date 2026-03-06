@@ -32,34 +32,10 @@ type LoadUnloadCommand struct {
 	CargoTypes   []string //welche Güter abgeladen/aufgeladen werden dürfen
 }
 
-func (gs *GameState) AddSchedule(name string) (*Schedule, error) {
-	s := Schedule{Name: name, Id: int(gs.CurrentScheduleID.Load())}
-	gs.Schedules[int(gs.CurrentScheduleID.Load())] = &s
-	gs.CurrentScheduleID.Add(1)
-	return &s, nil
-}
-
-// Löscht alle Stops und danach den Schedule aus der Map
-func (gs *GameState) RemoveSchedule(Id int) error {
-	schedule := gs.Schedules[Id]
-
-	if schedule == nil {
-		return fmt.Errorf("couldn't find schedule in map")
-	}
-
-	for _, stop := range schedule.Stops {
-		schedule.RemoveStop(stop.Id, gs)
-	}
-
-	delete(gs.Schedules, Id)
-
-	return nil
-}
-
 // returnt beide Enden der Plattform, wenn es eine ist, und sonst nur den Wegpunkt
 func (s *Stop) getGoals(gs *GameState) [][3]int {
 	if s.IsPlattform {
-		r := s.Plattform.GetFirstLast(gs)
+		r := s.Plattform.getFirstLast(gs)
 		return [][3]int{r[0], r[1]}
 	}
 	return [][3]int{s.Goal}
@@ -115,7 +91,7 @@ func (s *Schedule) RemoveStop(Id int, gs *GameState) error {
 			for _, train := range gs.Trains {
 				if train.NextStop.Id == Id {
 					train.NextStop = train.Schedule.nextStop(train.NextStop)
-					train.RecalculatePath(gs)
+					train.recalculatePath(gs)
 				}
 			}
 

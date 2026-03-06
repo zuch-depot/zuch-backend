@@ -35,30 +35,10 @@ type CargoStorage struct {
 	CargoCategory   string //statisch
 }
 
-// entfernt diesen zug, dazu wird er aus dem array genommen und sein currentPath wird auf nicht blockiert gesetzt, hoffe das passt so
-// fehler sind bisher ungenutzt, irgendwas wirrd schon schiefgehen
-func (t *Train) RemoveTrain(gs *GameState) error {
-
-	var blockedTilesPositions [][2]int
-	for _, v := range t.CurrentPath {
-		gs.Tiles[v[0]][v[1]].IsBlocked = false // ich hab keine ahnung ob das so geht
-		blockedTilesPositions = append(blockedTilesPositions, [2]int{v[0], v[1]})
-	}
-	// Das kann hier gut sein das da zeugs doppelt drinne ist aber das ist mir spontan egal, doppelt auf false setzen hält ohnehin besser
-	gs.BroadcastChannel <- WsEnvelope{Type: "tiles.unblock", Username: "Server", Msg: BlockedTilesMSG{Tiles: blockedTilesPositions}}
-
-	before := len(gs.Trains)
-	delete(gs.Trains, t.Id)
-	if !(before > len(gs.Trains)) {
-		return fmt.Errorf("couldn't find train in map")
-	}
-	return nil
-}
-
 // testet selber, ob es einen Weg gibt und berechnet bei Bedarf neu
 // für 2 Wege Signale muss geprüft werden, ob nicht schon ein Zug zum Signal auf der anderen Seite fährt
 // returnt Tile zum unblocken
-func (t *Train) Move(gs *GameState) [2]int {
+func (t *Train) move(gs *GameState) [2]int {
 	entblocken := [2]int{-1, -1}
 
 	// wenn ein Zug an einem Ziel angekommen ist und er nicht am ein/ausladen ist oder fertig damit ist, dann neu berechnen
@@ -69,7 +49,7 @@ func (t *Train) Move(gs *GameState) [2]int {
 		if t.NextStop.Id == 0 {
 			return entblocken
 		}
-		t.RecalculatePath(gs)
+		t.recalculatePath(gs)
 
 		//war das erfolgreich?
 		if len(t.CurrentPath) == 0 {
@@ -180,7 +160,7 @@ func (t *Train) Move(gs *GameState) [2]int {
 
 // returned Tile zum entblcken
 // wenn fertig mit Laden/entladen passiert ein Tick nichts und dann fährt er los
-func (t *Train) CalculateTrain(gs *GameState) [2]int {
+func (t *Train) calculateTrain(gs *GameState) [2]int {
 	var r [2]int
 
 	//ist gerade in die Staion eingefahren, also speichern der aktuellen Station. Nächste Station wird bei neuberechen überschrieben
@@ -189,7 +169,7 @@ func (t *Train) CalculateTrain(gs *GameState) [2]int {
 		// fmt.Println("Zug " + t.Name + " in " + t.NextStop.Plattform.GetStation(gs).Name + " eingefahren.")
 	} else if !t.NextStop.IsPlattform && len(t.CurrentPath) == 0 {
 		//wenn das aktuelle Ziel ein Wegpunkt ist und man angekommen ist, braucht man einfach den nächsten Stop aussuchen und fahren
-		return t.Move(gs)
+		return t.move(gs)
 	}
 
 	//wenn der aktuelle Stop eine Plattform ist und man an der an der Station steht
@@ -198,7 +178,7 @@ func (t *Train) CalculateTrain(gs *GameState) [2]int {
 		if t.LoadingTime >= gs.MinLoadUloadTicks && t.FinishedLoading {
 			gs.Logger.Debug("Zug " + t.Name + " versucht aus " + t.NextStop.Plattform.GetStation(gs).Name + " auszufahren.")
 
-			r = t.Move(gs)
+			r = t.move(gs)
 
 			//Ist Zug losgefahren, also Reset der Werte fürs nächste Laden
 			if !t.Waiting {
@@ -210,9 +190,9 @@ func (t *Train) CalculateTrain(gs *GameState) [2]int {
 		}
 		//laden/entladen, wenn er noch laden muss
 		if t.LoadingTime < gs.MinLoadUloadTicks || !t.FinishedLoading {
-			t.FinishedLoading = t.LoadUndload(gs)
+			t.FinishedLoading = t.loadUndload(gs)
 
-			printTrains(gs)
+			//gs.printTrains()
 		}
 		t.LoadingTime++
 
@@ -220,11 +200,11 @@ func (t *Train) CalculateTrain(gs *GameState) [2]int {
 		return [2]int{-1, -1}
 	}
 
-	return t.Move(gs)
+	return t.move(gs)
 }
 
 // returnt ob der Zug voll ist oder nichts mehr zu laden ist, also abfahrtsbereit ist
-func (t *Train) LoadUndload(gs *GameState) bool {
+func (t *Train) loadUndload(gs *GameState) bool {
 	var r bool
 
 	//station, in die der Zug steht
@@ -244,9 +224,9 @@ func (t *Train) LoadUndload(gs *GameState) bool {
 				var loaded int
 				//Berücksichtigung, dass max LoadUnloadSpeed pro Vorgang verladen wird
 				if sta.Storage[cargo] >= avaliableLoadUnloadSpeed {
-					loaded = avaliableLoadUnloadSpeed - t.LoadCargo(cargo, avaliableLoadUnloadSpeed, gs) //hinzufügen in den Zug
+					loaded = avaliableLoadUnloadSpeed - t.loadCargo(cargo, avaliableLoadUnloadSpeed, gs) //hinzufügen in den Zug
 				} else {
-					loaded = sta.Storage[cargo] - t.LoadCargo(cargo, sta.Storage[cargo], gs)
+					loaded = sta.Storage[cargo] - t.loadCargo(cargo, sta.Storage[cargo], gs)
 				}
 				sta.Storage[cargo] -= loaded //Entfernen aus der Station
 				avaliableLoadUnloadSpeed -= loaded
@@ -273,13 +253,13 @@ func (t *Train) LoadUndload(gs *GameState) bool {
 				var removed int
 				//ausladen was geht aus den Züge, max LoadUnloadSpeed
 				if sta.Capacity-sta.GetFillLevel() >= avaliableLoadUnloadSpeed {
-					removed = t.UnloadCargo(cargo, avaliableLoadUnloadSpeed)
+					removed = t.unloadCargo(cargo, avaliableLoadUnloadSpeed)
 				} else {
-					removed = t.UnloadCargo(cargo, sta.Capacity-sta.GetFillLevel())
+					removed = t.unloadCargo(cargo, sta.Capacity-sta.GetFillLevel())
 				}
 				avaliableLoadUnloadSpeed -= removed
 
-				sta.AddCargo(cargo, removed)
+				sta.addCargo(cargo, removed)
 
 				if removed > 0 {
 					gs.Logger.Debug("Zug: " + t.Name + " hat " + strconv.Itoa(removed) + " Tonnen " + string(cargo) + " entladen")
@@ -305,14 +285,14 @@ func (t *Train) LoadUndload(gs *GameState) bool {
 		r = true
 	}
 
-	// der user kriegt einfach den neuen zuch 
+	// der user kriegt einfach den neuen zuch
 	gs.BroadcastChannel <- WsEnvelope{Type: "train.cargochange", Username: "server", Msg: t}
 
 	return r
 }
 
 // return nicht geladenen Cargo. Geht davon aus, dass toLoad in Grenzen des LoadUnloadSpeedes ist
-func (t *Train) LoadCargo(cargoType string, toLoad int, gs *GameState) int {
+func (t *Train) loadCargo(cargoType string, toLoad int, gs *GameState) int {
 	var r int
 
 	for _, waggon := range t.Waggons {
@@ -324,7 +304,7 @@ func (t *Train) LoadCargo(cargoType string, toLoad int, gs *GameState) int {
 		//wenn Waggon richtigen CargoType hat, wenn er schon gefüllt ist, wird gefüllt, oder wenn leer ist, die passende Category hat
 		if waggon.CargoStorage != nil {
 
-			if (waggon.CargoStorage.Filled == 0 && waggon.CargoStorage.CargoCategory == getCargoCategory(cargoType, gs)) ||
+			if (waggon.CargoStorage.Filled == 0 && waggon.CargoStorage.CargoCategory == gs.getCargoCategory(cargoType)) ||
 				(cargoType == waggon.CargoStorage.FilledCargoType) {
 				emptySpace := waggon.CargoStorage.Capacity - waggon.CargoStorage.Filled
 				//wenn Waggon voll ist oder gefüllter wert, wenn was gefüllt ist, nächsten nehmen
@@ -348,7 +328,7 @@ func (t *Train) LoadCargo(cargoType string, toLoad int, gs *GameState) int {
 // returnt die Anzahl, die entfernt wurde. maxCargoRemoved ist dabei der Platz, der frei ist
 // geht davon aus, dass maxCargoRemoved den LoadUnloadSpeed berücksichtigt und prüft es nicht selber
 // -1, wenn kein passender Typ Waggon da ist -------------------> noch nicht!!!!!
-func (t *Train) UnloadCargo(cargoType string, maxCargoRemoved int) int {
+func (t *Train) unloadCargo(cargoType string, maxCargoRemoved int) int {
 	cargoRemovedSoFar := 0
 
 	for _, waggon := range t.Waggons {
@@ -403,5 +383,19 @@ func (t *Train) AddWaggon(position [3]int, typ string, gs *GameState) error {
 	gs.BroadcastChannel <- WsEnvelope{Type: "tiles.block", Username: "Server", Msg: BlockedTilesMSG{Tiles: blockedTilesPositions}}
 
 	gs.Logger.Debug("Blockiertes", slog.Int("Pos 0", position[0]), slog.Int("Pos 1", position[1]), slog.Bool("Blocked", gs.Tiles[position[0]][position[1]].IsBlocked))
+	return nil
+}
+
+// weist dem Zug einen Fahrplan zu, noch kein Fehler wird geworfen
+func (t *Train) AssignSchedule(schedule *Schedule) error {
+	t.Schedule = schedule
+
+	return nil
+}
+
+// entfernt den Fahrplan von dem Zug, noch kein Fehler wird geworfen
+func (t *Train) UnassignSchedule() error {
+	t.Schedule = nil
+
 	return nil
 }

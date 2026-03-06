@@ -61,7 +61,7 @@ func (gs *GameState) CalculateCargoPaths() {
 			for _, path := range prodTypePaths {
 				station := path[0].startStation
 				quantityToAdd := startActiveTile.Storage[prodType] / numberStations
-				startActiveTile.Storage[prodType] -= quantityToAdd - station.AddCargo(prodType, quantityToAdd)
+				startActiveTile.Storage[prodType] -= quantityToAdd - station.addCargo(prodType, quantityToAdd)
 			}
 
 		}
@@ -177,6 +177,7 @@ func (c *cargoPathElement) toString() string {
 	return fmt.Sprint("From ", c.startStation.Name, " to ", c.targetStation.Name, "  schedule ", c.schedule.Name, " length: ", c.pathLength)
 }
 
+// nur für CargoPathfindung
 // suche in den Schedules nach allen verfügbaren erreichbaren Stationen für den Typen
 // bei return: 0 ist start, 1 ist Ziel
 func (gs *GameState) GetAvaliableStation(startStation *Station, cargoType string) []cargoPathElement {
@@ -245,12 +246,12 @@ func (gs *GameState) GetAvaliableStation(startStation *Station, cargoType string
 			if targetStopFound {
 				//finden der Entfernung der Plattformen mit virtuellem Zug, damit das Pathfinding benutzt werden kann
 				tempTrain := Train{
-					Waggons:  []*Waggon{&Waggon{Position: startStop.Plattform.GetFirstLast(gs)[0]}}, //theoretisch sollte mittleres Tile oder einmal beide genommen werden
+					Waggons:  []*Waggon{&Waggon{Position: startStop.Plattform.getFirstLast(gs)[0]}}, //theoretisch sollte mittleres Tile oder einmal beide genommen werden
 					Schedule: schedule,
 					Id:       -1,
 					NextStop: *targetStop,
 				}
-				tempTrain.RecalculatePath(gs)
+				tempTrain.recalculatePath(gs)
 				//wenn es keinen Weg gibt, dann kann auch nichts transportiert werden
 				if len(tempTrain.CurrentPath) == 0 {
 					continue

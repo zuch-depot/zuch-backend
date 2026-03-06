@@ -98,7 +98,7 @@ func main() {
 
 		// Train calculate (Läd/Entläd oder bewegt) und entblocken
 		if gs.Tick%10 == 0 {
-			calculateTrains(&gs)
+			gs.CalculateTrains()
 			// for _, train := range gs.Trains {
 			// 	fmt.Print(train.Name, " ")
 			// 	for _, waggon := range train.Waggons {
@@ -163,26 +163,6 @@ func processClientInputs(gs *ds.GameState) {
 			input.Reply(true, "", gs)
 		}
 
-	}
-}
-
-func calculateTrains(gs *ds.GameState) {
-	// Speichern, welche Tiles am Ende des Threads entblocked werden muss
-	var tilesToUnblock [][2]int
-
-	for i := range gs.Trains {
-		temp := gs.Trains[i].CalculateTrain(gs)
-		if temp[0] >= 0 {
-			tilesToUnblock = append(tilesToUnblock, temp)
-		}
-	}
-
-	// entblocken
-	for _, i := range tilesToUnblock {
-		gs.Tiles[i[0]][i[1]].IsBlocked = false
-	}
-	if len(tilesToUnblock) > 0 {
-		gs.BroadcastChannel <- ds.WsEnvelope{Type: "tiles.unblock", Username: "kaputt", Msg: ds.BlockedTilesMSG{Tiles: tilesToUnblock}}
 	}
 }
 

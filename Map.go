@@ -48,27 +48,27 @@ func createDemoTrains(gs *ds.GameState) {
 
 	//stations inkl. Initialisieren
 	pos := [2]int{2, 0}
-	ds.ChangeStationTile(false, pos, gs) //hier wird auch die Station und Plattform erstellt
+	gs.AddStationTile(pos) //hier wird auch die Station und Plattform erstellt
 	//Bestimmung der Station zum umbenennen
-	plattform, _ := ds.GetPlattform(pos, gs)
+	plattform, _ := gs.GetPlattform(pos)
 	plattform.GetStation(gs).Name = "Station Nord"
 	plattform.Name = "Gleis 1"
-	ds.ChangeStationTile(false, [2]int{3, 0}, gs)
+	gs.AddStationTile([2]int{3, 0})
 
 	pos = [2]int{3, 7}
-	ds.ChangeStationTile(false, pos, gs)
-	plattform2, _ := ds.GetPlattform(pos, gs)
+	gs.AddStationTile(pos)
+	plattform2, _ := gs.GetPlattform(pos)
 	plattform2.GetStation(gs).Name = "Station Süd"
 	plattform2.Name = "Gleis 31"
-	ds.ChangeStationTile(false, [2]int{4, 7}, gs)
-	ds.ChangeStationTile(false, [2]int{5, 7}, gs)
+	gs.AddStationTile([2]int{4, 7})
+	gs.AddStationTile([2]int{5, 7})
 
 	pos = [2]int{9, 4}
-	ds.ChangeStationTile(false, pos, gs)
-	plattform, _ = ds.GetPlattform(pos, gs)
+	gs.AddStationTile(pos)
+	plattform, _ = gs.GetPlattform(pos)
 	plattform.GetStation(gs).Name = "Station Ost"
 	plattform.Name = "Gleis 2"
-	ds.ChangeStationTile(false, [2]int{9, 5}, gs)
+	gs.AddStationTile([2]int{9, 5})
 
 	// fmt.Println(gs.Stations)
 
@@ -84,13 +84,13 @@ func createDemoTrains(gs *ds.GameState) {
 	stop.SetLoadCommand([]string{"Pommes"}, false)
 	stop.SetUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false)
 
-	train, err := addTrain(ds.TrainCreateMSG{Name: "RE1",
-		Waggons: []ds.TrainCreateWaggons{
+	train, err := gs.AddTrain("RE1",
+		[]ds.TrainCreateWaggons{
 			{Position: [3]int{3, 4, 3}, Typ: "Lebensmittel"},
 			{Position: [3]int{3, 4, 1}, Typ: "Lebensmittel"},
 			{Position: [3]int{2, 4, 3}, Typ: "Lebensmittel"},
 			{Position: [3]int{2, 4, 1}, Typ: "Lebensmittel"}},
-	}, gs)
+	)
 	train.Schedule = schedule
 	if err != nil {
 		gs.Logger.Error("Fehler, aber ist im demo ding egal")
@@ -106,13 +106,12 @@ func createDemoTrains(gs *ds.GameState) {
 	stop.SetLoadCommand([]string{"Pommes"}, false)
 	stop.SetUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false)
 
-	train, err = addTrain(ds.TrainCreateMSG{
-		Name: "RE2",
-		Waggons: []ds.TrainCreateWaggons{
+	train, err = gs.AddTrain("RE2",
+		[]ds.TrainCreateWaggons{
 			{Position: [3]int{6, 6, 2}, Typ: "Lebensmittel"},
 			{Position: [3]int{6, 5, 4}, Typ: "Lebensmittel"},
 			{Position: [3]int{6, 5, 2}, Typ: "Lebensmittel"},
-			{Position: [3]int{6, 4, 4}, Typ: "Lebensmittel"}}}, gs)
+			{Position: [3]int{6, 4, 4}, Typ: "Lebensmittel"}})
 	train.Schedule = schedule
 
 	if err != nil {
@@ -304,6 +303,8 @@ func handleTileUpdate(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error {
 	}
 }
 
+// warum hast du das so komisch gemacht Jannis?
+// -> wenn du die funktionen direkt aufrufst, sieht das in der Übersicht besser aus
 // Führt das callback mit den daten des envelopes aus, tritt ein fehler aus wird der zurück gegeben, andererseits wird die nachricht an alle geschickt
 func executeAndReply(callback func(int, *ds.GameState) (bool, string), envelope *ds.RecieveWSEnvelope, update *ds.TileUpdateMSG, gs *ds.GameState) error {
 	success, msg := callback(update.Position[2], gs)

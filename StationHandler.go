@@ -24,7 +24,7 @@ func handleRemoveStation(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error 
 	if err != nil {
 		return fmt.Errorf("could not unpack envelope; %s", err.Error())
 	}
-	station, err := ds.RemoveStationTile(update.Position, gs)
+	station, err := gs.RemoveStationTile(update.Position)
 	if err != nil {
 		return fmt.Errorf("error removing station; %s", err.Error())
 	}
@@ -49,7 +49,7 @@ func handleCreateStation(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error 
 	if err != nil {
 		return fmt.Errorf("could not unpack envelope; %s", err.Error())
 	}
-	station, err := ds.AddStationTile(update.Position, gs)
+	station, err := gs.AddStationTile(update.Position)
 	if err != nil {
 		return fmt.Errorf("error Creating Station; %s", err.Error())
 	}
@@ -61,6 +61,6 @@ func handleCreateStation(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error 
 		TransactionID: envelope.TransactionID,
 		Msg:           station,
 	}
-	
+
 	return err
 }
