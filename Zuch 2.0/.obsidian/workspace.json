@@ -37,12 +37,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Allgemein/Allgemein.md",
+                "file": "CLI Eingabeding da.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Allgemein"
+              "title": "CLI Eingabeding da"
             }
           }
         ],
@@ -119,8 +119,8 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Aufgaben.md",
-                "collapseAll": false,
+                "file": "CLI Eingabeding da.md",
+                "collapseAll": true,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
                 "showSearch": false,
@@ -129,7 +129,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Aufgaben"
+              "title": "Rückverweise auf CLI Eingabeding da"
             }
           },
           {
@@ -189,16 +189,27 @@
               "icon": "lucide-list",
               "title": "Outline of Aufgaben"
             }
+          },
+          {
+            "id": "c8cc48484f8e751c",
+            "type": "leaf",
+            "state": {
+              "type": "git-view",
+              "state": {},
+              "icon": "git-pull-request",
+              "title": "Source Control"
+            }
           }
-        ]
+        ],
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 373.5
   },
   "left-ribbon": {
     "hiddenItems": {
+      "obsidian-git:Open Git source control": false,
       "switcher:Schnellauswahl öffnen": false,
       "graph:Graph-Ansicht öffnen": false,
       "canvas:Neuen Canvas erstellen": false,
@@ -210,8 +221,9 @@
   },
   "active": "d671fb9d8383add3",
   "lastOpenFiles": [
-    "Allgemein/Allgemein.md",
     "Aufgaben.md",
+    "CLI Eingabeding da.md",
+    "Allgemein/Allgemein.md",
     "Allgemein",
     "Backend",
     "Welcome.md"
