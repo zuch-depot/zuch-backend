@@ -125,7 +125,7 @@ func checkForClientInput(user *ds.User, gs *ds.GameState) {
 		var v ds.RecieveWSEnvelope
 		err := user.Connection.ReadJSON(&v)
 		if err != nil {
-			logger.Warn(user.Username+": Error while checking for input, Closing Connection", slog.String("Error", err.Error())) //logger or log?
+			gs.Logger.Warn(user.Username+": Error while checking for input, Closing Connection", slog.String("Error", err.Error())) //logger or log?
 			// Bei fehlern werden die Clients mit gewalt disconnected, müssen se sich halt wieder neu verbinden (oder einfach keine fehler verursachen :D)
 			user.IsConnected = false
 			user.Connection.Close()

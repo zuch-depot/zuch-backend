@@ -246,7 +246,7 @@ func ChangeStationTile(remove bool, position [2]int, gs *GameState) (*Station, e
 	} else {
 		//TODO error
 		// ich glaube der fehler hier ist wenn da noch keine gleise liegen?
-		return nil, fmt.Errorf("keine gleise vorhanden")
+		return nil, fmt.Errorf("Keine Gleise vorhanden oder nicht nur horizonale oder vertikale Gleise")
 	}
 
 	// Ich war mal so frech - Jannis

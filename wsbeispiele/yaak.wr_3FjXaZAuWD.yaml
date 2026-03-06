@@ -1,0 +1,16 @@
+type: websocket_request
+model: websocket_request
+id: wr_3FjXaZAuWD
+createdAt: 2026-01-16T08:17:43.018833657
+updatedAt: 2026-01-16T08:18:54.481770153
+workspaceId: wk_UugpzjqKHn
+folderId: fl_bgxodGfD9k
+authentication: {}
+authenticationType: null
+description: ''
+headers: []
+message: ''
+name: ''
+sortPriority: 4000.0
+url: wss://100.72.212.109:8083/ws
+urlParameters: []

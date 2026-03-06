@@ -54,16 +54,13 @@ func handleCreateStation(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error 
 		return fmt.Errorf("error Creating Station; %s", err.Error())
 	}
 
-	if err == nil {
-		gs.Logger.Info("Creating Station", slog.String("Username", envelope.User.Username), slog.Int("x", update.Position[0]), slog.Int("y", update.Position[1]))
-		gs.BroadcastChannel <- ds.WsEnvelope{
-			Type:          "station.create",
-			Username:      "Server",
-			TransactionID: envelope.TransactionID,
-			Msg:           station,
-		}
-	} else {
-		return fmt.Errorf("error removing station; %s", err.Error())
+	gs.Logger.Info("Creating Station", slog.String("Username", envelope.User.Username), slog.Int("x", update.Position[0]), slog.Int("y", update.Position[1]))
+	gs.BroadcastChannel <- ds.WsEnvelope{
+		Type:          "station.create",
+		Username:      "Server",
+		TransactionID: envelope.TransactionID,
+		Msg:           station,
 	}
+	
 	return err
 }
