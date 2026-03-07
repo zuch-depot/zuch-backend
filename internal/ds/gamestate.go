@@ -59,3 +59,39 @@ type SendAbleGamestate struct {
 	Tiles     [][]*Tile
 	Trains    map[int]*Train
 }
+
+type SaveAbleGamestate struct {
+	Users       map[string]*User // einzigartiger name
+	Schedules   map[int]*Schedule
+	Stations    map[int]*Station
+	Tiles       [][]*Tile
+	Trains      map[int]*Train
+	ActiveTiles []*ActiveTile
+
+	LoadUnloadSpeed        int
+	MinLoadUloadTicks      int
+	CapacityPerStationTile int
+	ConfigData             ConfigData // übergeordetes Struct, in das alles aus config.json reingeladen wird
+
+	StationRange int
+	//ALLE IDs MÜSSEN BEI 1 ANFANGEN
+	CurrentTrainID      int
+	CurrentScheduleID   int
+	CurrentStopID       int
+	CurrentStationID    int
+	CurrentPlattformID  int
+	CurrentActiveTileID int
+	//Ticker              *time.Ticker
+	Tick int
+	//IsPaused            bool
+
+	// BroadcastChannel chan WsEnvelope
+	// UserInputs       chan RecieveWSEnvelope
+	// UnPause          chan bool
+
+	// Logger *slog.Logger
+
+	SizeX       int
+	SizeY       int
+	SizeSubtile int
+}

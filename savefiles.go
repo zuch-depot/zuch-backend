@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"os"
 	"time"
@@ -26,11 +27,18 @@ func saveGame(gs *ds.GameState) {
 	// 	trains []Train,
 	// }
 
+	fmt.Println("Saving")
+
 	pauseGame(gs)
 
 	// Einzelnes Object das hoffentlich den ganzen status des Spiels darstellt
 
-	state := ds.SendAbleGamestate{Users: gs.Users, Schedules: gs.Schedules, Stations: gs.Stations, Tiles: gs.Tiles, Trains: gs.Trains}
+	state := ds.SaveAbleGamestate{Users: gs.Users, Schedules: gs.Schedules, Stations: gs.Stations, Tiles: gs.Tiles, Trains: gs.Trains,
+		ActiveTiles: gs.ActiveTiles, LoadUnloadSpeed: gs.LoadUnloadSpeed, MinLoadUloadTicks: gs.MinLoadUloadTicks, CapacityPerStationTile: gs.CapacityPerStationTile,
+		CurrentTrainID: int(gs.CurrentTrainID.Load()), CurrentScheduleID: int(gs.CurrentScheduleID.Load()), ConfigData: gs.ConfigData, StationRange: gs.StationRange,
+		CurrentStopID: int(gs.CurrentStopID.Load()), CurrentStationID: int(gs.CurrentStationID.Load()), CurrentPlattformID: int(gs.CurrentPlattformID.Load()),
+		CurrentActiveTileID: int(gs.CurrentActiveTileID.Load()), SizeX: gs.SizeX, SizeY: gs.SizeY, SizeSubtile: gs.SizeSubtile, Tick: gs.Tick}
+	// state := ds.SendAbleGamestate{Users: gs.Users, Schedules: gs.Schedules, Stations: gs.Stations, Tiles: gs.Tiles, Trains: gs.Trains}
 	// Die Objekte werden in einer netten JSON verpackt
 
 	// Dateiname wird ggf. abgeändert wenn es nicht compressed wird
@@ -39,7 +47,7 @@ func saveGame(gs *ds.GameState) {
 
 	stateByte, err := json.Marshal(state)
 	if err != nil {
-		logger.Error("COuld not convert state to JSON", slog.String("Error", err.Error()))
+		logger.Error("Could not convert state to JSON", slog.String("Error", err.Error()))
 	}
 
 	if os.Getenv("SAVECOMPRESSED") == "True" {
@@ -62,6 +70,8 @@ func saveGame(gs *ds.GameState) {
 	if err != nil {
 		logger.Error("Failure while writing File", slog.String("Error", err.Error()))
 	}
+
+	fmt.Println("Done Saving")
 
 	unPauseGame(gs)
 }
