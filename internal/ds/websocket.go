@@ -34,6 +34,20 @@ func (envelope *RecieveWSEnvelope) Reply(success bool, message string, gs *GameS
 
 }
 
+func CreateGenericResponse(message string, success bool) *GenericResponse {
+	return &GenericResponse{Body: struct {
+		Message string
+		Success bool
+	}{Message: message, Success: success}}
+}
+
+type GenericResponse struct {
+	Body struct {
+		Message string
+		Success bool
+	}
+}
+
 //	es gibt beide, da ich json.RawMessage brauche um die nachricht zunächst nur zum teil dekodieren zu können. Da kann ich aber nicht alles reinschreiben also gibt es die normale variante die dafür ein any hat
 //
 // Mögliche Types siehe wsFormat.go, bspw. tile.update. Steuert welcher teil des Backends dafür zuständig ist
@@ -47,7 +61,8 @@ type RecieveWSEnvelope struct {
 }
 
 type TileUpdateMSG struct {
-	Position [3]int // 0 => links, 1 => oben, 2 => rechts, 3 => unten
+	Position [3]int `path:"Position" example:"[1,3,4]" doc:"Which Tile to interact with, in the format X Y Subtile, Subtile starts with 1 and on the left side, then counts clockwise"`
+	// 0 => links, 1 => oben, 2 => rechts, 3 => unten
 	// Wilken hat sich entschlossen immer wenn ein subtile als int gespeichert wird bei 1 anzufangen und wenn es ein bool[4] ist bei 0, also kann sein das es sich irgendwo verschiebt aber das kriegen wir sicher noch behoben Bei schienen auch analog
 }
 
@@ -104,6 +119,6 @@ type ScheduleEntry struct {
 }
 
 type ScheduleAssignMSG struct {
-	ScheduleId  int
-	TrainId 	int
+	ScheduleId int
+	TrainId    int
 }

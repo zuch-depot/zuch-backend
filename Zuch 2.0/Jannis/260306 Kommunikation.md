@@ -17,3 +17,10 @@
 - https://github.com/danielgtaylor/huma 
 - kann das wohl und zieht eigentlich ganz nett aus 
 - vielleicht kann man das mal probieren
+# Einbau
+- das ganze kommt jetzt hier rein
+- wilken baut parralel noch die ds etwas um
+- in  clientlogin passst es erstmal aber die nenne ich dann noch um
+- Ziel ist es dass der websocket weiter geht
+- aber der rest auf REST umsteigt
+- damit er **besser dokumentiert** ist und **einfacher nachzuverfolgen welche antwort zu welcher request gehört**, nicht so wie bei dem websocket 

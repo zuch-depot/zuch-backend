@@ -294,8 +294,6 @@ func handleTileUpdate(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error {
 		return executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].AddTrack, &envelope, &update, gs)
 	case "rail.remove":
 		return executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].RemoveTrack, &envelope, &update, gs)
-	case "signal.create":
-		return executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].AddSignal, &envelope, &update, gs)
 	case "signal.remove":
 		return executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].RemoveSignal, &envelope, &update, gs)
 	default:

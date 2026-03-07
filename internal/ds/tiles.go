@@ -1,5 +1,9 @@
 package ds
 
+import (
+	"fmt"
+)
+
 type Tile struct {
 	Tracks      [4]bool
 	Signals     [4]bool
@@ -23,6 +27,17 @@ type ActiveTile struct {
 	Stations   []*Station //Stationen, die in der Nähe sind. wird mit changeStationTile verwaltet
 	Storage    map[string]int
 	MaxStorage int //STANDARD für alle gleich? maximum Lager pro Gut -> sonst kann es zu unwiederruflichen auffüllen kommen. Nur für Verbrauchsgüter der Produktion
+}
+
+func (gs *GameState) GetTile(X int, Y int) (*Tile, error) {
+	if !(0 <= X && X <= gs.SizeX) {
+		return &Tile{}, fmt.Errorf("X index is not in bounds %d", gs.SizeX)
+	}
+	if !(0 <= Y && Y <= gs.SizeY) {
+		return &Tile{}, fmt.Errorf("Y index is not in bounds %d", gs.SizeY)
+	}
+
+	return gs.Tiles[X][Y], nil
 }
 
 // returnt alle Produktionstypen mit der kumulierten maximalen Produktion pro Tick
@@ -81,16 +96,16 @@ func (t *Tile) RemoveTrack(subtile int, gs *GameState) (bool, string) {
 // Fügt bei i ein Signal hinzu, wenn da keins ist und ein entsprechendes Gleis vorhanden ist,
 // um bei i ein signal zu bauen muss gleis i da sein, und das Tile nicht locked ist;
 // returnt true bei erfolg und false bei error
-func (t *Tile) AddSignal(subtile int, gs *GameState) (bool, string) {
+func (t *Tile) AddSignal(subtile int, gs *GameState) (bool, error) {
 	if t.ActiveTile.Category != nil {
-		return false, "There is a Active Tile there, no Signal can be build on this tile."
+		return false, fmt.Errorf("There is a Active Tile there, no Signal can be build on this tile.")
 	}
 	if t.Tracks[subtile-1] || t.Signals[subtile-1] {
 		t.Signals[subtile-1] = true
 		gs.BroadcastChannel <- WsEnvelope{Type: "signal.create", Username: "Server", Msg: &TileUpdateMSG{Position: [3]int{t.X, t.Y, subtile}}}
-		return true, ""
+		return true, nil
 	}
-	return false, "There may be no Track to place the signal onto, or there is already a signal at that location."
+	return false, fmt.Errorf("There may be no Track to place the signal onto, or there is already a signal at that location.")
 }
 
 // Entfernt bei i das Signal, wenn da keins ist und das Tile nicht locked ist
