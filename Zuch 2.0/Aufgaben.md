@@ -36,10 +36,6 @@ Refactor ds
 	- nach jedem Signal neu berechnen
 
 Kommunikation
-- siehe CLI Eingabeding Graph
-
-# veraltet:
-Kommunikation
 - Methoden hinzufügen
 	-  removeStop
 	- addStop

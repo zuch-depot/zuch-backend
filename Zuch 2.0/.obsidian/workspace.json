@@ -25,7 +25,7 @@
             "id": "0e6f94e3e1ac66d5",
             "type": "leaf",
             "state": {
-              "type": "canvas",
+              "type": "markdown",
               "state": {
                 "file": "CLI Eingabeding Graph.canvas",
                 "viewState": {
@@ -53,6 +53,7 @@
             }
           }
         ],
+        "currentTab": 1
         "currentTab": 1
       }
     ],
@@ -126,8 +127,8 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Aufgaben.md",
-                "collapseAll": false,
+                "file": "Jannis/260306 Kommunikation.md",
+                "collapseAll": true,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
                 "showSearch": false,
@@ -136,7 +137,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Aufgaben"
+              "title": "Rückverweise auf 260306 Kommunikation"
             }
           },
           {
@@ -196,16 +197,28 @@
               "icon": "lucide-list",
               "title": "Outline of Aufgaben"
             }
+          },
+          {
+            "id": "c8cc48484f8e751c",
+            "type": "leaf",
+            "state": {
+              "type": "git-view",
+              "state": {},
+              "icon": "git-pull-request",
+              "title": "Source Control"
+            }
           }
-        ]
+        ],
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
-    "width": 300,
+    "width": 373.5,
     "collapsed": true
   },
   "left-ribbon": {
     "hiddenItems": {
+      "obsidian-git:Open Git source control": false,
       "switcher:Schnellauswahl öffnen": false,
       "graph:Graph-Ansicht öffnen": false,
       "canvas:Neuen Canvas erstellen": false,
@@ -217,6 +230,12 @@
   },
   "active": "0e6f94e3e1ac66d5",
   "lastOpenFiles": [
+    "Jannis/260306 Kommunikation.md",
+    "Jannis/CLI Eingabeding REST Überlegungen.canvas",
+    "Jannis/0_1_Introduction.pdf",
+    "Jannis/zuch_spec.yaml",
+    "Jannis/openapi3_2 (1).yaml",
+    "Aufgaben.md",
     "CLI Eingabeding da.md",
     "Archiv.md",
     "06.03. main package.pdf",
