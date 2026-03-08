@@ -3,6 +3,8 @@ package ds
 import (
 	"fmt"
 	"slices"
+	"strconv"
+	"strings"
 	"zuch-backend/internal/utils"
 )
 
@@ -542,5 +544,109 @@ func (gs *GameState) RemoveSchedule(Id int) error {
 
 	delete(gs.Schedules, Id)
 
+	return nil
+}
+
+//---------------------------------------------- Tiles -----------------------------------------
+
+// fügt bei allen SubTiles zwischen den beiden SubTiles, die inklusive, wenn möglich eine Schiene ein
+func (gs *GameState) AddTracks(startSubTile [3]int, endSubTile [3]int) error {
+
+	sst := startSubTile
+	est := endSubTile
+	defaultError := "Error while building tracks. "
+
+	//sind die y dann in range?
+	_, error := gs.GetTile(sst[0], sst[1])
+	if error != nil {
+		return fmt.Errorf("%s", defaultError+"The start koordinate have the problem: "+error.Error())
+	}
+	_, error = gs.GetTile(est[0], est[1])
+	if error != nil {
+		return fmt.Errorf("%s", defaultError+"The end koordinate have the problem: "+error.Error())
+	}
+
+	//liste der, die nicht hinzugefügt werden konnten
+	notBuild := []string{"Could not build tracks on the following tiles because of the following reasons: "}
+
+	//sind sie in einer linie (ggf. als einzelne Methode)
+	// sind die Subtiles beide horizontal?
+	if (sst[2] == 1 || sst[2] == 3) && (est[2] == 1 || est[2] == 3) {
+		//sind sie auf einer y?
+		if sst[1] != est[1] {
+			return fmt.Errorf("%s", defaultError+"The Subtiles are horizontal, but the y koordinates differ")
+		}
+
+		//bauen der Schienen
+		currentTile, _ := gs.GetTile(sst[0], sst[1])
+		currentSubTile := sst[2]
+		countUp := (sst[0] == est[0] && sst[2] < est[2]) || sst[0] < est[0] // ob sst links von est ist
+		for currentTile.X != est[0] || currentTile.Y != est[1] || currentSubTile != est[2] {
+
+			success, error := currentTile.AddTrack(currentSubTile, gs)
+			if !success {
+				notBuild = append(notBuild, "("+strconv.Itoa(currentTile.X)+", "+strconv.Itoa(currentTile.Y)+", "+strconv.Itoa(currentSubTile)+") "+error.Error())
+			}
+
+			if countUp {
+				if currentSubTile == 3 {
+					currentSubTile = 1
+					currentTile = gs.Tiles[currentTile.X+1][currentTile.Y]
+				} else {
+					currentSubTile = 3
+				}
+			} else {
+				if currentSubTile == 1 {
+					currentSubTile = 3
+					currentTile = gs.Tiles[currentTile.X-1][currentTile.Y]
+				} else {
+					currentSubTile = 1
+				}
+			}
+		}
+
+		//sind sie vertikal?
+	} else if (sst[2] == 2 || sst[2] == 4) && (est[2] == 2 || est[2] == 4) {
+		//sind sie auf einer x?
+		if sst[0] != est[0] {
+			return fmt.Errorf("%s", defaultError+"The Subtiles are vertikal, but the x koordinates differ")
+		}
+
+		//bauen der Schienen
+		currentTile, _ := gs.GetTile(sst[0], sst[1])
+		currentSubTile := sst[2]
+		countUp := (sst[1] == est[1] && sst[2] < est[2]) || sst[1] < est[1] // ob sst unter est ist
+		for currentTile.X != est[0] || currentTile.Y != est[1] || currentSubTile != est[2] {
+
+			success, error := currentTile.AddTrack(currentSubTile, gs)
+			if !success {
+				notBuild = append(notBuild, "("+strconv.Itoa(currentTile.X)+", "+strconv.Itoa(currentTile.Y)+", "+strconv.Itoa(currentSubTile)+") "+error.Error())
+			}
+
+			if countUp {
+				if currentSubTile == 4 {
+					currentSubTile = 2
+					currentTile = gs.Tiles[currentTile.X][currentTile.Y+1]
+				} else {
+					currentSubTile = 4
+				}
+			} else {
+				if currentSubTile == 2 {
+					currentSubTile = 4
+					currentTile = gs.Tiles[currentTile.X][currentTile.Y-1]
+				} else {
+					currentSubTile = 2
+				}
+			}
+		}
+
+	} else {
+		//sind beides nicht
+		return fmt.Errorf("%s", defaultError+"Sub-Tiles don't allign. They both have to be horizntal or vertikal")
+	}
+
+	if len(notBuild) > 1 {
+		return fmt.Errorf("%s", strings.Join(notBuild, "\n"))
+	}
 	return nil
 }
