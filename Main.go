@@ -16,7 +16,7 @@ import (
 )
 
 // Zum Debuggen: LevelInfo zu LevelDebug wechseln
-var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true, Level: slog.LevelDebug}))
+var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true, Level: slog.LevelInfo}))
 
 func main() {
 	utils.Logger = logger
@@ -61,7 +61,7 @@ func main() {
 	gs.CapacityPerStationTile = int(tempVar)
 
 	// wichtig als initialisierung, bevor Züge verarbeitet werden
-	loadConfig(&gs)
+	// loadConfig(&gs)
 
 	// Ablauf
 	// beim ersten start (eventuell probieren Dateien einzulesen) sonst defaults setzen
@@ -71,7 +71,8 @@ func main() {
 	// sich merken wer wer ist
 	// wenn wer rausfliegt sollten die sachen noch da sein
 
-	// loadGame(&gs, "")
+	//lade das akutellste Savegame
+	loadGame(&gs, "")
 
 	// hier den Server starten
 	go startServer(&gs)
@@ -101,31 +102,18 @@ func main() {
 		processClientInputs(&gs)
 
 		//TEMP fürs testen
-		if gs.Tick%100 == 0 {
-			saveGame(&gs, "")
-		}
+		// if gs.Tick%1000 == 0 {
+		// 	go saveGame(&gs, "")
+		// }
 
 		// Train calculate (Läd/Entläd oder bewegt) und entblocken
 		if gs.Tick%10 == 0 {
 			gs.CalculateTrains()
-			// for _, train := range gs.Trains {
-			// 	fmt.Print(train.Name, " ")
-			// 	for _, waggon := range train.Waggons {
-			// 		fmt.Print(waggon.CargoStorage.FilledCargoType, " ", waggon.CargoStorage.Filled, " ")
-			// 	}
-			// 	fmt.Println()
-			// }
 		}
 
 		// process factorys
 		if gs.Tick%10 == 1 {
 			processActiveTiles(&gs)
-			// for _, station := range gs.Stations {
-			// 	fmt.Println(station.Name, station.Storage)
-			// }
-			// for _, active := range gs.ActiveTiles {
-			// 	fmt.Println(active.Name, " ", active.Storage)
-			// }
 		}
 
 		if gs.Tick%10 == 2 {

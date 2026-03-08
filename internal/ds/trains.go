@@ -130,7 +130,6 @@ func (t *Train) move(gs *GameState) [2]int {
 	// wenn man am Ende des Weges angekommen ist oder bei einem Signal ist, neuberechnen
 	pos := t.Waggons[0].Position
 	if len(t.CurrentPath) == 0 || gs.Tiles[pos[0]][pos[1]].Signals[pos[2]-1] {
-
 		//wenn am Ziel angekommen, nächstes Ziel auswählen, anosten bleibt das Ziel gleich
 		if len(t.CurrentPath) == 0 {
 			t.NextStop = t.Schedule.nextStop(t.NextStop)
@@ -230,7 +229,6 @@ func (t *Train) move(gs *GameState) [2]int {
 
 	// Alles was bis hier gekommen ist hat sich bewegt (laut wilken beim döner essen) || xD
 	gs.BroadcastChannel <- WsEnvelope{Type: "train.move", Msg: TrainMoveMSG{Id: t.Id, Waggons: t.Waggons}}
-
 	return entblocken
 }
 

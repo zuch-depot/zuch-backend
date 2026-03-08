@@ -16,6 +16,7 @@ import (
 
 //DAS ALLES braucht support für mehrere Instanzen auf einem Server
 
+// Im Tick Loop NUR MIT GO aufrufen
 // Speichert den Spielstand
 // ist aber bisher pass-by-value, dunno ob reference hier vielleicht mehr sinn macht
 // Die ticks sollte man noch anhalten
@@ -147,6 +148,9 @@ func loadGame(gs *ds.GameState, saveName string) {
 	}
 
 	gs.Users = sgs.Users
+	for _, user := range gs.Users {
+		user.IsConnected = false
+	}
 	gs.Schedules = sgs.Schedules
 	gs.Stations = sgs.Stations
 	gs.Tiles = sgs.Tiles
