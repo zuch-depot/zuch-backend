@@ -278,29 +278,6 @@ func checkIfCoordinatesAreValid(position [3]int, gs *ds.GameState) error {
 	}
 }
 
-func handleTileUpdate(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error {
-	update, err := unpackEnvelope(envelope, ds.TileUpdateMSG{})
-	if err != nil {
-		return fmt.Errorf("could not unpack Envelope; %s", slog.String("error", err.Error()))
-
-	}
-	err = checkIfCoordinatesAreValid(update.Position, gs)
-	if err != nil {
-		return fmt.Errorf("envelope contains invalid Coordinates; %s", slog.String("error", err.Error()))
-	}
-
-	switch envelope.Type {
-	case "rail.create":
-		return executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].AddTrack, &envelope, &update, gs)
-	case "rail.remove":
-		return executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].RemoveTrack, &envelope, &update, gs)
-	case "signal.remove":
-		return executeAndReply(gs.Tiles[update.Position[0]][update.Position[1]].RemoveSignal, &envelope, &update, gs)
-	default:
-		return fmt.Errorf("unknown envelope Tyoe")
-	}
-}
-
 // warum hast du das so komisch gemacht Jannis?
 // -> wenn du die funktionen direkt aufrufst, sieht das in der Übersicht besser aus
 // Führt das callback mit den daten des envelopes aus, tritt ein fehler aus wird der zurück gegeben, andererseits wird die nachricht an alle geschickt

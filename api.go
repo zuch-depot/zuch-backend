@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -63,10 +64,13 @@ func startServer(gs *ds.GameState) {
 		acceptNewClient(w, r, gs)
 	})
 
-	api := humachi.New(router, huma.DefaultConfig("Zuch API", "0.1.0"))
+	config := huma.DefaultConfig("Zuch API", "0.1.0")
+	config.DocsRenderer = huma.DocsRendererScalar
+	api := humachi.New(router, config)
 
 	registerGameRoutes(&api, gs)
 	registerSignalRoutes(&api, gs)
+	registerTrackRoutes(&api, gs)
 
 	// die werden später noch als teil des WS umgesetzt (denke ich mal), aber zum testen erstmal so
 	http.HandleFunc("/save", func(w http.ResponseWriter, r *http.Request) { // Muss so gelöst werden damit ich noch die referenz zum Gamestate übertragen kann
@@ -78,48 +82,72 @@ func startServer(gs *ds.GameState) {
 
 }
 
+// region Signals
 // Hier werden die HUMA Routen für die Signale erstellt
 // Heißt hier werden auch die eigentlichen methoden aufgerufen und fehler abgefangen
 func registerSignalRoutes(api *huma.API, gs *ds.GameState) {
 	huma.Post(*api, "/signal", func(ctx context.Context, i *struct{ Body ds.TileUpdateMSG }) (*ds.GenericResponse, error) {
 		tile, err := gs.GetTile(i.Body.Position[0], i.Body.Position[1])
 		if err != nil {
-			return ds.CreateGenericResponse("Tile not found", false), nil
+			return nil, fmt.Errorf("Could not find Tile; %s", err.Error())
 		}
-		success, err := tile.AddSignal(i.Body.Position[2]-1, gs)
+		success, err := tile.AddSignal(i.Body.Position[2], gs)
 		if err != nil {
-			return ds.CreateGenericResponse("There was an error while creating the signal", success), nil
+			return nil, fmt.Errorf("Tile was found but could not create signal; %s", err.Error())
 		}
-		return ds.CreateGenericResponse("created signal", success), err
+		return ds.CreateGenericResponse("created signal", success), nil
 	}, huma.OperationTags("signal"))
 
 	huma.Delete(*api, "/signal", func(ctx context.Context, i *struct{ Body ds.TileUpdateMSG }) (*ds.GenericResponse, error) {
 		tile, err := gs.GetTile(i.Body.Position[0], i.Body.Position[1])
 		if err != nil {
-			return ds.CreateGenericResponse("Tile not found", false), nil
+			return nil, fmt.Errorf("Tile not found; %s", err.Error())
 		}
-		success, err := tile.AddSignal(i.Body.Position[2]-1, gs)
+		success, err := tile.RemoveSignal(i.Body.Position[2], gs)
 		if err != nil {
-			return ds.CreateGenericResponse("There was an error while removing the signal", success), nil
+			return nil, fmt.Errorf("Tile was found but could not remove signal; %s", err.Error())
 		}
-		return ds.CreateGenericResponse("removed signal", success), err
+		return ds.CreateGenericResponse("removed signal", success), nil
 	}, huma.OperationTags("signal"))
 }
 
+// endregion signals
+// region game
 func registerGameRoutes(api *huma.API, gs *ds.GameState) {
 	huma.Get(*api, "/game/pause", func(ctx context.Context, i *struct{}) (*ds.GenericResponse, error) {
 		pauseGame(gs)
-		return &ds.GenericResponse{Body: struct {
-			Message string
-			Success bool
-		}{Message: "game paused", Success: true}}, nil
+		return ds.CreateGenericResponse("game paused", true), nil
 	}, huma.OperationTags("game"))
 
 	huma.Get(*api, "/game/unpause", func(ctx context.Context, i *struct{}) (*ds.GenericResponse, error) {
 		unPauseGame(gs)
-		return &ds.GenericResponse{Body: struct {
-			Message string
-			Success bool
-		}{Message: "game unpaused", Success: true}}, nil
+		return ds.CreateGenericResponse("game unpaused", true), nil
 	}, huma.OperationTags("game"))
+}
+
+// endregion game
+func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
+	huma.Post(*api, "/track", func(ctx context.Context, i *struct{ Body ds.TileUpdateMSG }) (*ds.GenericResponse, error) {
+		tile, err := gs.GetTile(i.Body.Position[0], i.Body.Position[1])
+		if err != nil {
+			return nil, fmt.Errorf("Could not find Tile; %s", err.Error())
+		}
+		success, err := tile.AddTrack(i.Body.Position[2], gs)
+		if err != nil {
+			return nil, fmt.Errorf("Tile was found but could not create track; %s", err.Error())
+		}
+		return ds.CreateGenericResponse("created track", success), nil
+	}, huma.OperationTags("track"))
+
+	huma.Delete(*api, "/track", func(ctx context.Context, i *struct{ Body ds.TileUpdateMSG }) (*ds.GenericResponse, error) {
+		tile, err := gs.GetTile(i.Body.Position[0], i.Body.Position[1])
+		if err != nil {
+			return nil, fmt.Errorf("Tile not found; %s", err.Error())
+		}
+		success, err := tile.RemoveTrack(i.Body.Position[2], gs)
+		if err != nil {
+			return nil, fmt.Errorf("Tile was found but could not remove track; %s", err.Error())
+		}
+		return ds.CreateGenericResponse("removed track", success), nil
+	}, huma.OperationTags("track"))
 }

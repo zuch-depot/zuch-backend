@@ -143,10 +143,6 @@ func processClientInputs(gs *ds.GameState) {
 		inputCat := strings.Split(input.Type, ".")
 		var err error
 		switch inputCat[0] {
-		case "rail":
-			err = handleTileUpdate(input, gs)
-		case "signal":
-			err = handleTileUpdate(input, gs)
 		case "train":
 			err = handleTrainUpdate(input, gs)
 		case "station":

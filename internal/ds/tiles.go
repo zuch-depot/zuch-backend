@@ -67,29 +67,29 @@ func (a *ActiveTile) getConsumptionCategorys() map[string]int {
 
 // Fügt bei i ein gleis hinzu, wenn da keins ist und das Tile nicht locked ist
 // returnt true bei erfolg und false bei error
-func (t *Tile) AddTrack(subtile int, gs *GameState) (bool, string) {
+func (t *Tile) AddTrack(subtile int, gs *GameState) (bool, error) {
 	if t.ActiveTile.Category != nil {
-		return false, "There is a Active Tile there, no Tracks can be build on this tile."
+		return false, fmt.Errorf("There is a Active Tile there, no Tracks can be build on this tile.")
 	}
 	if !t.Tracks[subtile-1] {
 		t.Tracks[subtile-1] = true
 		gs.BroadcastChannel <- WsEnvelope{Type: "rail.create", Username: "Server", Msg: &TileUpdateMSG{Position: [3]int{t.X, t.Y, subtile}}}
-		return true, ""
+		return true, nil
 	}
-	return false, "There is already a Track at that Position."
+	return false, fmt.Errorf("There is already a Track at that Position.")
 }
 
 // Entfernt bei i ein gleis und Signal, wenn da eins ist und das Tile nicht locked ist
 // returnt true bei erfolg und false bei error
 // wenn kein Signal an der Stelle ist, wird kein Fehler geworfen
-func (t *Tile) RemoveTrack(subtile int, gs *GameState) (bool, string) {
+func (t *Tile) RemoveTrack(subtile int, gs *GameState) (bool, error) {
 	if t.Tracks[subtile-1] && !t.IsBlocked {
 		t.Tracks[subtile-1] = false
 		t.RemoveSignal(subtile, gs) // das muss noch kommunitzier werden
 		gs.BroadcastChannel <- WsEnvelope{Type: "rail.remove", Username: "Server", Msg: &TileUpdateMSG{Position: [3]int{t.X, t.Y, subtile}}}
-		return true, ""
+		return true, nil
 	}
-	return false, "There is no Track to Remove, or the Tile may be blocked by a Train, if so try again later."
+	return false, fmt.Errorf("There is no Track to Remove, or the Tile may be blocked by a Train, if so try again later.")
 
 }
 
@@ -111,12 +111,12 @@ func (t *Tile) AddSignal(subtile int, gs *GameState) (bool, error) {
 // Entfernt bei i das Signal, wenn da keins ist und das Tile nicht locked ist
 // returnt true bei erfolg und false bei error
 // TODO error
-func (t *Tile) RemoveSignal(subtile int, gs *GameState) (bool, string) {
+func (t *Tile) RemoveSignal(subtile int, gs *GameState) (bool, error) {
 	if t.Signals[subtile-1] {
 		t.Signals[subtile-1] = false
 		gs.BroadcastChannel <- WsEnvelope{Type: "signal.remove", Username: "Server", Msg: &TileUpdateMSG{Position: [3]int{t.X, t.Y, subtile}}}
-		return true, ""
+		return true, nil
 	}
-	return false, "There is no Signal to remove."
+	return false, fmt.Errorf("There is no Signal to remove.")
 
 }
