@@ -125,7 +125,10 @@ func registerGameRoutes(api *huma.API, gs *ds.GameState) {
 	}, huma.OperationTags("game"))
 
 	huma.Get(*api, "/game/save", func(ctx context.Context, i *struct{}) (*ds.SaveGameMessage, error) {
-		filename := saveGame(gs, "")
+		filename, err := saveGame(gs, "")
+		if err != nil {
+			return nil, fmt.Errorf("Error while Saving game; %s", err.Error())
+		}
 		msg := &ds.SaveGameMessage{}
 		msg.Body.Message = "game saved"
 		msg.Body.Success = true
@@ -134,7 +137,11 @@ func registerGameRoutes(api *huma.API, gs *ds.GameState) {
 	}, huma.OperationTags("game"))
 
 	huma.Put(*api, "/game/load", func(ctx context.Context, i *ds.SaveGameMessage) (*ds.GenericResponse, error) {
-		return nil, huma.Error501NotImplemented("Ohoh, ich muss auf wilkens merge warten")
+		err := loadGame(gs, "") // hier könnte man später noch den dateinamen mitgeben
+		if err != nil {
+			return nil, err
+		}
+		return ds.CreateGenericResponse("Loaded new Save", true), nil
 	}, huma.OperationTags("game"))
 }
 

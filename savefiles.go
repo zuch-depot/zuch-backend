@@ -19,7 +19,7 @@ import (
 // Speichert den Spielstand
 // ist aber bisher pass-by-value, dunno ob reference hier vielleicht mehr sinn macht
 // Die ticks sollte man noch anhalten
-func saveGame(gs *ds.GameState, saveGameName string) string {
+func saveGame(gs *ds.GameState, saveGameName string) (string, error) {
 	// ich will den ganzen bums hier eigentlich ja nur speichern
 	// Alles soll gerne in eine Json datei
 	// wenn die uns um die ohren fliegt kann man ja immernoch komprimieren
@@ -54,6 +54,7 @@ func saveGame(gs *ds.GameState, saveGameName string) string {
 	stateByte, err := json.Marshal(state)
 	if err != nil {
 		logger.Error("Could not convert state to JSON", slog.String("Error", err.Error()))
+		return "", err
 	}
 
 	if os.Getenv("SAVECOMPRESSED") == "True" {
@@ -75,30 +76,31 @@ func saveGame(gs *ds.GameState, saveGameName string) string {
 
 	if err != nil {
 		logger.Error("Failure while writing File", slog.String("Error", err.Error()))
+		return "", err
 	}
 
 	fmt.Println("Done Saving")
 
 	unPauseGame(gs)
-	return filename
+	return filename, nil
 }
 
 // nur in saves
 // kann nur jsons
-func loadGame(gs *ds.GameState, saveName string) {
+func loadGame(gs *ds.GameState, saveName string) error {
 
 	//eigentlich pausieren
 
 	//alle Dateien aus saves rauslesen
-	entries, error := os.ReadDir("saves")
-	if error != nil {
-		logger.Error(error.Error())
-		return
+	entries, err := os.ReadDir("saves")
+	if err != nil {
+		logger.Error(err.Error())
+		return err
 	}
 
 	if len(entries) == 0 {
 		logger.Error("No Savefile found")
-		return
+		return fmt.Errorf("No Savefile found")
 	}
 
 	//neuste zuerst, also größtes Datum zuerst
@@ -124,7 +126,7 @@ func loadGame(gs *ds.GameState, saveName string) {
 			} else {
 				//TODO konnte das FIle nicht finden
 				logger.Error("That Savefile not found")
-				return
+				return fmt.Errorf("Savefile not found")
 			}
 		}
 	}
@@ -135,16 +137,16 @@ func loadGame(gs *ds.GameState, saveName string) {
 
 	fmt.Println(saveFileName)
 
-	data, error := os.ReadFile(saveFileName)
-	if error != nil {
-		logger.Error(error.Error())
-		return
+	data, err := os.ReadFile(saveFileName)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
 	}
 
-	error = json.Unmarshal(data, &sgs)
-	if error != nil {
-		logger.Error(error.Error())
-		return
+	err = json.Unmarshal(data, &sgs)
+	if err != nil {
+		logger.Error(err.Error())
+		return err
 	}
 
 	gs.Users = sgs.Users
@@ -175,4 +177,6 @@ func loadGame(gs *ds.GameState, saveName string) {
 	gs.SizeX = sgs.SizeX
 	gs.SizeY = sgs.SizeY
 	gs.SizeSubtile = sgs.SizeSubtile
+
+	return nil
 }
