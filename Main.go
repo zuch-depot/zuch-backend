@@ -16,7 +16,7 @@ import (
 )
 
 // Zum Debuggen: LevelInfo zu LevelDebug wechseln
-var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true, Level: slog.LevelInfo}))
+var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true, Level: slog.LevelDebug}))
 
 func main() {
 	utils.Logger = logger
@@ -71,6 +71,8 @@ func main() {
 	// sich merken wer wer ist
 	// wenn wer rausfliegt sollten die sachen noch da sein
 
+	// loadGame(&gs, "")
+
 	// hier den Server starten
 	go startServer(&gs)
 	// Anfangen aus events an clients zu schicken
@@ -84,7 +86,9 @@ func main() {
 	gs.Ticker = time.NewTicker(time.Duration(ticksMilisec) * time.Millisecond)
 
 	// jeder Tick
-	for gs.Tick = 0; ; gs.Tick++ {
+	//for gs.Tick = 0; ; gs.Tick++ { //--> gs.tick ist standartmäßig 0, wenn nicht, dann nur, weil das rausgeladen wurde
+	for ; ; gs.Tick++ {
+
 		// Wenn pausiert wurde, warten bis entpausiert signal kommt
 		if gs.IsPaused {
 			confirmPause <- true
@@ -95,6 +99,11 @@ func main() {
 
 		// Client Inputs
 		processClientInputs(&gs)
+
+		//TEMP fürs testen
+		if gs.Tick%100 == 0 {
+			saveGame(&gs, "")
+		}
 
 		// Train calculate (Läd/Entläd oder bewegt) und entblocken
 		if gs.Tick%10 == 0 {

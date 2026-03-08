@@ -6,7 +6,7 @@ import (
 )
 
 func handleSaveRequest(w http.ResponseWriter, r *http.Request, gs *ds.GameState) {
-	saveGame(gs)
+	saveGame(gs, "")
 	w.WriteHeader(202)
 }
 func handlePauseGame(w http.ResponseWriter, r *http.Request, gs *ds.GameState) {

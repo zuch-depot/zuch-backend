@@ -7,14 +7,19 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"slices"
+	"strings"
+	"sync/atomic"
 	"time"
 	"zuch-backend/internal/ds"
 )
 
+//DAS ALLES braucht support für mehrere Instanzen auf einem Server
+
 // Speichert den Spielstand
 // ist aber bisher pass-by-value, dunno ob reference hier vielleicht mehr sinn macht
 // Die ticks sollte man noch anhalten
-func saveGame(gs *ds.GameState) {
+func saveGame(gs *ds.GameState, saveGameName string) {
 	// ich will den ganzen bums hier eigentlich ja nur speichern
 	// Alles soll gerne in eine Json datei
 	// wenn die uns um die ohren fliegt kann man ja immernoch komprimieren
@@ -42,6 +47,7 @@ func saveGame(gs *ds.GameState) {
 	// Die Objekte werden in einer netten JSON verpackt
 
 	// Dateiname wird ggf. abgeändert wenn es nicht compressed wird
+	// format ist yyyymmdd-hhmmss
 	filename := os.Getenv("SAVELOCATION") + "/savegame-" + time.Now().Format("20060102-150405")
 	var bytesToWrite []byte
 
@@ -74,4 +80,101 @@ func saveGame(gs *ds.GameState) {
 	fmt.Println("Done Saving")
 
 	unPauseGame(gs)
+}
+
+// nur in saves
+// kann nur jsons
+func loadGame(gs *ds.GameState, saveName string) {
+
+	//eigentlich pausieren
+
+	//alle Dateien aus saves rauslesen
+	entries, error := os.ReadDir("saves")
+	if error != nil {
+		logger.Error(error.Error())
+		return
+	}
+
+	if len(entries) == 0 {
+		logger.Error("No Savefile found")
+		return
+	}
+
+	//neuste zuerst, also größtes Datum zuerst
+	slices.SortFunc(entries, func(a, b os.DirEntry) int {
+		if a.Name() < b.Name() {
+			return 1
+		}
+		if a.Name() > b.Name() {
+			return -1
+		}
+		return 0
+	})
+
+	var saveFileName string
+
+	if saveName == "" {
+		saveFileName = entries[0].Name()
+	} else {
+		for _, entry := range entries {
+			if strings.Split(entry.Name(), "-")[3] == saveName {
+				saveFileName = entry.Name()
+				break
+			} else {
+				//TODO konnte das FIle nicht finden
+				logger.Error("That Savefile not found")
+				return
+			}
+		}
+	}
+
+	saveFileName = "saves/" + saveFileName
+
+	var sgs ds.SaveAbleGamestate
+
+	fmt.Println(saveFileName)
+
+	data, error := os.ReadFile(saveFileName)
+	if error != nil {
+		logger.Error(error.Error())
+		return
+	}
+
+	error = json.Unmarshal(data, &sgs)
+	if error != nil {
+		logger.Error(error.Error())
+		return
+	}
+
+	gs.Users = sgs.Users
+	gs.Schedules = sgs.Schedules
+	gs.Stations = sgs.Stations
+	gs.Tiles = sgs.Tiles
+	gs.Trains = sgs.Trains
+	gs.ActiveTiles = sgs.ActiveTiles
+
+	gs.LoadUnloadSpeed = sgs.LoadUnloadSpeed
+	gs.MinLoadUloadTicks = sgs.MinLoadUloadTicks
+	gs.CapacityPerStationTile = sgs.CapacityPerStationTile
+	gs.ConfigData = sgs.ConfigData
+
+	gs.StationRange = sgs.StationRange
+	setAtomic(&gs.CurrentTrainID, sgs.CurrentTrainID)
+	setAtomic(&gs.CurrentScheduleID, sgs.CurrentScheduleID)
+	setAtomic(&gs.CurrentStopID, sgs.CurrentStopID)
+	setAtomic(&gs.CurrentStationID, sgs.CurrentStationID)
+	setAtomic(&gs.CurrentPlattformID, sgs.CurrentPlattformID)
+	setAtomic(&gs.CurrentActiveTileID, sgs.CurrentActiveTileID)
+
+	gs.Tick = sgs.Tick
+
+	gs.SizeX = sgs.SizeX
+	gs.SizeY = sgs.SizeY
+	gs.SizeSubtile = sgs.SizeSubtile
+}
+
+func setAtomic(atomic *atomic.Uint64, add int) {
+	for range add {
+		atomic.Add(1)
+	}
 }

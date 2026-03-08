@@ -29,8 +29,8 @@
               "state": {
                 "file": "CLI Eingabeding Graph.canvas",
                 "viewState": {
-                  "x": 1385.3649602954854,
-                  "y": 3573.6073475608387,
+                  "x": 1350.5504216188776,
+                  "y": 2901.9768722579493,
                   "zoom": -0.5366555007126579
                 }
               },
@@ -42,18 +42,21 @@
             "id": "6171a3bc308dbf29",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "canvas",
               "state": {
-                "file": "Aufgaben.md",
-                "mode": "source",
-                "source": false
+                "file": "CLI Eingabeding Graph.canvas",
+                "viewState": {
+                  "x": 1030.245716772326,
+                  "y": 4905.460338201516,
+                  "zoom": -0.6666666666666665
+                }
               },
-              "icon": "lucide-file",
-              "title": "Aufgaben"
+              "icon": "lucide-layout-dashboard",
+              "title": "CLI Eingabeding Graph"
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -212,18 +215,19 @@
       "daily-notes:Heutige Notiz öffnen": false,
       "templates:Vorlage einfügen": false,
       "command-palette:Befehlspalette öffnen": false,
-      "bases:Neue Base erstellen": false
+      "bases:Neue Base erstellen": false,
+      "obsidian-git:Open Git source control": false
     }
   },
-  "active": "0e6f94e3e1ac66d5",
+  "active": "6171a3bc308dbf29",
   "lastOpenFiles": [
-    "CLI Eingabeding da.md",
+    "Aufgaben.md",
+    "CLI Eingabeding Graph.canvas",
     "Archiv.md",
     "06.03. main package.pdf",
     "06.03. ds package.pdf",
+    "CLI Eingabeding da.md",
     "Welcome.md",
-    "CLI Eingabeding Graph.canvas",
-    "Aufgaben.md",
     "Backend/Tagebuch Wilken.md",
     "Backend",
     "Allgemein/Allgemein.md",
