@@ -20,7 +20,7 @@ import (
 // Speichert den Spielstand
 // ist aber bisher pass-by-value, dunno ob reference hier vielleicht mehr sinn macht
 // Die ticks sollte man noch anhalten
-func saveGame(gs *ds.GameState, saveGameName string) {
+func saveGame(gs *ds.GameState, saveGameName string) string {
 	// ich will den ganzen bums hier eigentlich ja nur speichern
 	// Alles soll gerne in eine Json datei
 	// wenn die uns um die ohren fliegt kann man ja immernoch komprimieren
@@ -81,107 +81,7 @@ func saveGame(gs *ds.GameState, saveGameName string) {
 	fmt.Println("Done Saving")
 
 	unPauseGame(gs)
-	// return filename
-}
-
-// nur in saves
-// kann nur jsons
-func loadGame(gs *ds.GameState, saveName string) {
-
-	//eigentlich pausieren
-
-	//alle Dateien aus saves rauslesen
-	entries, error := os.ReadDir("saves")
-	if error != nil {
-		logger.Error(error.Error())
-		return
-	}
-
-	if len(entries) == 0 {
-		logger.Error("No Savefile found")
-		return
-	}
-
-	//neuste zuerst, also größtes Datum zuerst
-	slices.SortFunc(entries, func(a, b os.DirEntry) int {
-		if a.Name() < b.Name() {
-			return 1
-		}
-		if a.Name() > b.Name() {
-			return -1
-		}
-		return 0
-	})
-
-	var saveFileName string
-
-	if saveName == "" {
-		saveFileName = entries[0].Name()
-	} else {
-		for _, entry := range entries {
-			if strings.Split(entry.Name(), "-")[3] == saveName {
-				saveFileName = entry.Name()
-				break
-			} else {
-				//TODO konnte das FIle nicht finden
-				logger.Error("That Savefile not found")
-				return
-			}
-		}
-	}
-
-	saveFileName = "saves/" + saveFileName
-
-	var sgs ds.SaveAbleGamestate
-
-	fmt.Println(saveFileName)
-
-	data, error := os.ReadFile(saveFileName)
-	if error != nil {
-		logger.Error(error.Error())
-		return
-	}
-
-	error = json.Unmarshal(data, &sgs)
-	if error != nil {
-		logger.Error(error.Error())
-		return
-	}
-
-	gs.Users = sgs.Users
-	for _, user := range gs.Users {
-		user.IsConnected = false
-	}
-	gs.Schedules = sgs.Schedules
-	gs.Stations = sgs.Stations
-	gs.Tiles = sgs.Tiles
-	gs.Trains = sgs.Trains
-	gs.ActiveTiles = sgs.ActiveTiles
-
-	gs.LoadUnloadSpeed = sgs.LoadUnloadSpeed
-	gs.MinLoadUloadTicks = sgs.MinLoadUloadTicks
-	gs.CapacityPerStationTile = sgs.CapacityPerStationTile
-	gs.ConfigData = sgs.ConfigData
-
-	gs.StationRange = sgs.StationRange
-	setAtomic(&gs.CurrentTrainID, sgs.CurrentTrainID)
-	setAtomic(&gs.CurrentScheduleID, sgs.CurrentScheduleID)
-	setAtomic(&gs.CurrentStopID, sgs.CurrentStopID)
-	setAtomic(&gs.CurrentStationID, sgs.CurrentStationID)
-	setAtomic(&gs.CurrentPlattformID, sgs.CurrentPlattformID)
-	setAtomic(&gs.CurrentActiveTileID, sgs.CurrentActiveTileID)
-
-	gs.Tick = sgs.Tick
-
-	gs.SizeX = sgs.SizeX
-	gs.SizeY = sgs.SizeY
-	gs.SizeSubtile = sgs.SizeSubtile
-}
-
-func setAtomic(atomic *atomic.Uint64, add int) {
-	for range add {
-		atomic.Add(1)
-	}
+	return filename
 }
 
 // nur in saves

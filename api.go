@@ -125,7 +125,7 @@ func registerGameRoutes(api *huma.API, gs *ds.GameState) {
 	}, huma.OperationTags("game"))
 
 	huma.Get(*api, "/game/save", func(ctx context.Context, i *struct{}) (*ds.SaveGameMessage, error) {
-		filename := saveGame(gs)
+		filename := saveGame(gs, "")
 		msg := &ds.SaveGameMessage{}
 		msg.Body.Message = "game saved"
 		msg.Body.Success = true
