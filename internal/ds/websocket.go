@@ -69,8 +69,8 @@ type RecieveWSEnvelope struct {
 }
 
 type TileUpdateMSG struct {
-	Position    [3]int `path:"Position" example:"[1,3,4]" minLength:"3" maxLength:"3" doc:"Which Tile to interact with, in the format X Y Subtile, Subtile starts with 1 and on the left side, then counts clockwise"`
-	Position_to [3]int `path:"Position_to" required:"false" minLength:"1" maxLength:"3"`
+	Position    *[3]int `path:"Position" example:"[1,3,4]" minLength:"3" maxLength:"3" doc:"Which Tile to interact with, in the format X Y Subtile, Subtile starts with 1 and on the left side, then counts clockwise"`
+	Position_to *[3]int `path:"Position_to" example:"[1,1,4]" required:"false" minLength:"3" maxLength:"3" nullable:"true"`
 	// 0 => links, 1 => oben, 2 => rechts, 3 => unten
 	// Wilken hat sich entschlossen immer wenn ein subtile als int gespeichert wird bei 1 anzufangen und wenn es ein bool[4] ist bei 0, also kann sein das es sich irgendwo verschiebt aber das kriegen wir sicher noch behoben Bei schienen auch analog
 }

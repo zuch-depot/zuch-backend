@@ -31,10 +31,10 @@ type ActiveTile struct {
 
 // return das Tile bei den koordinaten, kontrolliert ob die in Bounds sind
 func (gs *GameState) GetTile(X int, Y int) (*Tile, error) {
-	if !(0 <= X && X <= gs.SizeX) {
+	if !(0 <= X && X < gs.SizeX) {
 		return &Tile{}, fmt.Errorf("X index is not in bounds %d", gs.SizeX)
 	}
-	if !(0 <= Y && Y <= gs.SizeY) {
+	if !(0 <= Y && Y < gs.SizeY) {
 		return &Tile{}, fmt.Errorf("Y index is not in bounds %d", gs.SizeY)
 	}
 
@@ -77,7 +77,7 @@ func (t *Tile) AddTrack(subtile int, gs *GameState) (bool, error) {
 	}
 	if !t.Tracks[subtile-1] {
 		t.Tracks[subtile-1] = true
-		gs.BroadcastChannel <- WsEnvelope{Type: "rail.create", Username: "Server", Msg: &TileUpdateMSG{Position: [3]int{t.X, t.Y, subtile}}}
+		gs.BroadcastChannel <- WsEnvelope{Type: "rail.create", Username: "Server", Msg: &TileUpdateMSG{Position: &[3]int{t.X, t.Y, subtile}}}
 		return true, nil
 	}
 	return false, fmt.Errorf("There is already a Track at that Position.")
@@ -90,7 +90,7 @@ func (t *Tile) RemoveTrack(subtile int, gs *GameState) (bool, error) {
 	if t.Tracks[subtile-1] && !t.IsBlocked {
 		t.Tracks[subtile-1] = false
 		t.RemoveSignal(subtile, gs) // das muss noch kommunitzier werden
-		gs.BroadcastChannel <- WsEnvelope{Type: "rail.remove", Username: "Server", Msg: &TileUpdateMSG{Position: [3]int{t.X, t.Y, subtile}}}
+		gs.BroadcastChannel <- WsEnvelope{Type: "rail.remove", Username: "Server", Msg: &TileUpdateMSG{Position: &[3]int{t.X, t.Y, subtile}}}
 		return true, nil
 	}
 	return false, fmt.Errorf("There is no Track to Remove, or the Tile may be blocked by a Train, if so try again later.")
@@ -106,7 +106,7 @@ func (t *Tile) AddSignal(subtile int, gs *GameState) (bool, error) {
 	}
 	if t.Tracks[subtile-1] || t.Signals[subtile-1] {
 		t.Signals[subtile-1] = true
-		gs.BroadcastChannel <- WsEnvelope{Type: "signal.create", Username: "Server", Msg: &TileUpdateMSG{Position: [3]int{t.X, t.Y, subtile}}}
+		gs.BroadcastChannel <- WsEnvelope{Type: "signal.create", Username: "Server", Msg: &TileUpdateMSG{Position: &[3]int{t.X, t.Y, subtile}}}
 		return true, nil
 	}
 	return false, fmt.Errorf("There may be no Track to place the signal onto, or there is already a signal at that location.")
@@ -118,7 +118,7 @@ func (t *Tile) AddSignal(subtile int, gs *GameState) (bool, error) {
 func (t *Tile) RemoveSignal(subtile int, gs *GameState) (bool, error) {
 	if t.Signals[subtile-1] {
 		t.Signals[subtile-1] = false
-		gs.BroadcastChannel <- WsEnvelope{Type: "signal.remove", Username: "Server", Msg: &TileUpdateMSG{Position: [3]int{t.X, t.Y, subtile}}}
+		gs.BroadcastChannel <- WsEnvelope{Type: "signal.remove", Username: "Server", Msg: &TileUpdateMSG{Position: &[3]int{t.X, t.Y, subtile}}}
 		return true, nil
 	}
 	return false, fmt.Errorf("There is no Signal to remove.")

@@ -11,32 +11,25 @@
             "id": "974a9b778b83a3e2",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Welcome.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Welcome"
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Graph-Ansicht"
             }
           },
           {
-            "id": "eafdc1242f6c5e71",
+            "id": "d671fb9d8383add3",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "pdf",
               "state": {
-                "file": "Frontend/Was wollen wir für ein Frontend.md",
-                "mode": "source",
-                "source": false
+                "file": "06.03. main package.pdf"
               },
-              "icon": "lucide-file",
-              "title": "Was wollen wir für ein Frontend"
+              "icon": "lucide-file-text",
+              "title": "06.03. main package"
             }
           }
         ],
-        "currentTab": 1
         "currentTab": 1
       }
     ],
@@ -94,7 +87,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 252.5
+    "width": 300
   },
   "right": {
     "id": "154b3157258bc2c0",
@@ -110,8 +103,8 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Aufgaben.md",
-                "collapseAll": false,
+                "file": "Jannis/260306 Kommunikation.md",
+                "collapseAll": true,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
                 "showSearch": false,
@@ -120,7 +113,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for Aufgaben"
+              "title": "Rückverweise auf 260306 Kommunikation"
             }
           },
           {
@@ -187,43 +180,48 @@
             "state": {
               "type": "git-view",
               "state": {},
-              "icon": "lucide-ghost",
-              "title": "git-view"
+              "icon": "git-pull-request",
+              "title": "Source Control"
             }
           }
-        ]
+        ],
+        "currentTab": 5
       }
     ],
     "direction": "horizontal",
-    "width": 300,
+    "width": 373.5,
     "collapsed": true
   },
   "left-ribbon": {
     "hiddenItems": {
+      "obsidian-git:Open Git source control": false,
       "switcher:Schnellauswahl öffnen": false,
       "graph:Graph-Ansicht öffnen": false,
       "canvas:Neuen Canvas erstellen": false,
       "daily-notes:Heutige Notiz öffnen": false,
       "templates:Vorlage einfügen": false,
       "command-palette:Befehlspalette öffnen": false,
-      "bases:Neue Base erstellen": false,
-      "obsidian-git:Open Git source control": false
+      "bases:Neue Base erstellen": false
     }
   },
-  "active": "eafdc1242f6c5e71",
+  "active": "d671fb9d8383add3",
   "lastOpenFiles": [
-    "Backend/Tagebuch Wilken.md",
-    "06.03. main package.pdf",
-    "Archiv.md",
-    "06.03. ds package.pdf",
-    "CLI Eingabeding da.md",
-    "CLI Eingabeding Graph.canvas",
     "Frontend/Was wollen wir für ein Frontend.md",
     "Frontend",
-    "Aufgaben.md",
+    "06.03. ds package.pdf",
+    "06.03. main package.pdf",
+    "Jannis/260306 Kommunikation.md",
+    "archiv/Alt Aufgaben.md",
+    "archiv",
+    "Jannis/zuch_spec.yaml",
+    "Jannis/0_1_Introduction.pdf",
     "Welcome.md",
+    "CLI Eingabeding da.md",
+    "CLI Eingabeding Graph.canvas",
+    "Backend/Tagebuch Wilken.md",
     "Backend",
     "Aufgaben.md",
+    "Archiv.md",
     "Allgemein/Allgemein.md",
     "Allgemein",
     "Jannis/CLI Eingabeding REST Überlegungen.canvas",

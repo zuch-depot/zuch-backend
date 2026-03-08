@@ -148,16 +148,27 @@ func registerGameRoutes(api *huma.API, gs *ds.GameState) {
 // endregion game
 // region tracks
 func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
+	// used to add tracks, if position_to is specified, the tracks are build in a straight line
 	huma.Post(*api, "/track", func(ctx context.Context, i *struct{ Body ds.TileUpdateMSG }) (*ds.GenericResponse, error) {
-		tile, err := gs.GetTile(i.Body.Position[0], i.Body.Position[1])
-		if err != nil {
-			return nil, fmt.Errorf("Could not find Tile; %s", err.Error())
+		var err error
+		// wenn das gestetzt ist, mehrere gleise bauen
+		if i.Body.Position_to != nil {
+			err = gs.AddTracks(*i.Body.Position, *i.Body.Position_to)
+			if err != nil {
+				return nil, fmt.Errorf("could not create track(s); %s", err.Error())
+			}
+			// sonst nur eins
+		} else {
+			tile, err := gs.GetTile(i.Body.Position[0], i.Body.Position[1])
+			if err != nil {
+				return nil, fmt.Errorf("Could not find Tile; %s", err.Error())
+			}
+			_, err = tile.AddTrack(i.Body.Position[2], gs)
+			if err != nil {
+				return nil, fmt.Errorf("Tile was found but could not create track(s); %s", err.Error())
+			}
 		}
-		success, err := tile.AddTrack(i.Body.Position[2], gs)
-		if err != nil {
-			return nil, fmt.Errorf("Tile was found but could not create track; %s", err.Error())
-		}
-		return ds.CreateGenericResponse("created track", success), nil
+		return ds.CreateGenericResponse("created track(s)", true), nil
 	}, huma.OperationTags("track"))
 
 	huma.Delete(*api, "/track", func(ctx context.Context, i *struct{ Body ds.TileUpdateMSG }) (*ds.GenericResponse, error) {
