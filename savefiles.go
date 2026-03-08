@@ -14,7 +14,7 @@ import (
 // Speichert den Spielstand
 // ist aber bisher pass-by-value, dunno ob reference hier vielleicht mehr sinn macht
 // Die ticks sollte man noch anhalten
-func saveGame(gs *ds.GameState) {
+func saveGame(gs *ds.GameState) string {
 	// ich will den ganzen bums hier eigentlich ja nur speichern
 	// Alles soll gerne in eine Json datei
 	// wenn die uns um die ohren fliegt kann man ja immernoch komprimieren
@@ -74,4 +74,5 @@ func saveGame(gs *ds.GameState) {
 	fmt.Println("Done Saving")
 
 	unPauseGame(gs)
+	return filename
 }

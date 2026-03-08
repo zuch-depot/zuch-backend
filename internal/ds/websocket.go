@@ -48,6 +48,14 @@ type GenericResponse struct {
 	}
 }
 
+type SaveGameMessage struct {
+	Body struct {
+		Message string
+		Success bool
+		Path    string
+	}
+}
+
 //	es gibt beide, da ich json.RawMessage brauche um die nachricht zunächst nur zum teil dekodieren zu können. Da kann ich aber nicht alles reinschreiben also gibt es die normale variante die dafür ein any hat
 //
 // Mögliche Types siehe wsFormat.go, bspw. tile.update. Steuert welcher teil des Backends dafür zuständig ist

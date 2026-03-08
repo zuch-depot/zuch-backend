@@ -25,3 +25,9 @@
 - aber der rest auf REST umsteigt
 - damit er **besser dokumentiert** ist und **einfacher nachzuverfolgen welche antwort zu welcher request gehört**, nicht so wie bei dem websocket 
  - mit den signalen geht es schonmal 
+# Problemchen
+- vorher hat das stoplight für die UI der docs genutzt
+- das konnte aber nicht **Bodies bei delete anfragen schicken**
+- dafür ist schon eine PR offen aber da kümmert sich keiner drum :(
+- ich hab auf github mal einen kommentar hinterlassen 
+- jetzt hab ich da zu scalar gewechselt, das machsts wohl auch 

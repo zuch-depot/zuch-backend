@@ -123,9 +123,23 @@ func registerGameRoutes(api *huma.API, gs *ds.GameState) {
 		unPauseGame(gs)
 		return ds.CreateGenericResponse("game unpaused", true), nil
 	}, huma.OperationTags("game"))
+
+	huma.Get(*api, "/game/save", func(ctx context.Context, i *struct{}) (*ds.SaveGameMessage, error) {
+		filename := saveGame(gs)
+		msg := &ds.SaveGameMessage{}
+		msg.Body.Message = "game saved"
+		msg.Body.Success = true
+		msg.Body.Path = filename
+		return msg, nil
+	}, huma.OperationTags("game"))
+
+	huma.Put(*api, "/game/load", func(ctx context.Context, i *ds.SaveGameMessage) (*ds.GenericResponse, error) {
+		return nil, huma.Error501NotImplemented("Ohoh, ich muss auf wilkens merge warten")
+	}, huma.OperationTags("game"))
 }
 
 // endregion game
+// region tracks
 func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 	huma.Post(*api, "/track", func(ctx context.Context, i *struct{ Body ds.TileUpdateMSG }) (*ds.GenericResponse, error) {
 		tile, err := gs.GetTile(i.Body.Position[0], i.Body.Position[1])
@@ -151,3 +165,5 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 		return ds.CreateGenericResponse("removed track", success), nil
 	}, huma.OperationTags("track"))
 }
+
+// endregion tracks
