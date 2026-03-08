@@ -9,7 +9,6 @@ import (
 	"os"
 	"slices"
 	"strings"
-	"sync/atomic"
 	"time"
 	"zuch-backend/internal/ds"
 )
@@ -164,22 +163,16 @@ func loadGame(gs *ds.GameState, saveName string) {
 	gs.ConfigData = sgs.ConfigData
 
 	gs.StationRange = sgs.StationRange
-	setAtomic(&gs.CurrentTrainID, sgs.CurrentTrainID)
-	setAtomic(&gs.CurrentScheduleID, sgs.CurrentScheduleID)
-	setAtomic(&gs.CurrentStopID, sgs.CurrentStopID)
-	setAtomic(&gs.CurrentStationID, sgs.CurrentStationID)
-	setAtomic(&gs.CurrentPlattformID, sgs.CurrentPlattformID)
-	setAtomic(&gs.CurrentActiveTileID, sgs.CurrentActiveTileID)
+	gs.CurrentTrainID.Store(uint64(sgs.CurrentTrainID))
+	gs.CurrentScheduleID.Store(uint64(sgs.CurrentScheduleID))
+	gs.CurrentStopID.Store(uint64(sgs.CurrentStopID))
+	gs.CurrentStationID.Store(uint64(sgs.CurrentStationID))
+	gs.CurrentPlattformID.Store(uint64(sgs.CurrentPlattformID))
+	gs.CurrentActiveTileID.Store(uint64(sgs.CurrentActiveTileID))
 
 	gs.Tick = sgs.Tick
 
 	gs.SizeX = sgs.SizeX
 	gs.SizeY = sgs.SizeY
 	gs.SizeSubtile = sgs.SizeSubtile
-}
-
-func setAtomic(atomic *atomic.Uint64, add int) {
-	for range add {
-		atomic.Add(1)
-	}
 }

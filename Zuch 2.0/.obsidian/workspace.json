@@ -29,9 +29,9 @@
               "state": {
                 "file": "CLI Eingabeding Graph.canvas",
                 "viewState": {
-                  "x": 1350.5504216188776,
-                  "y": 2901.9768722579493,
-                  "zoom": -0.5366555007126579
+                  "x": 947.2006109785473,
+                  "y": 976.2959032538829,
+                  "zoom": -0.26811729017639235
                 }
               },
               "icon": "lucide-layout-dashboard",
@@ -39,7 +39,7 @@
             }
           },
           {
-            "id": "d671fb9d8383add3",
+            "id": "6171a3bc308dbf29",
             "type": "leaf",
             "state": {
               "type": "canvas",
@@ -56,7 +56,7 @@
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -113,7 +113,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 252.5
   },
   "right": {
     "id": "154b3157258bc2c0",
@@ -129,8 +129,8 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Jannis/260306 Kommunikation.md",
-                "collapseAll": true,
+                "file": "Aufgaben.md",
+                "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
                 "showSearch": false,
@@ -139,7 +139,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Rückverweise auf 260306 Kommunikation"
+              "title": "Backlinks for Aufgaben"
             }
           },
           {
@@ -199,28 +199,16 @@
               "icon": "lucide-list",
               "title": "Outline of Aufgaben"
             }
-          },
-          {
-            "id": "c8cc48484f8e751c",
-            "type": "leaf",
-            "state": {
-              "type": "git-view",
-              "state": {},
-              "icon": "git-pull-request",
-              "title": "Source Control"
-            }
           }
-        ],
-        "currentTab": 5
+        ]
       }
     ],
     "direction": "horizontal",
-    "width": 373.5,
+    "width": 300,
     "collapsed": true
   },
   "left-ribbon": {
     "hiddenItems": {
-      "obsidian-git:Open Git source control": false,
       "switcher:Schnellauswahl öffnen": false,
       "graph:Graph-Ansicht öffnen": false,
       "canvas:Neuen Canvas erstellen": false,
@@ -231,27 +219,24 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "6171a3bc308dbf29",
+  "active": "0e6f94e3e1ac66d5",
   "lastOpenFiles": [
-    "Aufgaben.md",
+    "Backend/Tagebuch Wilken.md",
     "CLI Eingabeding Graph.canvas",
+    "archiv/Alt Aufgaben.md",
+    "archiv",
+    "Jannis/260306 Kommunikation.md",
+    "Jannis/zuch_spec.yaml",
+    "Jannis/0_1_Introduction.pdf",
+    "Jannis",
+    "Aufgaben.md",
     "Archiv.md",
     "06.03. main package.pdf",
     "06.03. ds package.pdf",
     "CLI Eingabeding da.md",
     "Welcome.md",
-    "Backend/Tagebuch Wilken.md",
     "Backend",
-    "Aufgaben.md",
-    "Archiv.md",
     "Allgemein/Allgemein.md",
-    "Allgemein",
-    "06.03. main package.pdf",
-    "06.03. ds package.pdf",
-    "Jannis/CLI Eingabeding REST Überlegungen.canvas",
-    "Jannis/openapi3_2 (1).yaml",
-    "Jannis",
-    "Unbenannt",
-    "Unbenannt.canvas"
+    "Allgemein"
   ]
 }
