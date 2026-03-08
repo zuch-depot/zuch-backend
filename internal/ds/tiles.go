@@ -29,6 +29,7 @@ type ActiveTile struct {
 	MaxStorage int //STANDARD für alle gleich? maximum Lager pro Gut -> sonst kann es zu unwiederruflichen auffüllen kommen. Nur für Verbrauchsgüter der Produktion
 }
 
+// return das Tile bei den koordinaten, kontrolliert ob die in Bounds sind
 func (gs *GameState) GetTile(X int, Y int) (*Tile, error) {
 	if !(0 <= X && X <= gs.SizeX) {
 		return &Tile{}, fmt.Errorf("X index is not in bounds %d", gs.SizeX)
@@ -70,6 +71,9 @@ func (a *ActiveTile) getConsumptionCategorys() map[string]int {
 func (t *Tile) AddTrack(subtile int, gs *GameState) (bool, error) {
 	if t.ActiveTile.Category != nil {
 		return false, fmt.Errorf("There is a Active Tile there, no Tracks can be build on this tile.")
+	}
+	if t.IsBlocked {
+		return false, fmt.Errorf("This Tile is blocked.")
 	}
 	if !t.Tracks[subtile-1] {
 		t.Tracks[subtile-1] = true

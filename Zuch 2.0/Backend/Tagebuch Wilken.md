@@ -7,4 +7,8 @@
 - Anfangen mit ersten refaktoring sachen
 	- Methoden verschieben
 	- Sichtbarkeit von Methoden apassen und reduzieren
-	- 
+# 07.03.26
+- Angefangen das laden zu implementieren
+# 08.03.26
+- grob laden implementiert, Bugfixing
+

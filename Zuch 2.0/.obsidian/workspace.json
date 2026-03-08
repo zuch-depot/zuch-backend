@@ -37,6 +37,7 @@
           }
         ],
         "currentTab": 1
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -93,7 +94,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 252.5
   },
   "right": {
     "id": "154b3157258bc2c0",
@@ -109,8 +110,8 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Jannis/260306 Kommunikation.md",
-                "collapseAll": true,
+                "file": "Aufgaben.md",
+                "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
                 "showSearch": false,
@@ -119,7 +120,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Rückverweise auf 260306 Kommunikation"
+              "title": "Backlinks for Aufgaben"
             }
           },
           {
@@ -190,12 +191,11 @@
               "title": "git-view"
             }
           }
-        ],
-        "currentTab": 5
+        ]
       }
     ],
     "direction": "horizontal",
-    "width": 373.5,
+    "width": 300,
     "collapsed": true
   },
   "left-ribbon": {
