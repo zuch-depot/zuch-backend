@@ -22,41 +22,21 @@
             }
           },
           {
-            "id": "0e6f94e3e1ac66d5",
+            "id": "eafdc1242f6c5e71",
             "type": "leaf",
             "state": {
-              "type": "canvas",
+              "type": "markdown",
               "state": {
-                "file": "CLI Eingabeding Graph.canvas",
-                "viewState": {
-                  "x": 1350.5504216188776,
-                  "y": 2901.9768722579493,
-                  "zoom": -0.5366555007126579
-                }
+                "file": "Frontend/Was wollen wir für ein Frontend.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "lucide-layout-dashboard",
-              "title": "CLI Eingabeding Graph"
-            }
-          },
-          {
-            "id": "d671fb9d8383add3",
-            "type": "leaf",
-            "state": {
-              "type": "canvas",
-              "state": {
-                "file": "CLI Eingabeding Graph.canvas",
-                "viewState": {
-                  "x": 1030.245716772326,
-                  "y": 4905.460338201516,
-                  "zoom": -0.6666666666666665
-                }
-              },
-              "icon": "lucide-layout-dashboard",
-              "title": "CLI Eingabeding Graph"
+              "icon": "lucide-file",
+              "title": "Was wollen wir für ein Frontend"
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -206,8 +186,8 @@
             "state": {
               "type": "git-view",
               "state": {},
-              "icon": "git-pull-request",
-              "title": "Source Control"
+              "icon": "lucide-ghost",
+              "title": "git-view"
             }
           }
         ],
@@ -220,7 +200,6 @@
   },
   "left-ribbon": {
     "hiddenItems": {
-      "obsidian-git:Open Git source control": false,
       "switcher:Schnellauswahl öffnen": false,
       "graph:Graph-Ansicht öffnen": false,
       "canvas:Neuen Canvas erstellen": false,
@@ -231,27 +210,25 @@
       "obsidian-git:Open Git source control": false
     }
   },
-  "active": "6171a3bc308dbf29",
+  "active": "eafdc1242f6c5e71",
   "lastOpenFiles": [
-    "Aufgaben.md",
-    "CLI Eingabeding Graph.canvas",
-    "Archiv.md",
+    "Backend/Tagebuch Wilken.md",
     "06.03. main package.pdf",
+    "Archiv.md",
     "06.03. ds package.pdf",
     "CLI Eingabeding da.md",
+    "CLI Eingabeding Graph.canvas",
+    "Frontend/Was wollen wir für ein Frontend.md",
+    "Frontend",
+    "Aufgaben.md",
     "Welcome.md",
-    "Backend/Tagebuch Wilken.md",
     "Backend",
     "Aufgaben.md",
-    "Archiv.md",
     "Allgemein/Allgemein.md",
     "Allgemein",
-    "06.03. main package.pdf",
-    "06.03. ds package.pdf",
     "Jannis/CLI Eingabeding REST Überlegungen.canvas",
     "Jannis/openapi3_2 (1).yaml",
     "Jannis",
-    "Unbenannt",
     "Unbenannt.canvas"
   ]
 }

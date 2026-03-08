@@ -7,3 +7,4 @@
 - Anfangen mit ersten refaktoring sachen
 	- Methoden verschieben
 	- Sichtbarkeit von Methoden apassen und reduzieren
+	- 
