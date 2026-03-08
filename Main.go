@@ -61,7 +61,7 @@ func main() {
 	gs.CapacityPerStationTile = int(tempVar)
 
 	// wichtig als initialisierung, bevor Züge verarbeitet werden
-	loadConfig(&gs)
+	// loadConfig(&gs)
 
 	// Ablauf
 	// beim ersten start (eventuell probieren Dateien einzulesen) sonst defaults setzen
@@ -70,6 +70,9 @@ func main() {
 	createDemoTrains(&gs)
 	// sich merken wer wer ist
 	// wenn wer rausfliegt sollten die sachen noch da sein
+
+	//lade das akutellste Savegame
+	loadGame(&gs, "")
 
 	// hier den Server starten
 	go startServer(&gs)
@@ -84,7 +87,9 @@ func main() {
 	gs.Ticker = time.NewTicker(time.Duration(ticksMilisec) * time.Millisecond)
 
 	// jeder Tick
-	for gs.Tick = 0; ; gs.Tick++ {
+	//for gs.Tick = 0; ; gs.Tick++ { //--> gs.tick ist standartmäßig 0, wenn nicht, dann nur, weil das rausgeladen wurde
+	for ; ; gs.Tick++ {
+
 		// Wenn pausiert wurde, warten bis entpausiert signal kommt
 		if gs.IsPaused {
 			confirmPause <- true
@@ -96,27 +101,19 @@ func main() {
 		// Client Inputs
 		processClientInputs(&gs)
 
+		//TEMP fürs testen
+		// if gs.Tick%1000 == 0 {
+		// 	go saveGame(&gs, "")
+		// }
+
 		// Train calculate (Läd/Entläd oder bewegt) und entblocken
 		if gs.Tick%10 == 0 {
 			gs.CalculateTrains()
-			// for _, train := range gs.Trains {
-			// 	fmt.Print(train.Name, " ")
-			// 	for _, waggon := range train.Waggons {
-			// 		fmt.Print(waggon.CargoStorage.FilledCargoType, " ", waggon.CargoStorage.Filled, " ")
-			// 	}
-			// 	fmt.Println()
-			// }
 		}
 
 		// process factorys
 		if gs.Tick%10 == 1 {
 			processActiveTiles(&gs)
-			// for _, station := range gs.Stations {
-			// 	fmt.Println(station.Name, station.Storage)
-			// }
-			// for _, active := range gs.ActiveTiles {
-			// 	fmt.Println(active.Name, " ", active.Storage)
-			// }
 		}
 
 		if gs.Tick%10 == 2 {

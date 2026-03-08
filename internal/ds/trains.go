@@ -8,6 +8,7 @@ import (
 
 // gesetzt werden müssen: Name, Waggons, Id
 type Train struct {
+	Id                 int
 	Name               string    // Nicht eindeutig, dafür siehe ID
 	Waggons            []*Waggon //Alle müssen nebeneinander spawnen
 	Schedule           *Schedule
@@ -18,14 +19,15 @@ type Train struct {
 	Waiting         bool //hat letzten Tick ein geblockes Tile gefunden oder keinen Weg gefunden und wartet
 	LoadingTime     int  //Wie lange ist der Zug schon am be-/entladen? 0 == nicht am laden. Zeiteinheit ist wie oft methode aufgerufen wurde
 	FinishedLoading bool //wenn nichts mehr geladen wird true. Kann auch wieder zurückgenommen werden
-	Id              int
-	//User            *User nur ggf., falls wird das implementieren
 }
 
 type Waggon struct {
 	Position     [3]int //x,y,sub
 	MaxSpeed     int
 	CargoStorage *CargoStorage
+
+	Power       int //wie viele Tonnen kann er ziehen, bei +10% 20% langsamer, +20% 50% langsamer
+	emptyWeight int //wie viel wiegt der Waggon leer
 }
 
 type CargoStorage struct {
@@ -33,6 +35,29 @@ type CargoStorage struct {
 	Filled          int
 	FilledCargoType string
 	CargoCategory   string //statisch
+}
+
+// Todo, ebenfalls Gewicht von Ladung berücksichtigen
+// return die Gesamtmasse des Zuges
+func (t *Train) GetWeight() int {
+	weight := 0
+
+	for _, waggon := range t.Waggons {
+		weight += waggon.emptyWeight
+		//HIER LADUNGSGEWICHT BERÜCKSICHTIGEN, gerade wird die m^3 als Gewicht genommen, muss noch mit dem gewicht pro m^3 multipliziert werden
+		weight += waggon.CargoStorage.Filled // * gewichtProM^3
+	}
+
+	return weight
+}
+
+// return die gesamte Zugkraft des Zuges
+func (t *Train) GetPower() int {
+	power := 0
+	for _, waggon := range t.Waggons {
+		power += waggon.Power
+	}
+	return power
 }
 
 // Überprüft, ob sich der letzte Wagen rausbewegt, wenn er sich einen weiter bewegt
@@ -105,7 +130,6 @@ func (t *Train) move(gs *GameState) [2]int {
 	// wenn man am Ende des Weges angekommen ist oder bei einem Signal ist, neuberechnen
 	pos := t.Waggons[0].Position
 	if len(t.CurrentPath) == 0 || gs.Tiles[pos[0]][pos[1]].Signals[pos[2]-1] {
-
 		//wenn am Ziel angekommen, nächstes Ziel auswählen, anosten bleibt das Ziel gleich
 		if len(t.CurrentPath) == 0 {
 			t.NextStop = t.Schedule.nextStop(t.NextStop)
@@ -205,7 +229,6 @@ func (t *Train) move(gs *GameState) [2]int {
 
 	// Alles was bis hier gekommen ist hat sich bewegt (laut wilken beim döner essen) || xD
 	gs.BroadcastChannel <- WsEnvelope{Type: "train.move", Msg: TrainMoveMSG{Id: t.Id, Waggons: t.Waggons}}
-
 	return entblocken
 }
 

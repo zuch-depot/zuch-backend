@@ -34,9 +34,15 @@ Refactor ds
 		- fertig
 - move() anpassen
 	- nach jedem Signal neu berechnen
+		- fertig
+	- Warentransport wieder aktivieren
+- in json gewichte pro m^3 für die Warenarten hinzufügen
 
 Kommunikation
 - siehe CLI Eingabeding Graph
+
+Frontend
+- bei Waggons zwischen versch. Modellen unterscheiden
 
 # veraltet:
 Kommunikation
