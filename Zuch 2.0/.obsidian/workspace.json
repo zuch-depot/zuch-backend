@@ -18,23 +18,6 @@
             }
           },
           {
-            "id": "a46447ef5249b0e6",
-            "type": "leaf",
-            "state": {
-              "type": "canvas",
-              "state": {
-                "file": "CLI Eingabeding Graph.canvas",
-                "viewState": {
-                  "x": 731.0087064779389,
-                  "y": 583.482469138168,
-                  "zoom": -0.3424609659369317
-                }
-              },
-              "icon": "lucide-layout-dashboard",
-              "title": "CLI Eingabeding Graph"
-            }
-          },
-          {
             "id": "d671fb9d8383add3",
             "type": "leaf",
             "state": {
@@ -223,28 +206,28 @@
       "bases:Neue Base erstellen": false
     }
   },
-  "active": "a46447ef5249b0e6",
+  "active": "d671fb9d8383add3",
   "lastOpenFiles": [
-    "CLI Eingabeding da.md",
+    "archiv/Alt Aufgaben.md",
+    "archiv",
+    "Jannis/zuch_spec.yaml",
     "Jannis/260306 Kommunikation.md",
+    "Jannis/0_1_Introduction.pdf",
+    "Welcome.md",
+    "CLI Eingabeding da.md",
     "CLI Eingabeding Graph.canvas",
     "Backend/Tagebuch Wilken.md",
     "Backend",
+    "Aufgaben.md",
     "Archiv.md",
+    "Allgemein/Allgemein.md",
+    "Allgemein",
     "06.03. main package.pdf",
     "06.03. ds package.pdf",
     "Jannis/CLI Eingabeding REST Überlegungen.canvas",
-    "Jannis/0_1_Introduction.pdf",
-    "Jannis/zuch_spec.yaml",
     "Jannis/openapi3_2 (1).yaml",
-    "Aufgaben.md",
     "Jannis",
-    "Welcome.md",
-    "archiv/Alt Aufgaben.md",
-    "archiv",
     "Unbenannt",
-    "Unbenannt.canvas",
-    "Allgemein/Allgemein.md",
-    "Allgemein"
+    "Unbenannt.canvas"
   ]
 }
