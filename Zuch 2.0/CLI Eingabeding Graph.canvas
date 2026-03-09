@@ -125,7 +125,13 @@
 		{"id":"2244adf0621b7864","type":"text","text":"\\<message\\>","x":1020,"y":5280,"width":250,"height":60,"color":"3"},
 		{"id":"310940339f9be156","type":"text","text":"\\<Username\\>","x":580,"y":5380,"width":250,"height":60,"color":"3"},
 		{"id":"300689c954db2f93","type":"text","text":"\\<savegameName\\>","x":580,"y":4940,"width":250,"height":60},
-		{"id":"0fe6452f7784c843","type":"text","text":"\\<DatumUndUhrzeit\\>","x":580,"y":5040,"width":250,"height":60}
+		{"id":"0fe6452f7784c843","type":"text","text":"\\<DatumUndUhrzeit\\>","x":580,"y":5040,"width":250,"height":60},
+		{"id":"9e582c8fea436c03","type":"text","text":"Drinnen, stand 9.3.","x":-160,"y":540,"width":250,"height":60,"color":"1"},
+		{"id":"17f87676add6452f","type":"text","text":"Einzeln entfernen drinne, stand 9.3.\nfür Mehrfach, warten auf wilken","x":-160,"y":740,"width":250,"height":120,"color":"1"},
+		{"id":"4bcecdb37b394ad3","type":"text","text":"Nur ohne Namen, drinne, stand 09.03","x":-140,"y":4740,"width":250,"height":60,"color":"1"},
+		{"id":"8893174c64dc8e87","type":"text","text":"Nur ohne Namen, drinne, stand 09.03","x":-140,"y":4940,"width":250,"height":60,"color":"1"},
+		{"id":"de359f1006d015de","type":"text","text":"Kommentar bzgl. Kommunikation","x":580,"y":-480,"width":250,"height":60,"color":"1"},
+		{"id":"3aef526823db9411","type":"text","text":"Bräuchten wir nicht auch noch eine position?, bisher einfach die alte genommen","x":1460,"y":2370,"width":250,"height":100,"color":"1"}
 	],
 	"edges":[
 		{"id":"6efc4162a19aeec5","fromNode":"a1b085118a072f25","fromSide":"right","toNode":"5a1aee1e6e272e55","toSide":"left"},
@@ -236,6 +242,7 @@
 		{"id":"b86e7512d6f79af1","fromNode":"b84de49d7009bcbc","fromSide":"right","toNode":"a3b75c6bd5b3b5e7","toSide":"left"},
 		{"id":"cfd3853d3717ce3d","fromNode":"a3b75c6bd5b3b5e7","fromSide":"right","toNode":"536008b2edefcc50","toSide":"left","color":"5"},
 		{"id":"262180d789df9531","fromNode":"cfaecc7f599f2ebb","fromSide":"right","toNode":"300689c954db2f93","toSide":"left"},
-		{"id":"40aacbeb60732719","fromNode":"cfaecc7f599f2ebb","fromSide":"right","toNode":"0fe6452f7784c843","toSide":"left"}
+		{"id":"40aacbeb60732719","fromNode":"cfaecc7f599f2ebb","fromSide":"right","toNode":"0fe6452f7784c843","toSide":"left"},
+		{"id":"50844d2f71caade5","fromNode":"3aef526823db9411","fromSide":"left","toNode":"a0ec5d332951b77d","toSide":"right"}
 	]
 }

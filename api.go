@@ -71,6 +71,7 @@ func startServer(gs *ds.GameState) {
 	registerGameRoutes(&api, gs)
 	registerSignalRoutes(&api, gs)
 	registerTrackRoutes(&api, gs)
+	registerTrainRoutes(&api, gs)
 
 	// die werden später noch als teil des WS umgesetzt (denke ich mal), aber zum testen erstmal so
 	http.HandleFunc("/save", func(w http.ResponseWriter, r *http.Request) { // Muss so gelöst werden damit ich noch die referenz zum Gamestate übertragen kann
@@ -171,6 +172,7 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 		return ds.CreateGenericResponse("created track(s)", true), nil
 	}, huma.OperationTags("track"))
 
+	// hier um Gleise zu entfernen, zum entfernen von mehreren Gleisen warte ich noch auf wilken
 	huma.Delete(*api, "/track", func(ctx context.Context, i *struct{ Body ds.TileUpdateMSG }) (*ds.GenericResponse, error) {
 		tile, err := gs.GetTile(i.Body.Position[0], i.Body.Position[1])
 		if err != nil {
@@ -185,3 +187,15 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 }
 
 // endregion tracks
+// region trains
+func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
+	huma.Post(*api, "/train", func(ctx context.Context, i *struct{ Body ds.TrainCreateMSG }) (*ds.GenericResponse, error) {
+		_, err := gs.AddTrain(i.Body.Name, i.Body.Waggons)
+		if err != nil {
+			return nil, fmt.Errorf("Could not create Train; %s", err.Error())
+		}
+		return ds.CreateGenericResponse("created Train", true), nil
+	})
+}
+
+// endregion trains

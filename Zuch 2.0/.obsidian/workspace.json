@@ -21,12 +21,17 @@
             "id": "d671fb9d8383add3",
             "type": "leaf",
             "state": {
-              "type": "pdf",
+              "type": "canvas",
               "state": {
-                "file": "06.03. main package.pdf"
+                "file": "CLI Eingabeding Graph.canvas",
+                "viewState": {
+                  "x": 1047.3917255739693,
+                  "y": 2195.704885518523,
+                  "zoom": -0.5849417123002874
+                }
               },
-              "icon": "lucide-file-text",
-              "title": "06.03. main package"
+              "icon": "lucide-layout-dashboard",
+              "title": "CLI Eingabeding Graph"
             }
           }
         ],
@@ -206,18 +211,19 @@
   },
   "active": "d671fb9d8383add3",
   "lastOpenFiles": [
+    "CLI Eingabeding da.md",
+    "06.03. main package.pdf",
+    "06.03. ds package.pdf",
+    "CLI Eingabeding Graph.canvas",
+    "Jannis/260309 Karte.md",
     "Frontend/Was wollen wir für ein Frontend.md",
     "Frontend",
-    "06.03. ds package.pdf",
-    "06.03. main package.pdf",
     "Jannis/260306 Kommunikation.md",
     "archiv/Alt Aufgaben.md",
     "archiv",
     "Jannis/zuch_spec.yaml",
     "Jannis/0_1_Introduction.pdf",
     "Welcome.md",
-    "CLI Eingabeding da.md",
-    "CLI Eingabeding Graph.canvas",
     "Backend/Tagebuch Wilken.md",
     "Backend",
     "Aufgaben.md",
