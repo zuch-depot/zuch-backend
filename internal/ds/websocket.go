@@ -131,3 +131,9 @@ type ScheduleAssignMSG struct {
 	ScheduleId int
 	TrainId    int
 }
+
+type TileMessage struct {
+	Body struct {
+		Tiles [][]*Tile
+	}
+}

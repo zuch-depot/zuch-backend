@@ -72,6 +72,7 @@ func startServer(gs *ds.GameState) {
 	registerSignalRoutes(&api, gs)
 	registerTrackRoutes(&api, gs)
 	registerTrainRoutes(&api, gs)
+	registerTileRoutes(&api, gs)
 
 	// die werden später noch als teil des WS umgesetzt (denke ich mal), aber zum testen erstmal so
 	http.HandleFunc("/save", func(w http.ResponseWriter, r *http.Request) { // Muss so gelöst werden damit ich noch die referenz zum Gamestate übertragen kann
@@ -199,3 +200,13 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 }
 
 // endregion trains
+// region tiles
+func registerTileRoutes(api *huma.API, gs *ds.GameState) {
+	huma.Get(*api, "/tiles", func(ctx context.Context, i *struct{}) (*ds.TileMessage, error) {
+		mes := &ds.TileMessage{}
+		mes.Body.Tiles = gs.Tiles
+		return mes, nil
+	}, huma.OperationTags("tiles"))
+}
+
+// endregion tiles
