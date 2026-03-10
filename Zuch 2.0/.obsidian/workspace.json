@@ -8,34 +8,20 @@
         "type": "tabs",
         "children": [
           {
-            "id": "974a9b778b83a3e2",
-            "type": "leaf",
-            "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Graph-Ansicht"
-            }
-          },
-          {
             "id": "d671fb9d8383add3",
             "type": "leaf",
             "state": {
-              "type": "canvas",
+              "type": "markdown",
               "state": {
-                "file": "CLI Eingabeding Graph.canvas",
-                "viewState": {
-                  "x": 1047.3917255739693,
-                  "y": 2195.704885518523,
-                  "zoom": -0.5849417123002874
-                }
+                "file": "Jannis/260310 Wir reden nochmal mit ihm.md",
+                "mode": "source",
+                "source": false
               },
-              "icon": "lucide-layout-dashboard",
-              "title": "CLI Eingabeding Graph"
+              "icon": "lucide-file",
+              "title": "260310 Wir reden nochmal mit ihm"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -194,8 +180,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 373.5,
-    "collapsed": true
+    "width": 373.5
   },
   "left-ribbon": {
     "hiddenItems": {
@@ -211,10 +196,11 @@
   },
   "active": "d671fb9d8383add3",
   "lastOpenFiles": [
+    "CLI Eingabeding Graph.canvas",
+    "Jannis/260310 Wir reden nochmal mit ihm.md",
     "CLI Eingabeding da.md",
     "06.03. main package.pdf",
     "06.03. ds package.pdf",
-    "CLI Eingabeding Graph.canvas",
     "Jannis/260309 Karte.md",
     "Frontend/Was wollen wir für ein Frontend.md",
     "Frontend",
