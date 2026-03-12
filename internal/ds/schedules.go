@@ -102,14 +102,12 @@ func (s *Schedule) RemoveStop(Id int, gs *GameState) error {
 	return nil
 }
 
-// TODO errors
 // fügt eine Station zu. Damit Waren geladen oder entladen werden sollen müssen dem Stop ein Load, bzw. Unload Befehle mit entsprechender Methode hinzugefügt werden.
 // Id ist Standardname
 func (s *Schedule) AddStopStation(plattform *Plattform, gs *GameState) (*Stop, error) {
-	var err error
 
 	if plattform == nil || plattform.Id == 0 {
-		return &Stop{}, err
+		return &Stop{}, fmt.Errorf("Error while adding a Stop to a schedule. Either Plattform is nil or the id is 0.")
 	}
 
 	s.Stops = append(s.Stops, Stop{Id: int(gs.CurrentStopID.Load()), Plattform: plattform, IsPlattform: true})
@@ -118,12 +116,14 @@ func (s *Schedule) AddStopStation(plattform *Plattform, gs *GameState) (*Stop, e
 	return &s.Stops[len(s.Stops)-1], nil
 }
 
-// TODO errors
 // fügt einen Wegpunkt hinzu. Wird angefahren, es werden aber keine Load oder Unload Befehle benötigt. Id ist Standardname
-func (s *Schedule) AddStopWaypoint(position [3]int, name string, gs *GameState) (Stop, error) {
-	var err error
+func (s *Schedule) AddStopWaypoint(position [3]int, name string, gs *GameState) (*Stop, error) {
 
-	//TODO überprüfen koordinaten?
+	//überprüfen koordinaten
+	_, err := gs.GetTile(position[0], position[1])
+	if err != nil || position[2] < 1 || position[2] > 4 {
+		return &Stop{}, fmt.Errorf("Error while adding a Waypoint to a schedule. The coordinates are invalid.")
+	}
 
 	if name == "" {
 		name = fmt.Sprint("Wegpunkt ", gs.CurrentStopID.Load())
@@ -132,5 +132,5 @@ func (s *Schedule) AddStopWaypoint(position [3]int, name string, gs *GameState) 
 	s.Stops = append(s.Stops, Stop{Id: int(gs.CurrentStopID.Load()), IsPlattform: false, Goal: position, Name: name})
 	gs.CurrentStopID.Add(1)
 
-	return s.Stops[len(s.Stops)-1], err
+	return &s.Stops[len(s.Stops)-1], err
 }

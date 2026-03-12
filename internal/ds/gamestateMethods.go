@@ -523,8 +523,14 @@ func (gs *GameState) neighbourTracks(x int, y int, sub int) [][3]int {
 }
 
 // --------------------------------------- Schedules ------------------------------------------
+
+// wenn Name leer ist, wird die Id als Name genommen
 func (gs *GameState) AddSchedule(name string) (*Schedule, error) {
-	s := Schedule{Name: name, Id: int(gs.CurrentScheduleID.Load())}
+	id := int(gs.CurrentScheduleID.Load())
+	if name == "" {
+		name = fmt.Sprint("Schedule", id)
+	}
+	s := Schedule{Name: name, Id: id}
 	gs.Schedules[int(gs.CurrentScheduleID.Load())] = &s
 	gs.CurrentScheduleID.Add(1)
 	return &s, nil
@@ -552,55 +558,87 @@ func (gs *GameState) RemoveSchedule(Id int) error {
 // fügt bei allen SubTiles zwischen den beiden SubTiles, die inklusive, wenn möglich eine Schiene ein
 func (gs *GameState) AddTracks(startSubTile [3]int, endSubTile [3]int) error {
 
+	gs.editTracks(startSubTile, endSubTile, "Error while building tracks.", func(gs *GameState, coordinate [3]int) error {
+		tile, error := gs.GetTile(coordinate[0], coordinate[1])
+		if error != nil {
+			gs.Logger.Error("Out of Bound, voll Scheiße, sollte nicht gehen.")
+			return fmt.Errorf("Scheiße, läuft gar nicht gut")
+		}
+		return tile.AddTrack(coordinate[2], gs)
+	})
+
+	return nil
+}
+
+func (gs *GameState) RemoveTracks(startSubTile [3]int, endSubTile [3]int) error {
+
+	gs.editTracks(startSubTile, endSubTile, "Error while removing tracks.", func(gs *GameState, coordinate [3]int) error {
+		tile, error := gs.GetTile(coordinate[0], coordinate[1])
+		if error != nil {
+			gs.Logger.Error("Out of Bound, voll Scheiße, sollte nicht gehen.")
+			return fmt.Errorf("Scheiße, läuft gar nicht gut")
+		}
+		//return tile.AddTrack(coordinate[2], gs)
+		return tile.RemoveTrack(coordinate[2], gs)
+	})
+
+	return nil
+}
+
+// führt für alle Subtiles zwischen den beiden angebenen die Methode aus, inklusive derer.
+// Kontrolliert, ob die in einer Reihe sind und ob die in Bonds sind.
+// ob die Aktion durchgeführt werden kann sollte in der Methode überprüft werden, die in der übergebenen Methode aufgerufen wird.
+func (gs *GameState) editTracks(startSubTile [3]int, endSubTile [3]int, defaultError string, methodForEach func(gs *GameState, coordinate [3]int) error) error {
+
 	sst := startSubTile
 	est := endSubTile
-	defaultError := "Error while building tracks. "
 
 	//sind die y dann in range?
 	_, error := gs.GetTile(sst[0], sst[1])
 	if error != nil {
-		return fmt.Errorf("%s", defaultError+"The start koordinate have the problem: "+error.Error())
+		return fmt.Errorf("%s", defaultError+" The start koordinate have the problem: "+error.Error())
 	}
 	_, error = gs.GetTile(est[0], est[1])
 	if error != nil {
-		return fmt.Errorf("%s", defaultError+"The end koordinate have the problem: "+error.Error())
+		return fmt.Errorf("%s", defaultError+" The end koordinate have the problem: "+error.Error())
 	}
 
 	//liste der, die nicht hinzugefügt werden konnten
-	notBuild := []string{"Could not build tracks on the following tiles because of the following reasons: "}
+	notEdit := []string{"Could not edit the following subtiles because of the following reasons: "}
 
 	//sind sie in einer linie (ggf. als einzelne Methode)
 	// sind die Subtiles beide horizontal?
 	if (sst[2] == 1 || sst[2] == 3) && (est[2] == 1 || est[2] == 3) {
 		//sind sie auf einer y?
 		if sst[1] != est[1] {
-			return fmt.Errorf("%s", defaultError+"The Subtiles are horizontal, but the y koordinates differ")
+			return fmt.Errorf("%s", defaultError+" The Subtiles are horizontal, but the y koordinates differs.")
 		}
 
-		//bauen der Schienen
-		currentTile, _ := gs.GetTile(sst[0], sst[1])
-		currentSubTile := sst[2]
+		//edititeren der Tiles
+		curTile := sst
 		countUp := (sst[0] == est[0] && sst[2] < est[2]) || sst[0] < est[0] // ob sst links von est ist
-		for currentTile.X != est[0] || currentTile.Y != est[1] || currentSubTile != est[2] {
+		for curTile[0] != est[0] || curTile[1] != est[1] || curTile[2] != est[2] {
 
-			success, error := currentTile.AddTrack(currentSubTile, gs)
-			if !success {
-				notBuild = append(notBuild, "("+strconv.Itoa(currentTile.X)+", "+strconv.Itoa(currentTile.Y)+", "+strconv.Itoa(currentSubTile)+") "+error.Error())
+			//Methode auf Tile anwenden, signal,
+			error := methodForEach(gs, curTile)
+
+			if error != nil {
+				notEdit = append(notEdit, "("+strconv.Itoa(curTile[0])+", "+strconv.Itoa(curTile[1])+", "+strconv.Itoa(curTile[2])+") "+error.Error())
 			}
 
 			if countUp {
-				if currentSubTile == 3 {
-					currentSubTile = 1
-					currentTile = gs.Tiles[currentTile.X+1][currentTile.Y]
+				if curTile[2] == 3 {
+					curTile[0] += 1
+					curTile[2] = 1
 				} else {
-					currentSubTile = 3
+					curTile[2] = 3
 				}
 			} else {
-				if currentSubTile == 1 {
-					currentSubTile = 3
-					currentTile = gs.Tiles[currentTile.X-1][currentTile.Y]
+				if curTile[2] == 1 {
+					curTile[0] -= 1
+					curTile[2] = 3
 				} else {
-					currentSubTile = 1
+					curTile[2] = 1
 				}
 			}
 		}
@@ -609,44 +647,45 @@ func (gs *GameState) AddTracks(startSubTile [3]int, endSubTile [3]int) error {
 	} else if (sst[2] == 2 || sst[2] == 4) && (est[2] == 2 || est[2] == 4) {
 		//sind sie auf einer x?
 		if sst[0] != est[0] {
-			return fmt.Errorf("%s", defaultError+"The Subtiles are vertikal, but the x koordinates differ")
+			return fmt.Errorf("%s", defaultError+" The Subtiles are vertikal, but the x koordinates differ")
 		}
 
-		//bauen der Schienen
-		currentTile, _ := gs.GetTile(sst[0], sst[1])
-		currentSubTile := sst[2]
+		//jedes Sub-tile durchiterieren
+		curTile := sst
 		countUp := (sst[1] == est[1] && sst[2] < est[2]) || sst[1] < est[1] // ob sst unter est ist
-		for currentTile.X != est[0] || currentTile.Y != est[1] || currentSubTile != est[2] {
+		for curTile[0] != est[0] || curTile[1] != est[1] || curTile[2] != est[2] {
 
-			success, error := currentTile.AddTrack(currentSubTile, gs)
-			if !success {
-				notBuild = append(notBuild, "("+strconv.Itoa(currentTile.X)+", "+strconv.Itoa(currentTile.Y)+", "+strconv.Itoa(currentSubTile)+") "+error.Error())
+			error := methodForEach(gs, curTile)
+
+			if error != nil {
+				notEdit = append(notEdit, "("+strconv.Itoa(curTile[0])+", "+strconv.Itoa(curTile[1])+", "+strconv.Itoa(curTile[2])+") "+error.Error())
 			}
 
 			if countUp {
-				if currentSubTile == 4 {
-					currentSubTile = 2
-					currentTile = gs.Tiles[currentTile.X][currentTile.Y+1]
+				if curTile[2] == 4 {
+					curTile[1] += 1
+					curTile[2] = 2
 				} else {
-					currentSubTile = 4
+					curTile[2] = 4
 				}
 			} else {
-				if currentSubTile == 2 {
-					currentSubTile = 4
-					currentTile = gs.Tiles[currentTile.X][currentTile.Y-1]
+				if curTile[2] == 2 {
+					curTile[2] = 4
+					curTile[1] -= 1
 				} else {
-					currentSubTile = 2
+					curTile[2] = 2
 				}
 			}
 		}
 
 	} else {
 		//sind beides nicht
-		return fmt.Errorf("%s", defaultError+"Sub-Tiles don't allign. They both have to be horizntal or vertikal")
+		return fmt.Errorf("%s", defaultError+" Sub-Tiles don't allign. They both have to be horizntal or vertikal")
 	}
 
-	if len(notBuild) > 1 {
-		return fmt.Errorf("%s", strings.Join(notBuild, "\n"))
+	if len(notEdit) > 0 {
+		return fmt.Errorf("%s", strings.Join(notEdit, "\n"))
 	}
+
 	return nil
 }

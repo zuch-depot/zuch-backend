@@ -165,7 +165,7 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 			if err != nil {
 				return nil, fmt.Errorf("Could not find Tile; %s", err.Error())
 			}
-			_, err = tile.AddTrack(i.Body.Position[2], gs)
+			err = tile.AddTrack(i.Body.Position[2], gs)
 			if err != nil {
 				return nil, fmt.Errorf("Tile was found but could not create track(s); %s", err.Error())
 			}
@@ -179,11 +179,11 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 		if err != nil {
 			return nil, fmt.Errorf("Tile not found; %s", err.Error())
 		}
-		success, err := tile.RemoveTrack(i.Body.Position[2], gs)
+		err = tile.RemoveTrack(i.Body.Position[2], gs)
 		if err != nil {
 			return nil, fmt.Errorf("Tile was found but could not remove track; %s", err.Error())
 		}
-		return ds.CreateGenericResponse("removed track", success), nil
+		return ds.CreateGenericResponse("removed track", err != nil), nil //habe success in != nil verändert, da bool als return entfernt wurde, analog zu addTile
 	}, huma.OperationTags("track"))
 }
 
