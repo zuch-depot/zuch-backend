@@ -213,7 +213,7 @@ func (gs *GameState) GetAvaliableStation(startStation *Station, cargoType string
 				}
 			}
 			if startStopFound {
-				startStop = &stop
+				startStop = stop
 				break
 			}
 		}
@@ -239,7 +239,7 @@ func (gs *GameState) GetAvaliableStation(startStation *Station, cargoType string
 						}
 					}
 					if targetStopFound {
-						targetStop = &stop
+						targetStop = stop
 					}
 				}
 			}
@@ -249,7 +249,7 @@ func (gs *GameState) GetAvaliableStation(startStation *Station, cargoType string
 					Waggons:  []*Waggon{&Waggon{Position: startStop.Plattform.getFirstLast(gs)[0]}}, //theoretisch sollte mittleres Tile oder einmal beide genommen werden
 					Schedule: schedule,
 					Id:       -1,
-					NextStop: *targetStop,
+					NextStop: targetStop,
 				}
 				tempTrain.recalculatePath(gs)
 				//wenn es keinen Weg gibt, dann kann auch nichts transportiert werden

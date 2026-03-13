@@ -93,11 +93,11 @@ func registerSignalRoutes(api *huma.API, gs *ds.GameState) {
 		if err != nil {
 			return nil, fmt.Errorf("Could not find Tile; %s", err.Error())
 		}
-		success, err := tile.AddSignal(i.Body.Position[2], gs)
+		err = tile.AddSignal(i.Body.Position[2], gs)
 		if err != nil {
 			return nil, fmt.Errorf("Tile was found but could not create signal; %s", err.Error())
 		}
-		return ds.CreateGenericResponse("created signal", success), nil
+		return ds.CreateGenericResponse("created signal", err == nil), nil
 	}, huma.OperationTags("signal"))
 
 	huma.Delete(*api, "/signal", func(ctx context.Context, i *struct{ Body ds.TileUpdateMSG }) (*ds.GenericResponse, error) {
@@ -105,11 +105,11 @@ func registerSignalRoutes(api *huma.API, gs *ds.GameState) {
 		if err != nil {
 			return nil, fmt.Errorf("Tile not found; %s", err.Error())
 		}
-		success, err := tile.RemoveSignal(i.Body.Position[2], gs)
+		err = tile.RemoveSignal(i.Body.Position[2], gs)
 		if err != nil {
 			return nil, fmt.Errorf("Tile was found but could not remove signal; %s", err.Error())
 		}
-		return ds.CreateGenericResponse("removed signal", success), nil
+		return ds.CreateGenericResponse("removed signal", err == nil), nil
 	}, huma.OperationTags("signal"))
 }
 

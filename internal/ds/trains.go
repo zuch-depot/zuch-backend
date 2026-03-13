@@ -12,13 +12,15 @@ type Train struct {
 	Name               string    // Nicht eindeutig, dafür siehe ID
 	Waggons            []*Waggon //Alle müssen nebeneinander spawnen
 	Schedule           *Schedule
-	NextStop           Stop     //der Stop, in dem der Zug gerade hinfährt oder plant hinzufahren. Wenn 0, dann nächster Stop aus Schedule
+	NextStop           *Stop    //der Stop, in dem der Zug gerade hinfährt oder plant hinzufahren. Wenn 0, dann nächster Stop aus Schedule
 	CurrentPath        [][3]int //ggf. nur bis zum nächsten Signal notwendig -> dann andere Bedingung finden, wann man angekommen ist
 	CurrentPathSignals [][3]int //dementsprechend ggf. unnötig -> auch unabhängig davon ggf. unnötig
 
 	Waiting         bool //hat letzten Tick ein geblockes Tile gefunden oder keinen Weg gefunden und wartet
 	LoadingTime     int  //Wie lange ist der Zug schon am be-/entladen? 0 == nicht am laden. Zeiteinheit ist wie oft methode aufgerufen wurde
 	FinishedLoading bool //wenn nichts mehr geladen wird true. Kann auch wieder zurückgenommen werden
+
+	paused bool //wurde er von Spieler blockiert?
 }
 
 type Waggon struct {
@@ -234,8 +236,13 @@ func (t *Train) move(gs *GameState) [2]int {
 
 // returned Tile zum entblcken
 // wenn fertig mit Laden/entladen passiert ein Tick nichts und dann fährt er los
+
 func (t *Train) calculateTrain(gs *GameState) [2]int {
 	//var r [2]int
+
+	if t.paused {
+		return [2]int{}
+	}
 
 	//ist gerade in die Staion eingefahren, also speichern der aktuellen Station. Nächste Station wird bei neuberechen überschrieben
 	if t.NextStop.IsPlattform && t.LoadingTime == 0 && len(t.CurrentPath) == 0 {
@@ -541,4 +548,23 @@ func (t *Train) AssignSchedule(schedule *Schedule) {
 // entfernt den Fahrplan von dem Zug, noch kein Fehler wird geworfen
 func (t *Train) UnassignSchedule() {
 	t.Schedule = nil
+}
+
+// keine Überprüfung
+func (t *Train) Pause() {
+	t.paused = true
+}
+
+// keine Überprüfung
+func (t *Train) UnPause() {
+	t.paused = false
+}
+
+// auch sonderzeigen erlaubt, ggf. anpassen
+func (t *Train) rename(name string) error {
+	if name == "" {
+		return fmt.Errorf("Please provide a name.")
+	}
+	t.Name = name
+	return nil
 }

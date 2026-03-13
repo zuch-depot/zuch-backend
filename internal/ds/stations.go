@@ -287,3 +287,14 @@ func (s *Station) removePlattform(Id int, gs *GameState) error {
 
 	return nil
 }
+
+func (s *Station) rename(name string) error {
+
+	err := utils.CheckName(name)
+	if err != nil {
+		return nil
+	}
+
+	s.Name = name
+	return nil
+}

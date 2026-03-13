@@ -10,6 +10,7 @@ import (
 
 //Außer Cargopathfinding
 
+// region Stations
 // ------------------------------------- stations -------------------------------------------
 
 // nur intern
@@ -359,6 +360,7 @@ func (gs *GameState) GetPlattform(position [2]int) (*Plattform, error) {
 	return nil, nil
 }
 
+// region Züge
 // -------------------------------------- ZÜGE ---------------------------------------------
 
 //vielleicht noch woanders hin
@@ -534,6 +536,7 @@ func (gs *GameState) neighbourTracks(x int, y int, sub int) [][3]int {
 	return connectedNeigbours
 }
 
+// region schedules
 // --------------------------------------- Schedules ------------------------------------------
 
 // wenn Name leer ist, wird die Id als Name genommen
@@ -582,6 +585,7 @@ func (gs *GameState) AddTracks(startSubTile [3]int, endSubTile [3]int) error {
 	return nil
 }
 
+// entfernt bei allen Sub-Tiles die Schienen
 func (gs *GameState) RemoveTracks(startSubTile [3]int, endSubTile [3]int) error {
 
 	gs.iterateSubTiles(startSubTile, endSubTile, "Error while removing tracks.", func(gs *GameState, coordinate [3]int) error {
@@ -597,6 +601,7 @@ func (gs *GameState) RemoveTracks(startSubTile [3]int, endSubTile [3]int) error 
 	return nil
 }
 
+// region allgemein
 // -------------------------------------------------------------------- allgemein -------------------------------------------------------------------------
 
 // führt für alle Subtiles zwischen den beiden angebenen die Methode aus, inklusive derer.

@@ -43,3 +43,10 @@ func Timer(name string) func() {
 		fmt.Printf("%s took %v\n", name, time.Since(start))
 	}
 }
+
+func CheckName(name string) error {
+	if name == "" {
+		return fmt.Errorf("Please provide a valid name.")
+	}
+	return nil
+}
