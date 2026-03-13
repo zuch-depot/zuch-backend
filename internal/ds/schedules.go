@@ -49,16 +49,18 @@ func (s *Stop) getName(gs *GameState) string {
 	return s.Name
 }
 
-// TODO errors/Validierung
-func (s *Stop) SetLoadCommand(cargoTypes []string, waitTillFull bool) error {
-	s.LoadUnloadCommand[1] = LoadUnloadCommand{Loading: true, WaitTillFull: waitTillFull, CargoTypes: cargoTypes}
-	return nil
+// validiert, ob es die Kategorien gibt und fügt als Command hinzu
+func (s *Stop) SetLoadCommand(cargoTypes []string, waitTillFull bool, gs *GameState) error {
+	validatedCategorys, err := gs.validateTrainCategories(cargoTypes)
+	s.LoadUnloadCommand[1] = LoadUnloadCommand{Loading: true, WaitTillFull: waitTillFull, CargoTypes: validatedCategorys}
+	return err
 }
 
-// TODO errors/validierung
-func (s *Stop) SetUnloadCommand(cargoTypes []string, waitTillEmpty bool) error {
-	s.LoadUnloadCommand[0] = LoadUnloadCommand{Loading: false, WaitTillFull: waitTillEmpty, CargoTypes: cargoTypes}
-	return nil
+// validiert, ob es die Kategorien gibt und fügt als Command hinzu
+func (s *Stop) SetUnloadCommand(cargoTypes []string, waitTillEmpty bool, gs *GameState) error {
+	validatedCategorys, err := gs.validateTrainCategories(cargoTypes)
+	s.LoadUnloadCommand[0] = LoadUnloadCommand{Loading: false, WaitTillFull: waitTillEmpty, CargoTypes: validatedCategorys}
+	return err
 }
 
 // returnt nächsten Stop, wenn 0 übergeben wird der erste
@@ -155,7 +157,8 @@ func (s *Schedule) AddStopWaypoint(position [3]int, name string, gs *GameState) 
 	return s.Stops[len(s.Stops)-1], err
 }
 
-func (s *Schedule) rename(name string) error {
+// überprüft utils.CeckName und setzt name
+func (s *Schedule) Rename(name string) error {
 
 	err := utils.CheckName(name)
 	if err != nil {

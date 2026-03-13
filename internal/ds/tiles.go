@@ -2,6 +2,7 @@ package ds
 
 import (
 	"fmt"
+	"zuch-backend/internal/utils"
 )
 
 type Tile struct {
@@ -64,6 +65,18 @@ func (a *ActiveTile) getConsumptionCategorys() map[string]int {
 		}
 	}
 	return consumptionTypes
+}
+
+// Überprüft utils.CheckName() und setzt namen
+func (a *ActiveTile) Rename(name string) error {
+
+	err := utils.CheckName(name)
+	if err != nil {
+		return err
+	}
+
+	a.Name = name
+	return nil
 }
 
 // Fügt bei i ein gleis hinzu, wenn da keins ist, da keine Plattform ist und das Tile nicht locked ist

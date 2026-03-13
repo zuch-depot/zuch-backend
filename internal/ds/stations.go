@@ -127,9 +127,21 @@ func (p *Plattform) removeTile(position [2]int, gs *GameState) error {
 
 	if len(p.Tiles) == 0 {
 		//Plattform löschen
-		p.GetStation(gs).removePlattform(p.Id, gs)
+		p.GetStation(gs).deletePlattform(p.Id, gs)
 
 	}
+
+	return nil
+}
+
+// prüft utils.Checkname und bennent danach um
+func (p *Plattform) Rename(name string) error {
+
+	err := utils.CheckName(name)
+	if err != nil {
+		return err
+	}
+	p.Name = name
 
 	return nil
 }
@@ -233,10 +245,8 @@ func (s *Station) addPlattform(name string, tiles [][2]int, gs *GameState) error
 }
 
 // entfernt nur die Plattform auch aus allen stops und wenn die Station leer ist, diese auch. Manipuliert keine Tiles
-// früher:
-// nur als einzel, um eine Station zu löschen entsprechende Methode nutzen.
 // Auch zu benutzen, wenn schon alle Tiles weg sind
-func (s *Station) removePlattform(Id int, gs *GameState) error {
+func (s *Station) deletePlattform(Id int, gs *GameState) error {
 
 	var err error
 
@@ -282,13 +292,26 @@ func (s *Station) removePlattform(Id int, gs *GameState) error {
 	if len(s.Plattforms) == 0 {
 		//TODO error
 		//Station löschen
-		gs.removeStation(s)
+		gs.deleteStation(s)
 	}
 
 	return nil
 }
 
-func (s *Station) rename(name string) error {
+// entgfernt alle Tiles der Plattform
+func (s *Station) RemovePlattform(Id int, gs *GameState) error {
+
+	for _, tilePos := range s.Plattforms[Id].Tiles {
+		_, err := gs.RemoveStationTile(tilePos)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// checks the name with utils.checkname und setzt den namen
+func (s *Station) Rename(name string) error {
 
 	err := utils.CheckName(name)
 	if err != nil {

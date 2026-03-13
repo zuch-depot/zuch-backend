@@ -27,28 +27,37 @@ func (gs *GameState) addStation(name string) (*Station, error) {
 	return station, nil // ich glaube bisher kann hier kein fehler kommen? surelly jaja
 }
 
-// nur intern
-// Entfernt die Station
-// nicht mehr alle Referenzen (Stops, Plattform Tiles, etc)
-func (gs *GameState) removeStation(s *Station) error {
+// nur intern, entfernt nur die Stationen, die keine Plattformen mehr haben
+func (gs *GameState) deleteStation(s *Station) error {
 	var err error
 	before := len(gs.Stations)
 	delete(gs.Stations, s.Id)
 	if !(before > len(gs.Stations)) {
 		return fmt.Errorf("couldn't find station in map")
 	}
-	//Enfernung des Plattform Tags aller Tiles der Station, Löschung der Plattformen findet beim Löschenn des jeweils letzten Tiles statt
-	/*for _, plattform := range s.Plattforms {
-		for _, tilePos := range plattform.Tiles {
-			ChangeStationTile(true, tilePos, gs)
-		}
-	}*/
 	return err
 }
 
+// löscht alle Tiles der Station und damit auch alle Plattformen und die Station selber
+func (gs *GameState) RemoveStation(s *Station) error {
+	//Enfernung des Plattform Tags aller Tiles der Station, Löschung der Plattformen findet beim Löschen des jeweils letzten Tiles statt
+	for _, plattform := range s.Plattforms {
+		err := s.RemovePlattform(plattform.Id, gs)
+		if err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
+// Fügt an der Position ein Station Tile ein, kümmert sich um Erstellen Plattform und Station. Gibt die Station zurück, der das Tile hinzugefügt wurde.
 func (gs *GameState) AddStationTile(position [2]int) (*Station, error) {
 	return gs.changeStationTile(false, position)
 }
+
+// Löscht an der Position das Station Tile, kümmert sich um Löschen der  Plattform und Station.
 func (gs *GameState) RemoveStationTile(position [2]int) (*Station, error) {
 	return gs.changeStationTile(true, position)
 }
@@ -104,7 +113,7 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 		//gucken
 		if len(plattform.Tiles) == 0 {
 			//Plattform löschen
-			station.removePlattform(plattform.Id, gs)
+			station.deletePlattform(plattform.Id, gs)
 		}
 
 	} else {
@@ -566,6 +575,41 @@ func (gs *GameState) RemoveSchedule(Id int) error {
 	delete(gs.Schedules, Id)
 
 	return nil
+}
+
+// TODO auf neue Train Categories anpassen
+// gibt die train categories zurück, die aus der Liste korrekt sind. Im Fehler stehen alle, die invalide sind, doppelte werden einfach mitgenommen
+// keine Validierung, ob richtige Caracter oder so verwendet wurden, nur ob es die gibt
+func (gs *GameState) validateTrainCategories(categories []string) ([]string, error) {
+
+	validCategories := make(map[string]bool)
+	error := "The following Train Categories are invalid: "
+
+	for _, category := range categories {
+		// suchen der übergebenen Kategorie in den Kategorien der Config, wenn gefunden, dann ist sie valide, wenn nicht, dann Fehler
+		for _, trainCategory := range gs.ConfigData.TrainCategories {
+			if slices.Contains(trainCategory, category) {
+				validCategories[category] = true
+			}
+		}
+		// wenn nicht gefunden, dann Fehler
+		if !validCategories[category] {
+			error += category + ", "
+		}
+	}
+
+	r := make([]string, 0, len(validCategories))
+	for key := range validCategories {
+		r = append(r, key)
+	}
+
+	//remove last ", " and return error if there are invalid categories
+	if strings.Contains(error, ", ") {
+		error = strings.TrimSuffix(error, ", ")
+		return r, fmt.Errorf("%s", error)
+	}
+
+	return r, nil
 }
 
 //---------------------------------------------- Tiles -----------------------------------------

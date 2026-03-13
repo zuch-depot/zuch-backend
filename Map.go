@@ -77,12 +77,12 @@ func createDemoTrains(gs *ds.GameState) {
 	schedule, _ = gs.AddSchedule("Schdule Nord")
 	var stop *ds.Stop
 	stop, _ = schedule.AddStopStation(gs.Stations[1].Plattforms[1], gs)
-	stop.SetLoadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false)
-	stop.SetUnloadCommand([]string{"Pommes"}, false)
+	stop.SetLoadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false, gs)
+	stop.SetUnloadCommand([]string{"Pommes"}, false, gs)
 
 	stop, _ = schedule.AddStopStation(gs.Stations[3].Plattforms[3], gs)
-	stop.SetLoadCommand([]string{"Pommes"}, false)
-	stop.SetUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false)
+	stop.SetLoadCommand([]string{"Pommes"}, false, gs)
+	stop.SetUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false, gs)
 
 	train, err := gs.AddTrain("RE1", [3]int{3, 4, 3}, "")
 	// []ds.TrainCreateWaggons{
@@ -100,12 +100,12 @@ func createDemoTrains(gs *ds.GameState) {
 	// Zug zwei mit eigenem Schedule
 	schedule, _ = gs.AddSchedule("Schedule Süd")
 	stop, _ = schedule.AddStopStation(gs.Stations[3].Plattforms[3], gs)
-	stop.SetLoadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false)
-	stop.SetUnloadCommand([]string{"Pommes"}, false)
+	stop.SetLoadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false, gs)
+	stop.SetUnloadCommand([]string{"Pommes"}, false, gs)
 
 	stop, _ = schedule.AddStopStation(gs.Stations[2].Plattforms[2], gs)
-	stop.SetLoadCommand([]string{"Pommes"}, false)
-	stop.SetUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false)
+	stop.SetLoadCommand([]string{"Pommes"}, false, gs)
+	stop.SetUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false, gs)
 
 	train, err = gs.AddTrain("RE2", [3]int{6, 6, 2}, "")
 	// []ds.TrainCreateWaggons{

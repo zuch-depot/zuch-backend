@@ -28,14 +28,14 @@ func handleUnAssignSchdeule(envelope ds.RecieveWSEnvelope, gs *ds.GameState) err
 	if err != nil {
 		return fmt.Errorf("could not unpack envelope; %s", err.Error())
 	}
-	train , ok := gs.Trains[update.TrainId]
+	train, ok := gs.Trains[update.TrainId]
 	if ok {
 		return fmt.Errorf("could not find train")
-	} 
-	
+	}
+
 	// vielleicht macht das probleme
 	train.Schedule = nil
-	gs.Logger.Info("Unassigned Schedule", slog.Int("Train ID",update.TrainId),slog.Int("Schedule Id", update.ScheduleId), slog.String("Username", envelope.User.Username))
+	gs.Logger.Info("Unassigned Schedule", slog.Int("Train ID", update.TrainId), slog.Int("Schedule Id", update.ScheduleId), slog.String("Username", envelope.User.Username))
 	gs.BroadcastChannel <- ds.WsEnvelope{
 		Type:          "schedule.unassign",
 		Username:      "Server",
@@ -51,18 +51,18 @@ func handleAssignSchedule(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error
 	if err != nil {
 		return fmt.Errorf("could not unpack envelope; %s", err.Error())
 	}
-	train , ok := gs.Trains[update.TrainId]
+	train, ok := gs.Trains[update.TrainId]
 	if ok {
 		return fmt.Errorf("could not find train")
-	} 
-	
-	schedule , ok := gs.Schedules[update.ScheduleId]
+	}
+
+	schedule, ok := gs.Schedules[update.ScheduleId]
 	if ok {
 		return fmt.Errorf("could not find schedule")
-	} 
-	
+	}
+
 	train.Schedule = schedule
-	gs.Logger.Info("Assigned Schedule", slog.Int("Train ID",update.TrainId),slog.Int("Schedule Id", update.ScheduleId), slog.String("Username", envelope.User.Username))
+	gs.Logger.Info("Assigned Schedule", slog.Int("Train ID", update.TrainId), slog.Int("Schedule Id", update.ScheduleId), slog.String("Username", envelope.User.Username))
 	gs.BroadcastChannel <- ds.WsEnvelope{
 		Type:          "schedule.assign",
 		Username:      "Server",
@@ -119,11 +119,11 @@ func handleCreateSchedule(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error
 			return err
 		}
 
-		err = stop.SetLoadCommand(entry.LoadStrings, entry.WaitTillFull)
+		err = stop.SetLoadCommand(entry.LoadStrings, entry.WaitTillFull, gs)
 		if err != nil {
 			return err
 		}
-		err = stop.SetUnloadCommand(entry.UnloadString, entry.WaitTillEmpty)
+		err = stop.SetUnloadCommand(entry.UnloadString, entry.WaitTillEmpty, gs)
 		if err != nil {
 			return err
 		}

@@ -8,13 +8,14 @@ import (
 )
 
 // ds = Datastructure, GS = gamestate, beides abgekürzt weil es oft vorkommen wird
-type GamestateTemp struct {
-	Users     []*User
-	Schedules []*Schedule
-	Stations  []*Station
-	Tiles     [][]*Tile
-	Trains    []*Train
-}
+
+// type GamestateTemp struct {
+// 	Users     []*User
+// 	Schedules []*Schedule
+// 	Stations  []*Station
+// 	Tiles     [][]*Tile
+// 	Trains    []*Train
+// }
 
 type GameState struct {
 	Users       map[string]*User // einzigartiger name
@@ -55,6 +56,7 @@ type GameState struct {
 	currentWaggonType string //ebenfalls weil ich faul bin und um redundanz zu vermeiden
 }
 
+// alle Attribute, die man am anfang senden möchte
 type SendAbleGamestate struct {
 	Users     map[string]*User // der name ist einzigartig
 	Schedules map[int]*Schedule
@@ -63,6 +65,7 @@ type SendAbleGamestate struct {
 	Trains    map[int]*Train
 }
 
+// alle attribute, die man speichern möchte
 type SaveAbleGamestate struct {
 	Users       map[string]*User // einzigartiger name
 	Schedules   map[int]*Schedule
