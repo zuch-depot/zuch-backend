@@ -397,7 +397,7 @@ func (gs *GameState) AddTrain(name string, position [3]int, lokmotive string) (*
 		name = fmt.Sprint(gs.CurrentTrainID.Load())
 	}
 
-	train := &Train{Name: name, Id: int(gs.CurrentTrainID.Load())}
+	train := &Train{Name: name, Id: int(gs.CurrentTrainID.Load()), Waggons: make([]*Waggon, 1)}
 
 	// Überprüft, ob das Subtile korrekt ist
 	err := gs.iterateSubTiles(position, position, "An Error accured while adding a Train.", func(gs *GameState, coordinate [3]int) error { return nil })
@@ -407,12 +407,6 @@ func (gs *GameState) AddTrain(name string, position [3]int, lokmotive string) (*
 
 	// Fügt die Lock hinzu
 	err = train.AddWaggon(position, lokmotive, gs)
-	if err != nil {
-		return nil, err
-	}
-
-	//ist die Position valid?
-	err = gs.checkIfWaggonsAreValid(train.Waggons)
 	if err != nil {
 		return nil, err
 	}
@@ -671,7 +665,15 @@ func (gs *GameState) iterateSubTiles(startSubTile [3]int, endSubTile [3]int, def
 
 	//sind sie in einer linie (ggf. als einzelne Methode)
 	// sind die Subtiles beide horizontal?
-	if (sst[2] == 1 || sst[2] == 3) && (est[2] == 1 || est[2] == 3) {
+
+	// wenn gleich ist, muss die Methode aus der Schleife trotzdem einmal laufen
+	if sst == est {
+		//Methode auf Tile anwenden
+		error := methodForEach(gs, sst)
+		if error != nil {
+			notEdit = append(notEdit, "("+strconv.Itoa(sst[0])+", "+strconv.Itoa(sst[1])+", "+strconv.Itoa(sst[2])+") "+error.Error())
+		}
+	} else if (sst[2] == 1 || sst[2] == 3) && (est[2] == 1 || est[2] == 3) {
 		//sind sie auf einer y?
 		if sst[1] != est[1] {
 			return fmt.Errorf("%s", defaultError+" The Subtiles are horizontal, but the y koordinates differs.")
@@ -742,11 +744,13 @@ func (gs *GameState) iterateSubTiles(startSubTile [3]int, endSubTile [3]int, def
 		}
 
 	} else {
+
 		//sind beides nicht
 		return fmt.Errorf("%s", defaultError+" Sub-Tiles don't allign. They both have to be horizntal or vertikal")
+
 	}
 
-	if len(notEdit) > 0 {
+	if len(notEdit) > 1 {
 		return fmt.Errorf("%s", strings.Join(notEdit, "\n"))
 	}
 
