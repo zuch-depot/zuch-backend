@@ -451,6 +451,9 @@ func (t *Train) AddWaggon(position [3]int, typ string, gs *GameState) error {
 	case "Lebensmittel":
 		capacity = 30
 		maxSpeed = 77
+	case "":
+		capacity = 30
+		maxSpeed = 77
 	default:
 		gs.Logger.Error("Invalider Typ", slog.String("Typ", typ))
 		return fmt.Errorf("invalider Typ")
@@ -470,7 +473,11 @@ func (t *Train) AddWaggon(position [3]int, typ string, gs *GameState) error {
 	}
 
 	// Waggons zu zug hinzufügen und entsprechende tiles blockieren
-	t.Waggons = append(t.Waggons, waggon)
+	if t.Waggons[0] == nil {
+		t.Waggons = []*Waggon{waggon}
+	} else {
+		t.Waggons = append(t.Waggons, waggon)
+	}
 	var blockedTilesPositions [][2]int
 	blockedTilesPositions = append(blockedTilesPositions, [2]int(position[:2]))
 	gs.Tiles[position[0]][position[1]].IsBlocked = true
