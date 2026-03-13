@@ -191,7 +191,7 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 // region trains
 func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 	huma.Post(*api, "/train", func(ctx context.Context, i *struct{ Body ds.TrainCreateMSG }) (*ds.GenericResponse, error) {
-		_, err := gs.AddTrain(i.Body.Name, i.Body.Waggons)
+		_, err := gs.AddTrain(i.Body.Name, i.Body.Waggons[0].Position, "") //kein Plan was du so gemacht hast, habe das mal angepasst. Musst mal gucken, ob das so passt. Siehe Funktionsbeschreibung
 		if err != nil {
 			return nil, fmt.Errorf("Could not create Train; %s", err.Error())
 		}

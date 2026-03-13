@@ -50,6 +50,9 @@ type GameState struct {
 	SizeX       int
 	SizeY       int
 	SizeSubtile int
+
+	currentTrain      *Train //nur für das einfache hinzufügen von Waggons, wird auch nicht im savegame gespeichert
+	currentWaggonType string //ebenfalls weil ich faul bin und um redundanz zu vermeiden
 }
 
 type SendAbleGamestate struct {
@@ -81,15 +84,7 @@ type SaveAbleGamestate struct {
 	CurrentStationID    int
 	CurrentPlattformID  int
 	CurrentActiveTileID int
-	//Ticker              *time.Ticker
-	Tick int
-	//IsPaused            bool
-
-	// BroadcastChannel chan WsEnvelope
-	// UserInputs       chan RecieveWSEnvelope
-	// UnPause          chan bool
-
-	// Logger *slog.Logger
+	Tick                int
 
 	SizeX       int
 	SizeY       int

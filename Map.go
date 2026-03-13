@@ -84,14 +84,15 @@ func createDemoTrains(gs *ds.GameState) {
 	stop.SetLoadCommand([]string{"Pommes"}, false)
 	stop.SetUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false)
 
-	train, err := gs.AddTrain("RE1",
-		[]ds.TrainCreateWaggons{
-			{Position: [3]int{3, 4, 3}, Typ: "Lebensmittel"},
-			{Position: [3]int{3, 4, 1}, Typ: "Lebensmittel"},
-			{Position: [3]int{2, 4, 3}, Typ: "Lebensmittel"},
-			{Position: [3]int{2, 4, 1}, Typ: "Lebensmittel"}},
-	)
-	train.Schedule = schedule
+	train, err := gs.AddTrain("RE1", [3]int{3, 4, 3}, "")
+	// []ds.TrainCreateWaggons{
+	// 	{Position: [3]int{3, 4, 3}, Typ: "Lebensmittel"},
+	// 	{Position: [3]int{3, 4, 1}, Typ: "Lebensmittel"},
+	// 	{Position: [3]int{2, 4, 3}, Typ: "Lebensmittel"},
+	// 	{Position: [3]int{2, 4, 1}, Typ: "Lebensmittel"}},
+	// )
+	train.AddWaggons([3]int{3, 4, 1}, [3]int{2, 4, 1}, "Lebensmittel", gs)
+	train.AssignSchedule(schedule)
 	if err != nil {
 		gs.Logger.Error("Fehler, aber ist im demo ding egal")
 	}
@@ -106,13 +107,14 @@ func createDemoTrains(gs *ds.GameState) {
 	stop.SetLoadCommand([]string{"Pommes"}, false)
 	stop.SetUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false)
 
-	train, err = gs.AddTrain("RE2",
-		[]ds.TrainCreateWaggons{
-			{Position: [3]int{6, 6, 2}, Typ: "Lebensmittel"},
-			{Position: [3]int{6, 5, 4}, Typ: "Lebensmittel"},
-			{Position: [3]int{6, 5, 2}, Typ: "Lebensmittel"},
-			{Position: [3]int{6, 4, 4}, Typ: "Lebensmittel"}})
-	train.Schedule = schedule
+	train, err = gs.AddTrain("RE2", [3]int{6, 6, 2}, "")
+	// []ds.TrainCreateWaggons{
+	// 	{Position: [3]int{6, 6, 2}, Typ: "Lebensmittel"},
+	// 	{Position: [3]int{6, 5, 4}, Typ: "Lebensmittel"},
+	// 	{Position: [3]int{6, 5, 2}, Typ: "Lebensmittel"},
+	// 	{Position: [3]int{6, 4, 4}, Typ: "Lebensmittel"}})
+	train.AddWaggons([3]int{6, 5, 4}, [3]int{6, 4, 4}, "Lebensmittel", gs)
+	train.AssignSchedule(schedule)
 
 	if err != nil {
 		gs.Logger.Error("Fehler, aber ist im demo ding egal")

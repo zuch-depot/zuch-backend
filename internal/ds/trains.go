@@ -434,10 +434,10 @@ func (t *Train) unloadCargo(cargoType string, maxCargoRemoved int) int {
 }
 
 // Fügt einen Wagon zu einem Zug, typ gibt die art des wagongs an, daraus basierend wird capacity und maxSpeed bestimmt, bspw "Lebensmittel"
-// true => Erfolgreich; false => fehler
-// setzt vorraus, dass das
+// TODO waggonType umstellen <----------------------------------------------
 func (t *Train) AddWaggon(position [3]int, typ string, gs *GameState) error {
 	var capacity, maxSpeed int
+
 	// Typ gibt kurz als string an was für einen Waggon man will
 	// hier werden die passenden Attribute rausgesucht
 	switch typ {
@@ -449,15 +449,21 @@ func (t *Train) AddWaggon(position [3]int, typ string, gs *GameState) error {
 		return fmt.Errorf("invalider Typ")
 	}
 
-	// Hier wird noch überorüft ob da überhaupt ein freies gleis ist
-	if !gs.Tiles[position[0]][position[1]].Tracks[position[2]-1] { // Wenn dort ein gleis ist
-		return fmt.Errorf("kein Gleis vorhanden")
+	//kontrollieren, dass das SubTile valide ist
+	err := gs.iterateSubTiles(position, position, "An error accured while adding a waggon.", func(gs *GameState, coordinate [3]int) error { return nil })
+	if err != nil {
+		return err
 	}
 
-	//kontrollieren, dass das Tile
+	// prüft, ob das Sub-Tile valide ist
+	waggon := &Waggon{Position: position, MaxSpeed: maxSpeed, CargoStorage: &CargoStorage{Capacity: capacity, CargoCategory: typ}}
+	err = gs.checkIfWaggonsAreValid([]*Waggon{waggon})
+	if err != nil {
+		return err
+	}
 
 	// Waggons zu zug hinzufügen und entsprechende tiles blockieren
-	t.Waggons = append(t.Waggons, &Waggon{Position: position, MaxSpeed: maxSpeed, CargoStorage: &CargoStorage{Capacity: capacity, CargoCategory: typ}})
+	t.Waggons = append(t.Waggons, waggon)
 	var blockedTilesPositions [][2]int
 	blockedTilesPositions = append(blockedTilesPositions, [2]int(position[:2]))
 	gs.Tiles[position[0]][position[1]].IsBlocked = true
@@ -467,12 +473,28 @@ func (t *Train) AddWaggon(position [3]int, typ string, gs *GameState) error {
 	return nil
 }
 
-// kontrolliert nur, dass der index in range ist. Entblockt auch
+// Fügt Waggons im Bereich zu
+func (t *Train) AddWaggons(startSubTile [3]int, endSubTile [3]int, waggonType string, gs *GameState) error {
+
+	// zum verwenden in Methode
+	gs.currentWaggonType = waggonType
+	gs.currentTrain = t
+
+	//prüfen der Parameter und hinzufügen der Waggons
+	return gs.iterateSubTiles(startSubTile, endSubTile, "An error accured while adding waggons.", func(gs *GameState, coordinate [3]int) error {
+
+		//hinzufügen des Waggons
+		return gs.currentTrain.AddWaggon(coordinate, gs.currentWaggonType, gs)
+
+	})
+}
+
+// kontrolliert nur, dass der index in range ist. Entblockt auch. Löscht den Zug, wenn dieser Leer ist
 func (t *Train) RemoveWaggon(index int, gs *GameState) error {
 
 	//validieren des Indexes
 	if index > len(t.Waggons)-1 || index < 0 {
-		return fmt.Errorf("Waggon out of bounds. ", strconv.Itoa(index), " not a valid index for ", len(t.Waggons), " Waggons from train ", t.Name)
+		return fmt.Errorf("%s", "Waggon out of bounds. "+strconv.Itoa(index)+" not a valid index for "+strconv.Itoa(len(t.Waggons))+" Waggons from train "+t.Name)
 	}
 
 	//ggf. enblocken des Tiles, da die Waggons aufrücken
@@ -481,19 +503,42 @@ func (t *Train) RemoveWaggon(index int, gs *GameState) error {
 	//entblocken durchführen. Muss nicht in Queue, da nicht ausgeführt wird, während Bewegungen stattfinden
 	gs.Tiles[entblocken[0]][entblocken[1]].IsBlocked = false
 
+	//entfernt den Zug, wenn des keine Waggons mehr gibt
+	if len(t.Waggons) == 0 {
+		gs.RemoveTrain(t)
+	}
+
+	//entfernen des Waggons
+	t.Waggons = append(t.Waggons[:index], t.Waggons[index:]...)
+
+	return nil
+}
+
+// validiert die Indizes, entblockt, löscht den Zug, wenn dieser leer ist. Löscht alle innerhalb der indizes, die valide sind
+func (t *Train) RemoveWaggons(indexStart int, indexEnd int, gs *GameState) error {
+
+	//validieren der Indizes
+	if (indexStart > len(t.Waggons)-1 || indexStart < 0) && (indexEnd > len(t.Waggons)-1 || indexEnd < 0) && indexStart <= indexEnd {
+		return fmt.Errorf("%s", "Waggon out of bounds. "+strconv.Itoa(indexStart)+" and/or "+strconv.Itoa(indexEnd)+" not valid indizes for "+strconv.Itoa(len(t.Waggons))+" Waggons from train "+t.Name)
+	}
+
+	//entfernen der Waggons
+	for i := indexStart; i < indexEnd; i++ {
+		err := t.RemoveWaggon(i, gs)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
 // weist dem Zug einen Fahrplan zu, noch kein Fehler wird geworfen
-func (t *Train) AssignSchedule(schedule *Schedule) error {
+func (t *Train) AssignSchedule(schedule *Schedule) {
 	t.Schedule = schedule
-
-	return nil
 }
 
 // entfernt den Fahrplan von dem Zug, noch kein Fehler wird geworfen
-func (t *Train) UnassignSchedule() error {
+func (t *Train) UnassignSchedule() {
 	t.Schedule = nil
-
-	return nil
 }

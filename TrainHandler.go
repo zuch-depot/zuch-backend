@@ -99,17 +99,17 @@ func handleCreateTrain(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error {
 	if err != nil {
 		return fmt.Errorf("could not unpack envelope; %s", err.Error())
 	}
-	train, err := gs.AddTrain(update.Name, update.Waggons)
-	if err != nil {
-		return fmt.Errorf("error creating train; %s", err.Error())
-	}
+	// train, err := gs.AddTrain(update.Name, update.Waggons)
+	// if err != nil {
+	// 	return fmt.Errorf("error creating train; %s", err.Error())
+	// }
 
 	logger.Info("Creating Train", slog.String("Username", envelope.User.Username), slog.String("Zug Name", update.Name))
 	gs.BroadcastChannel <- ds.WsEnvelope{
 		Type:          "train.create",
 		Username:      "Server",
 		TransactionID: envelope.TransactionID,
-		Msg:           train,
+		// Msg:           train,
 	}
 	return nil
 }

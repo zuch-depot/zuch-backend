@@ -379,35 +379,41 @@ func (gs *GameState) getCargoCategory(cargoType string) string {
 	return ""
 }
 
-// Fügt einen Zug hinzu, anhand eines namens und der position sowie des typen und positionen der waggons
-func (gs *GameState) AddTrain(name string, Waggons []TrainCreateWaggons) (*Train, error) {
-
-	// Weg muss ja frei sein, und alles müssen zusammenhängen
-	err := gs.checkIfWaggonsAreValid(Waggons)
-	if err != nil {
-		return nil, err
-	}
+// fügt Zug hinzu, wenn name leer ist, wird Id genommen. Lokomotive erstmal leer lassen, wird als einziger Waggon angefügt.
+func (gs *GameState) AddTrain(name string, position [3]int, lokmotive string) (*Train, error) {
 
 	if name == "" {
 		name = fmt.Sprint(gs.CurrentTrainID.Load())
 	}
 
 	train := &Train{Name: name, Id: int(gs.CurrentTrainID.Load())}
-	gs.CurrentTrainID.Add(1)
 
-	for _, waggon := range Waggons {
-		err := train.AddWaggon(waggon.Position, waggon.Typ, gs)
-		if err != nil {
-			return nil, fmt.Errorf("this shoudln't happen; %s", err.Error())
-		}
+	// Überprüft, ob das Subtile korrekt ist
+	err := gs.iterateSubTiles(position, position, "An Error accured while adding a Train.", func(gs *GameState, coordinate [3]int) error { return nil })
+	if err != nil {
+		return nil, err
+	}
+
+	// Fügt die Lock hinzu
+	err = train.AddWaggon(position, lokmotive, gs)
+	if err != nil {
+		return nil, err
+	}
+
+	//ist die Position valid?
+	err = gs.checkIfWaggonsAreValid(train.Waggons)
+	if err != nil {
+		return nil, err
 	}
 
 	gs.Trains[train.Id] = train
+	gs.CurrentTrainID.Add(1)
+
 	return train, nil
 }
 
 // Überprüft ob alle waggons eine Valide Position haben, also das Gleis nicht blockiert ist, das gleis existiert und die Waggons zusammenhängend sind
-func (gs *GameState) checkIfWaggonsAreValid(waggons []TrainCreateWaggons) error {
+func (gs *GameState) checkIfWaggonsAreValid(waggons []*Waggon) error {
 	for i, waggon := range waggons {
 		if gs.Tiles[waggon.Position[0]][waggon.Position[1]].IsBlocked {
 			return fmt.Errorf("track is blocked")
@@ -448,13 +454,19 @@ func (gs *GameState) CalculateTrains() {
 }
 
 // entfernt diesen zug, dazu wird er aus dem array genommen und sein currentPath wird auf nicht blockiert gesetzt, hoffe das passt so
-// fehler sind bisher ungenutzt, irgendwas wirrd schon schiefgehen
+// hoffentlich reicht das so, mal gucken
 func (gs *GameState) RemoveTrain(t *Train) error {
 
 	var blockedTilesPositions [][2]int
 	for _, v := range t.CurrentPath {
 		gs.Tiles[v[0]][v[1]].IsBlocked = false // ich hab keine ahnung ob das so geht
 		blockedTilesPositions = append(blockedTilesPositions, [2]int{v[0], v[1]})
+	}
+
+	//auch die Tiles des Zuges entblocken
+	for _, w := range t.Waggons {
+		gs.Tiles[w.Position[0]][w.Position[1]].IsBlocked = false
+		blockedTilesPositions = append(blockedTilesPositions, [2]int{w.Position[0], w.Position[1]})
 	}
 	// Das kann hier gut sein das da zeugs doppelt drinne ist aber das ist mir spontan egal, doppelt auf false setzen hält ohnehin besser
 	gs.BroadcastChannel <- WsEnvelope{Type: "tiles.unblock", Username: "Server", Msg: BlockedTilesMSG{Tiles: blockedTilesPositions}}
@@ -558,7 +570,7 @@ func (gs *GameState) RemoveSchedule(Id int) error {
 // fügt bei allen SubTiles zwischen den beiden SubTiles, die inklusive, wenn möglich eine Schiene ein
 func (gs *GameState) AddTracks(startSubTile [3]int, endSubTile [3]int) error {
 
-	gs.editTracks(startSubTile, endSubTile, "Error while building tracks.", func(gs *GameState, coordinate [3]int) error {
+	gs.iterateSubTiles(startSubTile, endSubTile, "Error while building tracks.", func(gs *GameState, coordinate [3]int) error {
 		tile, error := gs.GetTile(coordinate[0], coordinate[1])
 		if error != nil {
 			gs.Logger.Error("Out of Bound, voll Scheiße, sollte nicht gehen.")
@@ -572,7 +584,7 @@ func (gs *GameState) AddTracks(startSubTile [3]int, endSubTile [3]int) error {
 
 func (gs *GameState) RemoveTracks(startSubTile [3]int, endSubTile [3]int) error {
 
-	gs.editTracks(startSubTile, endSubTile, "Error while removing tracks.", func(gs *GameState, coordinate [3]int) error {
+	gs.iterateSubTiles(startSubTile, endSubTile, "Error while removing tracks.", func(gs *GameState, coordinate [3]int) error {
 		tile, error := gs.GetTile(coordinate[0], coordinate[1])
 		if error != nil {
 			gs.Logger.Error("Out of Bound, voll Scheiße, sollte nicht gehen.")
@@ -585,10 +597,12 @@ func (gs *GameState) RemoveTracks(startSubTile [3]int, endSubTile [3]int) error 
 	return nil
 }
 
+// -------------------------------------------------------------------- allgemein -------------------------------------------------------------------------
+
 // führt für alle Subtiles zwischen den beiden angebenen die Methode aus, inklusive derer.
-// Kontrolliert, ob die in einer Reihe sind und ob die in Bonds sind.
+// Kontrolliert, ob die in einer Reihe sind und ob die in Bonds sind. Kann hoffentlich für Verifizierung einzelner SubTiles verwendet werden.
 // ob die Aktion durchgeführt werden kann sollte in der Methode überprüft werden, die in der übergebenen Methode aufgerufen wird.
-func (gs *GameState) editTracks(startSubTile [3]int, endSubTile [3]int, defaultError string, methodForEach func(gs *GameState, coordinate [3]int) error) error {
+func (gs *GameState) iterateSubTiles(startSubTile [3]int, endSubTile [3]int, defaultError string, methodForEach func(gs *GameState, coordinate [3]int) error) error {
 
 	sst := startSubTile
 	est := endSubTile
