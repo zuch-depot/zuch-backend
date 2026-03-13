@@ -204,12 +204,45 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 // endregion tracks
 // region trains
 func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
+	// Hier kriegt man infos zu einem Zug
+	huma.Get(*api, "/train/{id}", func(ctx context.Context, i *struct {
+		id int `path:"id"`
+	}) (*ds.Train, error) {
+		train, ok := gs.Trains[i.id]
+		if !ok {
+			return nil, fmt.Errorf("Train does not exist")
+		}
+		return train, nil
+	})
+	// Hier kann man einen Zug bauen
 	huma.Post(*api, "/train", func(ctx context.Context, i *struct{ Body ds.TrainCreateMSG }) (*ds.GenericResponse, error) {
 		_, err := gs.AddTrain(i.Body.Name, i.Body.LocomotivePosition, "") //kein Plan was du so gemacht hast, habe das mal angepasst. Musst mal gucken, ob das so passt. Siehe Funktionsbeschreibung
 		if err != nil {
 			return nil, fmt.Errorf("Could not create Train; %s", err.Error())
 		}
 		return ds.CreateGenericResponse("created Train", true), nil
+	})
+	// Hier kann man einen Zug pausieren
+	huma.Post(*api, "/train/{id}/pause", func(ctx context.Context, i *struct {
+		id int `path:"id"`
+	}) (*ds.GenericResponse, error) {
+		train, ok := gs.Trains[i.id]
+		if !ok {
+			return nil, fmt.Errorf("Train does not exist")
+		}
+		train.Pause()
+		return ds.CreateGenericResponse("paused Train", true), nil
+	})
+	// Hier kann man einen Zug pausieren
+	huma.Post(*api, "/train/{id}/unpause", func(ctx context.Context, i *struct {
+		id int `path:"id"`
+	}) (*ds.GenericResponse, error) {
+		train, ok := gs.Trains[i.id]
+		if !ok {
+			return nil, fmt.Errorf("Train does not exist")
+		}
+		train.UnPause()
+		return ds.CreateGenericResponse("resumed Train", true), nil
 	})
 }
 
