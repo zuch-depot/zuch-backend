@@ -175,15 +175,29 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier um Gleise zu entfernen, zum entfernen von mehreren Gleisen warte ich noch auf wilken
 	huma.Delete(*api, "/track", func(ctx context.Context, i *struct{ Body ds.TileUpdateMSG }) (*ds.GenericResponse, error) {
-		tile, err := gs.GetTile(i.Body.Position[0], i.Body.Position[1])
-		if err != nil {
-			return nil, fmt.Errorf("Tile not found; %s", err.Error())
+		var err error
+		// für mehrere
+		if i.Body.Position_to != nil {
+			err = gs.RemoveTracks(*i.Body.Position, *i.Body.Position_to)
+			if err != nil {
+				return nil, fmt.Errorf("could not remove track(s); %s", err.Error())
+			}
+			// um nur eins zu entfernen
+		} else {
+			// erstmal holen
+			tile, err := gs.GetTile(i.Body.Position[0], i.Body.Position[1])
+			if err != nil {
+				return nil, fmt.Errorf("Tile not found; %s", err.Error())
+			}
+			// dann entfernen
+			err = tile.RemoveTrack(i.Body.Position[2], gs)
+			if err != nil {
+				return nil, fmt.Errorf("Tile was found but could not remove track; %s", err.Error())
+			}
 		}
-		err = tile.RemoveTrack(i.Body.Position[2], gs)
-		if err != nil {
-			return nil, fmt.Errorf("Tile was found but could not remove track; %s", err.Error())
-		}
-		return ds.CreateGenericResponse("removed track", err != nil), nil //habe success in != nil verändert, da bool als return entfernt wurde, analog zu addTile
+		// dann rückmelden
+		return ds.CreateGenericResponse("removed track(s)", true), nil
+
 	}, huma.OperationTags("track"))
 }
 
@@ -191,7 +205,7 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 // region trains
 func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 	huma.Post(*api, "/train", func(ctx context.Context, i *struct{ Body ds.TrainCreateMSG }) (*ds.GenericResponse, error) {
-		_, err := gs.AddTrain(i.Body.Name, i.Body.Waggons[0].Position, "") //kein Plan was du so gemacht hast, habe das mal angepasst. Musst mal gucken, ob das so passt. Siehe Funktionsbeschreibung
+		_, err := gs.AddTrain(i.Body.Name, i.Body.LocomotivePosition, "") //kein Plan was du so gemacht hast, habe das mal angepasst. Musst mal gucken, ob das so passt. Siehe Funktionsbeschreibung
 		if err != nil {
 			return nil, fmt.Errorf("Could not create Train; %s", err.Error())
 		}

@@ -81,9 +81,9 @@ type TrainMoveMSG struct {
 }
 
 type TrainCreateMSG struct {
-	Name    string
-	Waggons []TrainCreateWaggons
-	Id      int
+	Name               string
+	LocomotivePosition [3]int
+	Id                 int
 }
 
 type TrainRemoveMSG struct {
