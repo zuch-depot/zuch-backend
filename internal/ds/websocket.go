@@ -34,21 +34,22 @@ func (envelope *RecieveWSEnvelope) Reply(success bool, message string, gs *GameS
 
 }
 
-func CreateGenericResponse(message string, success bool) *GenericResponse {
+// beschreibung siehe typdefinition
+func CreateGenericResponse(message string) *GenericResponse {
 	return &GenericResponse{Body: struct {
 		Message string
-		Success bool
-	}{Message: message, Success: success}}
+	}{Message: message}}
 }
 
+// ich wollte mir hier die optionen offen halten, vielleicht wird das ding nachher noch mit mehr infos angereichert aber das machen wa halt bisher noch nicht
+// so ist es einfach nur ein string im body, vielleicht sollte man den noch zum Header machen, aber das kann man ja recht schnell nachher
 type GenericResponse struct {
 	Body struct {
 		Message string
-		Success bool
 	}
 }
 
-type SaveGameMessage struct {
+type SaveGameResponse struct {
 	Body struct {
 		Message string
 		Success bool
@@ -68,6 +69,7 @@ type RecieveWSEnvelope struct {
 	Msg           json.RawMessage
 }
 
+// recht allgemeiner Typ der einfach 2 Positionen abbildet, wird für Tracks als auch bspw. Züge genutzt, die 2. position ist optional
 type TileUpdateMSG struct {
 	Position    *[3]int `path:"Position" example:"[1,3,4]" minLength:"3" maxLength:"3" doc:"Which Tile to interact with, in the format X Y Subtile, Subtile starts with 1 and on the left side, then counts clockwise"`
 	Position_to *[3]int `path:"Position_to" example:"[1,1,4]" required:"false" minLength:"3" maxLength:"3" nullable:"true"`

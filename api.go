@@ -97,7 +97,7 @@ func registerSignalRoutes(api *huma.API, gs *ds.GameState) {
 		if err != nil {
 			return nil, fmt.Errorf("Tile was found but could not create signal; %s", err.Error())
 		}
-		return ds.CreateGenericResponse("created signal", err == nil), nil
+		return ds.CreateGenericResponse("created signal"), nil
 	}, huma.OperationTags("signal"))
 
 	huma.Delete(*api, "/signal", func(ctx context.Context, i *struct{ Body ds.TileUpdateMSG }) (*ds.GenericResponse, error) {
@@ -109,7 +109,7 @@ func registerSignalRoutes(api *huma.API, gs *ds.GameState) {
 		if err != nil {
 			return nil, fmt.Errorf("Tile was found but could not remove signal; %s", err.Error())
 		}
-		return ds.CreateGenericResponse("removed signal", err == nil), nil
+		return ds.CreateGenericResponse("removed signal"), nil
 	}, huma.OperationTags("signal"))
 }
 
@@ -118,32 +118,32 @@ func registerSignalRoutes(api *huma.API, gs *ds.GameState) {
 func registerGameRoutes(api *huma.API, gs *ds.GameState) {
 	huma.Get(*api, "/game/pause", func(ctx context.Context, i *struct{}) (*ds.GenericResponse, error) {
 		pauseGame(gs)
-		return ds.CreateGenericResponse("game paused", true), nil
+		return ds.CreateGenericResponse("game paused"), nil
 	}, huma.OperationTags("game"))
 
 	huma.Get(*api, "/game/unpause", func(ctx context.Context, i *struct{}) (*ds.GenericResponse, error) {
 		unPauseGame(gs)
-		return ds.CreateGenericResponse("game unpaused", true), nil
+		return ds.CreateGenericResponse("game unpaused"), nil
 	}, huma.OperationTags("game"))
 
-	huma.Get(*api, "/game/save", func(ctx context.Context, i *struct{}) (*ds.SaveGameMessage, error) {
+	huma.Get(*api, "/game/save", func(ctx context.Context, i *struct{}) (*ds.SaveGameResponse, error) {
 		filename, err := saveGame(gs, "")
 		if err != nil {
 			return nil, fmt.Errorf("Error while Saving game; %s", err.Error())
 		}
-		msg := &ds.SaveGameMessage{}
+		msg := &ds.SaveGameResponse{}
 		msg.Body.Message = "game saved"
 		msg.Body.Success = true
 		msg.Body.Path = filename
 		return msg, nil
 	}, huma.OperationTags("game"))
 
-	huma.Put(*api, "/game/load", func(ctx context.Context, i *ds.SaveGameMessage) (*ds.GenericResponse, error) {
+	huma.Put(*api, "/game/load", func(ctx context.Context, i *ds.SaveGameResponse) (*ds.GenericResponse, error) {
 		err := loadGame(gs, "") // hier könnte man später noch den dateinamen mitgeben
 		if err != nil {
 			return nil, err
 		}
-		return ds.CreateGenericResponse("Loaded new Save", true), nil
+		return ds.CreateGenericResponse("Loaded new Save"), nil
 	}, huma.OperationTags("game"))
 }
 
@@ -170,7 +170,7 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 				return nil, fmt.Errorf("Tile was found but could not create track(s); %s", err.Error())
 			}
 		}
-		return ds.CreateGenericResponse("created track(s)", true), nil
+		return ds.CreateGenericResponse("created track(s)"), nil
 	}, huma.OperationTags("track"))
 
 	// hier um Gleise zu entfernen, zum entfernen von mehreren Gleisen warte ich noch auf wilken
@@ -196,7 +196,7 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 			}
 		}
 		// dann rückmelden
-		return ds.CreateGenericResponse("removed track(s)", true), nil
+		return ds.CreateGenericResponse("removed track(s)"), nil
 
 	}, huma.OperationTags("track"))
 }
@@ -213,15 +213,17 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("Train does not exist")
 		}
 		return train, nil
-	})
+	}, huma.OperationTags("train"))
+
 	// Hier kann man einen Zug bauen
 	huma.Post(*api, "/train", func(ctx context.Context, i *struct{ Body ds.TrainCreateMSG }) (*ds.GenericResponse, error) {
 		_, err := gs.AddTrain(i.Body.Name, i.Body.LocomotivePosition, "") //kein Plan was du so gemacht hast, habe das mal angepasst. Musst mal gucken, ob das so passt. Siehe Funktionsbeschreibung
 		if err != nil {
 			return nil, fmt.Errorf("Could not create Train; %s", err.Error())
 		}
-		return ds.CreateGenericResponse("created Train", true), nil
-	})
+		return ds.CreateGenericResponse("created Train"), nil
+	}, huma.OperationTags("train"))
+
 	// Hier kann man einen Zug pausieren
 	huma.Post(*api, "/train/{id}/pause", func(ctx context.Context, i *struct {
 		id int `path:"id"`
@@ -231,8 +233,9 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("Train does not exist")
 		}
 		train.Pause()
-		return ds.CreateGenericResponse("paused Train", true), nil
-	})
+		return ds.CreateGenericResponse("paused Train"), nil
+	}, huma.OperationTags("train"))
+
 	// Hier kann man einen Zug pausieren
 	huma.Post(*api, "/train/{id}/unpause", func(ctx context.Context, i *struct {
 		id int `path:"id"`
@@ -242,8 +245,59 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("Train does not exist")
 		}
 		train.UnPause()
-		return ds.CreateGenericResponse("resumed Train", true), nil
-	})
+		return ds.CreateGenericResponse("resumed Train"), nil
+	}, huma.OperationTags("train"))
+
+	// hier kann man Waggons anhängen
+	huma.Post(*api, "/train/{id}/append", func(ctx context.Context, i *struct {
+		id   int `path:"id"`
+		Body struct {
+			pos        ds.TileUpdateMSG
+			waggontype string
+		}
+	}) (*ds.GenericResponse, error) {
+		// für mehrere in einer geraden linie
+		train, ok := gs.Trains[i.id]
+		if !ok {
+			return nil, fmt.Errorf("Train does not exist")
+		}
+		var err error
+		if i.Body.pos.Position_to != nil {
+			err = train.AddWaggon(*i.Body.pos.Position, i.Body.waggontype, gs)
+
+		} else {
+			err = train.AddWaggons(*i.Body.pos.Position, *i.Body.pos.Position_to, i.Body.waggontype, gs)
+
+		}
+		if err != nil {
+			return nil, fmt.Errorf("Could not add waggon(s); %s", err.Error())
+		}
+		return ds.CreateGenericResponse("added waggons to train"), nil
+	}, huma.OperationTags("train"))
+
+	// hier kann man züge entfernen
+	huma.Delete(*api, "/train/{id}/remove", func(ctx context.Context, i *struct {
+		id   int `path:"id"`
+		Body struct {
+			from int
+			to   *int `example:"5" required:"false" nullable:"true"`
+		}
+	}) (*ds.GenericResponse, error) {
+		train, ok := gs.Trains[i.id]
+		if !ok {
+			return nil, fmt.Errorf("Train does not exist")
+		}
+		var err error
+		if i.Body.to == nil {
+			err = train.RemoveWaggon(i.Body.from, gs)
+		} else {
+			err = train.RemoveWaggons(i.Body.from, *i.Body.to, gs)
+		}
+		if err != nil {
+			return nil, fmt.Errorf("could not remove waggon(s) %s", err.Error())
+		}
+		return ds.CreateGenericResponse("removed waggon(s)"), nil
+	}, huma.OperationTags("train"))
 }
 
 // endregion trains
