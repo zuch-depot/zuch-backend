@@ -230,7 +230,7 @@ func (t *Train) move(gs *GameState) [2]int {
 	// for alle waggons {clients.schickeNachtricht(waggong x,y, hat sich bewegt)}
 
 	// Alles was bis hier gekommen ist hat sich bewegt (laut wilken beim döner essen) || xD
-	gs.BroadcastChannel <- WsEnvelope{Type: "train.move", Msg: TrainMoveMSG{Id: t.Id, Waggons: t.Waggons}}
+	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
 	return entblocken
 }
 
@@ -371,7 +371,7 @@ func (t *Train) loadUndload(gs *GameState) bool {
 	}
 
 	// der user kriegt einfach den neuen zuch
-	gs.BroadcastChannel <- WsEnvelope{Type: "train.cargochange", Msg: t}
+	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
 
 	return r
 }
