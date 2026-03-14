@@ -236,11 +236,14 @@ func (t *Train) move(gs *GameState) [2]int {
 
 // returned Tile zum entblcken
 // wenn fertig mit Laden/entladen passiert ein Tick nichts und dann fährt er los
-
 func (t *Train) calculateTrain(gs *GameState) [2]int {
 	//var r [2]int
 
 	if t.paused {
+		return [2]int{}
+	}
+
+	if t.Schedule == nil {
 		return [2]int{}
 	}
 
@@ -553,6 +556,7 @@ func (t *Train) RemoveWaggons(indexStart int, indexEnd int, gs *GameState) error
 // weist dem Zug einen Fahrplan zu, noch kein Fehler wird geworfen
 func (t *Train) AssignSchedule(schedule *Schedule, gs *GameState) {
 	t.Schedule = schedule
+	t.NextStop = schedule.nextStop(&Stop{Id: 0})
 	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
 
 }
@@ -560,6 +564,7 @@ func (t *Train) AssignSchedule(schedule *Schedule, gs *GameState) {
 // entfernt den Fahrplan von dem Zug, noch kein Fehler wird geworfen
 func (t *Train) UnassignSchedule(gs *GameState) {
 	t.Schedule = nil
+	t.NextStop = nil
 	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
 
 }
@@ -579,7 +584,7 @@ func (t *Train) UnPause(gs *GameState) {
 }
 
 // auch sonderzeigen erlaubt, ggf. anpassen
-func (t *Train) rename(name string) error {
+func (t *Train) Rename(name string) error {
 	if name == "" {
 		return fmt.Errorf("Please provide a name.")
 	}
