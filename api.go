@@ -330,14 +330,14 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 	huma.Post(*api, "/train/{id}/schedule", func(ctx context.Context, i *struct {
 		Id   int `path:"id"`
 		Body struct {
-			scheduleId int
+			ScheduleId int
 		}
 	}) (*ds.GenericResponse, error) {
 		train, ok := gs.Trains[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Train does not exist")
 		}
-		schedule, ok := gs.Trains[i.Body.scheduleId]
+		schedule, ok := gs.Trains[i.Body.ScheduleId]
 		if !ok {
 			return nil, fmt.Errorf("schedule does not exist")
 		}
