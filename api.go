@@ -252,8 +252,8 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 	huma.Post(*api, "/train/{id}/append", func(ctx context.Context, i *struct {
 		Id   int `path:"id"`
 		Body struct {
-			pos        ds.TileUpdateMSG
-			waggontype string
+			Pos        ds.TileUpdateMSG
+			Waggontype string
 		}
 	}) (*ds.GenericResponse, error) {
 		// für mehrere in einer geraden linie
@@ -262,11 +262,11 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("Train does not exist")
 		}
 		var err error
-		if i.Body.pos.Position_to != nil {
-			err = train.AddWaggon(*i.Body.pos.Position, i.Body.waggontype, gs)
+		if i.Body.Pos.Position_to != nil {
+			err = train.AddWaggon(*i.Body.Pos.Position, i.Body.Waggontype, gs)
 
 		} else {
-			err = train.AddWaggons(*i.Body.pos.Position, *i.Body.pos.Position_to, i.Body.waggontype, gs)
+			err = train.AddWaggons(*i.Body.Pos.Position, *i.Body.Pos.Position_to, i.Body.Waggontype, gs)
 
 		}
 		if err != nil {
@@ -279,8 +279,8 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 	huma.Delete(*api, "/train/{id}/remove", func(ctx context.Context, i *struct {
 		Id   int `path:"id"`
 		Body struct {
-			from int
-			to   *int `example:"5" required:"false" nullable:"true"`
+			From int
+			To   *int `example:"5" required:"false" nullable:"true"`
 		}
 	}) (*ds.GenericResponse, error) {
 		train, ok := gs.Trains[i.Id]
@@ -288,10 +288,10 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("Train does not exist")
 		}
 		var err error
-		if i.Body.to == nil {
-			err = train.RemoveWaggon(i.Body.from, gs)
+		if i.Body.To == nil {
+			err = train.RemoveWaggon(i.Body.From, gs)
 		} else {
-			err = train.RemoveWaggons(i.Body.from, *i.Body.to, gs)
+			err = train.RemoveWaggons(i.Body.From, *i.Body.To, gs)
 		}
 		if err != nil {
 			return nil, fmt.Errorf("could not remove waggon(s) %s", err.Error())
