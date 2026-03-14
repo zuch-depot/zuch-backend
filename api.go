@@ -206,9 +206,9 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 	// Hier kriegt man infos zu einem Zug
 	huma.Get(*api, "/train/{id}", func(ctx context.Context, i *struct {
-		id int `path:"id"`
+		Id int `path:"id"`
 	}) (*ds.Train, error) {
-		train, ok := gs.Trains[i.id]
+		train, ok := gs.Trains[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Train does not exist")
 		}
@@ -226,9 +226,9 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 
 	// Hier kann man einen Zug pausieren
 	huma.Post(*api, "/train/{id}/pause", func(ctx context.Context, i *struct {
-		id int `path:"id"`
+		Id int `path:"id"`
 	}) (*ds.GenericResponse, error) {
-		train, ok := gs.Trains[i.id]
+		train, ok := gs.Trains[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Train does not exist")
 		}
@@ -238,9 +238,9 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 
 	// Hier kann man einen Zug pausieren
 	huma.Post(*api, "/train/{id}/unpause", func(ctx context.Context, i *struct {
-		id int `path:"id"`
+		Id int `path:"id"`
 	}) (*ds.GenericResponse, error) {
-		train, ok := gs.Trains[i.id]
+		train, ok := gs.Trains[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Train does not exist")
 		}
@@ -250,14 +250,14 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man Waggons anhängen
 	huma.Post(*api, "/train/{id}/append", func(ctx context.Context, i *struct {
-		id   int `path:"id"`
+		Id   int `path:"id"`
 		Body struct {
 			pos        ds.TileUpdateMSG
 			waggontype string
 		}
 	}) (*ds.GenericResponse, error) {
 		// für mehrere in einer geraden linie
-		train, ok := gs.Trains[i.id]
+		train, ok := gs.Trains[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Train does not exist")
 		}
@@ -277,13 +277,13 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man züge entfernen
 	huma.Delete(*api, "/train/{id}/remove", func(ctx context.Context, i *struct {
-		id   int `path:"id"`
+		Id   int `path:"id"`
 		Body struct {
 			from int
 			to   *int `example:"5" required:"false" nullable:"true"`
 		}
 	}) (*ds.GenericResponse, error) {
-		train, ok := gs.Trains[i.id]
+		train, ok := gs.Trains[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Train does not exist")
 		}
@@ -301,9 +301,9 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man einen zug brutalst umbringen
 	huma.Delete(*api, "/train/{id}", func(ctx context.Context, i *struct {
-		id int `path:"id"`
+		Id int `path:"id"`
 	}) (*ds.GenericResponse, error) {
-		train, ok := gs.Trains[i.id]
+		train, ok := gs.Trains[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Train does not exist")
 		}
@@ -317,9 +317,9 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 	// hier könnte man einen zug umbennen
 	// aber ich finde die funktion dazu nicht
 	huma.Post(*api, "/train/{id}/rename", func(ctx context.Context, i *struct {
-		id int `path:"id"`
+		Id int `path:"id"`
 	}) (*ds.GenericResponse, error) {
-		_, ok := gs.Trains[i.id]
+		_, ok := gs.Trains[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Train does not exist")
 		}
@@ -328,12 +328,12 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man schedules zuweisen
 	huma.Post(*api, "/train/{id}/schedule", func(ctx context.Context, i *struct {
-		id   int `path:"id"`
+		Id   int `path:"id"`
 		Body struct {
 			scheduleId int
 		}
 	}) (*ds.GenericResponse, error) {
-		train, ok := gs.Trains[i.id]
+		train, ok := gs.Trains[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Train does not exist")
 		}
@@ -348,9 +348,9 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man schedules zuweisen
 	huma.Post(*api, "/train/{id}/schedule_unassign", func(ctx context.Context, i *struct {
-		id int `path:"id"`
+		Id int `path:"id"`
 	}) (*ds.GenericResponse, error) {
-		train, ok := gs.Trains[i.id]
+		train, ok := gs.Trains[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Train does not exist")
 		}
