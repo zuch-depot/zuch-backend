@@ -482,6 +482,7 @@ func (t *Train) AddWaggon(position [3]int, typ string, gs *GameState) error {
 	blockedTilesPositions = append(blockedTilesPositions, [2]int(position[:2]))
 	gs.Tiles[position[0]][position[1]].IsBlocked = true
 	gs.BroadcastChannel <- WsEnvelope{Type: "tiles.block", Msg: BlockedTilesMSG{Tiles: blockedTilesPositions}}
+	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
 
 	gs.Logger.Debug("Blockiertes", slog.Int("Pos 0", position[0]), slog.Int("Pos 1", position[1]), slog.Bool("Blocked", gs.Tiles[position[0]][position[1]].IsBlocked))
 	return nil
@@ -516,6 +517,7 @@ func (t *Train) RemoveWaggon(index int, gs *GameState) error {
 
 	//entblocken durchführen. Muss nicht in Queue, da nicht ausgeführt wird, während Bewegungen stattfinden
 	gs.Tiles[entblocken[0]][entblocken[1]].IsBlocked = false
+	gs.BroadcastChannel <- WsEnvelope{Type: "tiles.unblock", Msg: BlockedTilesMSG{Tiles: []([2]int){entblocken}}}
 
 	//entfernt den Zug, wenn des keine Waggons mehr gibt
 	if len(t.Waggons) == 0 {
@@ -524,6 +526,7 @@ func (t *Train) RemoveWaggon(index int, gs *GameState) error {
 
 	//entfernen des Waggons
 	t.Waggons = append(t.Waggons[:index], t.Waggons[index:]...)
+	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
 
 	return nil
 }
@@ -548,23 +551,31 @@ func (t *Train) RemoveWaggons(indexStart int, indexEnd int, gs *GameState) error
 }
 
 // weist dem Zug einen Fahrplan zu, noch kein Fehler wird geworfen
-func (t *Train) AssignSchedule(schedule *Schedule) {
+func (t *Train) AssignSchedule(schedule *Schedule, gs *GameState) {
 	t.Schedule = schedule
+	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
+
 }
 
 // entfernt den Fahrplan von dem Zug, noch kein Fehler wird geworfen
-func (t *Train) UnassignSchedule() {
+func (t *Train) UnassignSchedule(gs *GameState) {
 	t.Schedule = nil
+	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
+
 }
 
 // keine Überprüfung
-func (t *Train) Pause() {
+func (t *Train) Pause(gs *GameState) {
 	t.paused = true
+	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
+
 }
 
 // keine Überprüfung
-func (t *Train) UnPause() {
+func (t *Train) UnPause(gs *GameState) {
 	t.paused = false
+	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
+
 }
 
 // auch sonderzeigen erlaubt, ggf. anpassen

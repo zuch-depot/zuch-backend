@@ -477,6 +477,7 @@ func (gs *GameState) RemoveTrain(t *Train) error {
 	}
 	// Das kann hier gut sein das da zeugs doppelt drinne ist aber das ist mir spontan egal, doppelt auf false setzen hält ohnehin besser
 	gs.BroadcastChannel <- WsEnvelope{Type: "tiles.unblock", Msg: BlockedTilesMSG{Tiles: blockedTilesPositions}}
+	gs.BroadcastChannel <- WsEnvelope{Type: "train.remove", Msg: TrainRemoveMSG{Id: t.Id}}
 
 	before := len(gs.Trains)
 	delete(gs.Trains, t.Id)

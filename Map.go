@@ -92,7 +92,7 @@ func createDemoTrains(gs *ds.GameState) {
 	// 	{Position: [3]int{2, 4, 1}, Typ: "Lebensmittel"}},
 	// )
 	train.AddWaggons([3]int{3, 4, 1}, [3]int{2, 4, 1}, "Lebensmittel", gs)
-	train.AssignSchedule(schedule)
+	train.AssignSchedule(schedule, gs)
 	if err != nil {
 		gs.Logger.Error("Fehler, aber ist im demo ding egal")
 	}
@@ -114,7 +114,7 @@ func createDemoTrains(gs *ds.GameState) {
 	// 	{Position: [3]int{6, 5, 2}, Typ: "Lebensmittel"},
 	// 	{Position: [3]int{6, 4, 4}, Typ: "Lebensmittel"}})
 	train.AddWaggons([3]int{6, 5, 4}, [3]int{6, 4, 4}, "Lebensmittel", gs)
-	train.AssignSchedule(schedule)
+	train.AssignSchedule(schedule, gs)
 
 	if err != nil {
 		gs.Logger.Error("Fehler, aber ist im demo ding egal")

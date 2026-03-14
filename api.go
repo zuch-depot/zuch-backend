@@ -232,7 +232,7 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 		if !ok {
 			return nil, fmt.Errorf("Train does not exist")
 		}
-		train.Pause()
+		train.Pause(gs)
 		return ds.CreateGenericResponse("paused Train"), nil
 	}, huma.OperationTags("train"))
 
@@ -244,7 +244,7 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 		if !ok {
 			return nil, fmt.Errorf("Train does not exist")
 		}
-		train.UnPause()
+		train.UnPause(gs)
 		return ds.CreateGenericResponse("resumed Train"), nil
 	}, huma.OperationTags("train"))
 
@@ -316,7 +316,7 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier könnte man einen zug umbennen
 	// aber ich finde die funktion dazu nicht
-	huma.Delete(*api, "/train/{id}", func(ctx context.Context, i *struct {
+	huma.Post(*api, "/train/{id}/rename", func(ctx context.Context, i *struct {
 		id int `path:"id"`
 	}) (*ds.GenericResponse, error) {
 		_, ok := gs.Trains[i.id]
@@ -342,7 +342,7 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("schedule does not exist")
 		}
 
-		train.AssignSchedule(schedule.Schedule)
+		train.AssignSchedule(schedule.Schedule, gs)
 		return ds.CreateGenericResponse("assigned Schedule"), nil
 	}, huma.OperationTags("train"))
 
@@ -355,7 +355,7 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("Train does not exist")
 		}
 
-		train.UnassignSchedule()
+		train.UnassignSchedule(gs)
 		return ds.CreateGenericResponse("unassigned Schedule"), nil
 	}, huma.OperationTags("train"))
 
