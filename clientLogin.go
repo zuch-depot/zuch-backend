@@ -83,7 +83,7 @@ func initializeClient(user *ds.User, gs *ds.GameState) {
 		stationMap[v.Id] = v
 	}
 
-	envelope := ds.WsEnvelope{Type: "game.initialLoad", Username: "Server", TransactionID: "", Msg: ds.SendAbleGamestate{Users: gs.Users, Schedules: gs.Schedules, Stations: stationMap, Tiles: gs.Tiles, Trains: gs.Trains}}
+	envelope := ds.WsEnvelope{Type: "game.initialLoad", Msg: ds.SendAbleGamestate{Users: gs.Users, Schedules: gs.Schedules, Stations: stationMap, Tiles: gs.Tiles, Trains: gs.Trains}}
 	err := user.Connection.WriteJSON(envelope)
 	if err != nil {
 		logger.Error("Failed parsing state to JSON", slog.String("Error", err.Error()))

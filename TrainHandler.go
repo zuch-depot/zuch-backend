@@ -82,10 +82,8 @@ func handleRemoveTrain(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error {
 	train, prs := gs.Trains[update.Id]
 	if prs {
 		gs.BroadcastChannel <- ds.WsEnvelope{
-			Type:          "train.remove",
-			Username:      "Server",
-			TransactionID: envelope.TransactionID,
-			Msg:           ds.TrainRemoveMSG{Id: update.Id},
+			Type: "train.remove",
+			Msg:  ds.TrainRemoveMSG{Id: update.Id},
 		}
 		return gs.RemoveTrain(train)
 	} else {
@@ -106,9 +104,7 @@ func handleCreateTrain(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error {
 
 	logger.Info("Creating Train", slog.String("Username", envelope.User.Username), slog.String("Zug Name", update.Name))
 	gs.BroadcastChannel <- ds.WsEnvelope{
-		Type:          "train.create",
-		Username:      "Server",
-		TransactionID: envelope.TransactionID,
+		Type: "train.create",
 		// Msg:           train,
 	}
 	return nil

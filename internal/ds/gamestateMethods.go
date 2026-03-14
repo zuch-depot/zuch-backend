@@ -414,6 +414,8 @@ func (gs *GameState) AddTrain(name string, position [3]int, lokmotive string) (*
 	gs.Trains[train.Id] = train
 	gs.CurrentTrainID.Add(1)
 
+	gs.BroadcastChannel <- WsEnvelope{Type: "train.create", Msg: train}
+
 	return train, nil
 }
 
@@ -454,7 +456,7 @@ func (gs *GameState) CalculateTrains() {
 		gs.Tiles[i[0]][i[1]].IsBlocked = false
 	}
 	if len(tilesToUnblock) > 0 {
-		gs.BroadcastChannel <- WsEnvelope{Type: "tiles.unblock", Username: "kaputt", Msg: BlockedTilesMSG{Tiles: tilesToUnblock}}
+		gs.BroadcastChannel <- WsEnvelope{Type: "tiles.unblock", Msg: BlockedTilesMSG{Tiles: tilesToUnblock}}
 	}
 }
 
@@ -474,7 +476,7 @@ func (gs *GameState) RemoveTrain(t *Train) error {
 		blockedTilesPositions = append(blockedTilesPositions, [2]int{w.Position[0], w.Position[1]})
 	}
 	// Das kann hier gut sein das da zeugs doppelt drinne ist aber das ist mir spontan egal, doppelt auf false setzen hält ohnehin besser
-	gs.BroadcastChannel <- WsEnvelope{Type: "tiles.unblock", Username: "Server", Msg: BlockedTilesMSG{Tiles: blockedTilesPositions}}
+	gs.BroadcastChannel <- WsEnvelope{Type: "tiles.unblock", Msg: BlockedTilesMSG{Tiles: blockedTilesPositions}}
 
 	before := len(gs.Trains)
 	delete(gs.Trains, t.Id)

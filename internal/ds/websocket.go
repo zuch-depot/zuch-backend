@@ -11,10 +11,8 @@ import (
 // bei Username wird automatisch der Username über den sich die websocket verbindung angemeldet hat eingetragen, Eingaben vom User werden überschrieben
 // Msg ist die eigentliche nachricht, siehe ebenfalls wsFormat.go, nicht alle haben ein eigenes Struct, aber einige
 type WsEnvelope struct {
-	Type          string
-	Username      string
-	TransactionID string
-	Msg           any
+	Type string
+	Msg  any
 }
 
 func (envelope *RecieveWSEnvelope) Reply(success bool, message string, gs *GameState) {
@@ -28,7 +26,7 @@ func (envelope *RecieveWSEnvelope) Reply(success bool, message string, gs *GameS
 	}
 
 	replyInnerMSG := RelpyMSG{Success: success, Msg: message}
-	reply := WsEnvelope{Type: "game.reply", Username: envelope.User.Username, TransactionID: envelope.TransactionID, Msg: replyInnerMSG}
+	reply := WsEnvelope{Type: "game.reply", Msg: replyInnerMSG}
 	gs.Logger.Debug("Replying to Client event", slog.String("user", envelope.User.Username), slog.String("Event Type", reply.Type))
 	envelope.User.WebSocketQueue <- reply
 

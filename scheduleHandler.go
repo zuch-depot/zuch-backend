@@ -37,10 +37,9 @@ func handleUnAssignSchdeule(envelope ds.RecieveWSEnvelope, gs *ds.GameState) err
 	train.Schedule = nil
 	gs.Logger.Info("Unassigned Schedule", slog.Int("Train ID", update.TrainId), slog.Int("Schedule Id", update.ScheduleId), slog.String("Username", envelope.User.Username))
 	gs.BroadcastChannel <- ds.WsEnvelope{
-		Type:          "schedule.unassign",
-		Username:      "Server",
-		TransactionID: envelope.TransactionID,
-		Msg:           train,
+		Type: "schedule.unassign",
+
+		Msg: train,
 	}
 	return nil
 }
@@ -64,10 +63,9 @@ func handleAssignSchedule(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error
 	train.Schedule = schedule
 	gs.Logger.Info("Assigned Schedule", slog.Int("Train ID", update.TrainId), slog.Int("Schedule Id", update.ScheduleId), slog.String("Username", envelope.User.Username))
 	gs.BroadcastChannel <- ds.WsEnvelope{
-		Type:          "schedule.assign",
-		Username:      "Server",
-		TransactionID: envelope.TransactionID,
-		Msg:           train,
+		Type: "schedule.assign",
+
+		Msg: train,
 	}
 	return nil
 }
@@ -85,10 +83,9 @@ func handleRemoveSchedule(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error
 
 	gs.Logger.Info("Remove Schedule", slog.String("Username", envelope.User.Username))
 	gs.BroadcastChannel <- ds.WsEnvelope{
-		Type:          "schedule.remove",
-		Username:      "Server",
-		TransactionID: envelope.TransactionID,
-		Msg:           &ds.ScheduleRemoveMSG{Id: update.Id},
+		Type: "schedule.remove",
+
+		Msg: &ds.ScheduleRemoveMSG{Id: update.Id},
 	}
 	return nil
 }
@@ -130,10 +127,9 @@ func handleCreateSchedule(envelope ds.RecieveWSEnvelope, gs *ds.GameState) error
 	}
 	gs.Logger.Info("Creating Schedule", slog.String("Username", envelope.User.Username))
 	gs.BroadcastChannel <- ds.WsEnvelope{
-		Type:          "schedule.create",
-		Username:      "Server",
-		TransactionID: envelope.TransactionID,
-		Msg:           schedule,
+		Type: "schedule.create",
+
+		Msg: schedule,
 	}
 	return nil
 

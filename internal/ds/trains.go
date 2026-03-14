@@ -205,7 +205,7 @@ func (t *Train) move(gs *GameState) [2]int {
 		}
 
 		// dann können die clients auch nett anzeigen welche jetzt blockiert sind :D , brauche ich vielleicht auch fürs debuggen :D :D
-		gs.BroadcastChannel <- WsEnvelope{Type: "tiles.block", Username: "Server", Msg: BlockedTilesMSG{Tiles: blockedTilesPositions}}
+		gs.BroadcastChannel <- WsEnvelope{Type: "tiles.block", Msg: BlockedTilesMSG{Tiles: blockedTilesPositions}}
 		//nun wird das Signal aus der Queue rausgenommen, da der Zug über das Signal fährt
 		t.CurrentPathSignals = t.CurrentPathSignals[1:]
 
@@ -371,7 +371,7 @@ func (t *Train) loadUndload(gs *GameState) bool {
 	}
 
 	// der user kriegt einfach den neuen zuch
-	gs.BroadcastChannel <- WsEnvelope{Type: "train.cargochange", Username: "server", Msg: t}
+	gs.BroadcastChannel <- WsEnvelope{Type: "train.cargochange", Msg: t}
 
 	return r
 }
@@ -481,7 +481,7 @@ func (t *Train) AddWaggon(position [3]int, typ string, gs *GameState) error {
 	var blockedTilesPositions [][2]int
 	blockedTilesPositions = append(blockedTilesPositions, [2]int(position[:2]))
 	gs.Tiles[position[0]][position[1]].IsBlocked = true
-	gs.BroadcastChannel <- WsEnvelope{Type: "tiles.block", Username: "Server", Msg: BlockedTilesMSG{Tiles: blockedTilesPositions}}
+	gs.BroadcastChannel <- WsEnvelope{Type: "tiles.block", Msg: BlockedTilesMSG{Tiles: blockedTilesPositions}}
 
 	gs.Logger.Debug("Blockiertes", slog.Int("Pos 0", position[0]), slog.Int("Pos 1", position[1]), slog.Bool("Blocked", gs.Tiles[position[0]][position[1]].IsBlocked))
 	return nil
