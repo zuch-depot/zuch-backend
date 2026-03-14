@@ -298,6 +298,67 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 		}
 		return ds.CreateGenericResponse("removed waggon(s)"), nil
 	}, huma.OperationTags("train"))
+
+	// hier kann man einen zug brutalst umbringen
+	huma.Delete(*api, "/train/{id}", func(ctx context.Context, i *struct {
+		id int `path:"id"`
+	}) (*ds.GenericResponse, error) {
+		train, ok := gs.Trains[i.id]
+		if !ok {
+			return nil, fmt.Errorf("Train does not exist")
+		}
+		err := gs.RemoveTrain(train)
+		if err != nil {
+			return nil, fmt.Errorf("could not remove train %s", err.Error())
+		}
+		return ds.CreateGenericResponse("removed train"), nil
+	}, huma.OperationTags("train"))
+
+	// hier könnte man einen zug umbennen
+	// aber ich finde die funktion dazu nicht
+	huma.Delete(*api, "/train/{id}", func(ctx context.Context, i *struct {
+		id int `path:"id"`
+	}) (*ds.GenericResponse, error) {
+		_, ok := gs.Trains[i.id]
+		if !ok {
+			return nil, fmt.Errorf("Train does not exist")
+		}
+		return nil, huma.Error501NotImplemented("joa ich finde wilkens funktion dazu nicht")
+	}, huma.OperationTags("train"))
+
+	// hier kann man schedules zuweisen
+	huma.Post(*api, "/train/{id}/schedule", func(ctx context.Context, i *struct {
+		id   int `path:"id"`
+		Body struct {
+			scheduleId int
+		}
+	}) (*ds.GenericResponse, error) {
+		train, ok := gs.Trains[i.id]
+		if !ok {
+			return nil, fmt.Errorf("Train does not exist")
+		}
+		schedule, ok := gs.Trains[i.Body.scheduleId]
+		if !ok {
+			return nil, fmt.Errorf("schedule does not exist")
+		}
+
+		train.AssignSchedule(schedule.Schedule)
+		return ds.CreateGenericResponse("assigned Schedule"), nil
+	}, huma.OperationTags("train"))
+
+	// hier kann man schedules zuweisen
+	huma.Post(*api, "/train/{id}/schedule_unassign", func(ctx context.Context, i *struct {
+		id int `path:"id"`
+	}) (*ds.GenericResponse, error) {
+		train, ok := gs.Trains[i.id]
+		if !ok {
+			return nil, fmt.Errorf("Train does not exist")
+		}
+
+		train.UnassignSchedule()
+		return ds.CreateGenericResponse("unassigned Schedule"), nil
+	}, huma.OperationTags("train"))
+
 }
 
 // endregion trains

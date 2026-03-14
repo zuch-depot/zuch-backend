@@ -83,9 +83,9 @@ type TrainMoveMSG struct {
 }
 
 type TrainCreateMSG struct {
-	Name               string
-	LocomotivePosition [3]int
-	Id                 int
+	Name               string `example:"fred"`
+	LocomotivePosition [3]int `example:"[1,1,4]" required:"true"`
+	Id                 int    `hidden:"true"`
 }
 
 type TrainRemoveMSG struct {
