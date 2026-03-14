@@ -317,13 +317,20 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 	// hier könnte man einen zug umbennen
 	// aber ich finde die funktion dazu nicht
 	huma.Post(*api, "/train/{id}/rename", func(ctx context.Context, i *struct {
-		Id int `path:"id"`
+		Id   int `path:"id"`
+		Body struct {
+			Name string
+		}
 	}) (*ds.GenericResponse, error) {
-		_, ok := gs.Trains[i.Id]
+		train, ok := gs.Trains[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Train does not exist")
 		}
-		return nil, huma.Error501NotImplemented("joa ich finde wilkens funktion dazu nicht")
+		err := train.Rename(i.Body.Name)
+		if err != nil {
+			return nil, fmt.Errorf("could not rename Train; %s", err.Error())
+		}
+		return ds.CreateGenericResponse("renamed train"), nil
 	}, huma.OperationTags("train"))
 
 	// hier kann man schedules zuweisen
