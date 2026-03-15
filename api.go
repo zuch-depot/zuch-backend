@@ -474,6 +474,92 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 		return ds.CreateGenericResponse("removed Stop(s)"), nil
 	})
 
+	// hier kann man die ganze schedule löschen
+	huma.Delete(*api, "/schedule/{id}", func(ctx context.Context, i *struct {
+		Id int `path:"id"`
+	}) (*ds.GenericResponse, error) {
+		err := gs.RemoveSchedule(i.Id)
+		if err != nil {
+			return nil, fmt.Errorf("could not remove schedule; %s", err.Error())
+		}
+		return ds.CreateGenericResponse("removed schedule"), nil
+	})
+
+	// hier kann man eine schedule umbenennen
+	huma.Post(*api, "/schedule/{id}/rename", func(ctx context.Context, i *struct {
+		Id   int `path:"id"`
+		Body struct {
+			Name string
+		}
+	}) (*ds.GenericResponse, error) {
+		schedule, ok := gs.Schedules[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Schedule does not exist")
+		}
+		err := schedule.Rename(i.Body.Name)
+		if err != nil {
+			return nil, fmt.Errorf("could not rename Station; %s", err.Error())
+		}
+		return ds.CreateGenericResponse("rename station"), nil
+	})
+
+	// Hier kann man die reihenfolge ändern
+	huma.Post(*api, "/schedule/{id}/sequence", func(ctx context.Context, i *struct {
+		Id   int `path:"id"`
+		Body struct {
+			Index     int
+			Index_Two int
+		}
+	}) (*ds.GenericResponse, error) {
+		schedule, ok := gs.Schedules[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Schedule does not exist")
+		}
+		err := schedule.ChangeSquence(i.Body.Index, i.Body.Index_Two)
+		if err != nil {
+			return nil, fmt.Errorf("could not change sequence; %s", err.Error())
+		}
+		return ds.CreateGenericResponse("changed sequence"), nil
+	})
+
+	// Hier kann man eine Schedule updaten
+	huma.Post(*api, "/schedule/{id}/change", func(ctx context.Context, i *struct {
+		Id   int `path:"id"`
+		Body struct {
+			Stop_Index      int
+			LoadList        *[]string `required:"false" doc:"both LoadList and LoadTillFull both have to be either used or omitted"`
+			LoadTillFull    *bool     `required:"false" doc:"both LoadList and LoadTillFull both have to be either used or omitted"`
+			UnloadList      *[]string `required:"false" doc:"both UnloadList and UnloadTillFull both have to be either used or omitted"`
+			UnloadTillEmpty *bool     `required:"false" doc:"both UnloadList and UnloadTillFull both have to be either used or omitted"`
+		}
+	}) (*ds.GenericResponse, error) {
+		schedule, ok := gs.Schedules[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Schedule does not exist")
+		}
+		stop := schedule.Stops[i.Body.Stop_Index]
+		if stop == nil {
+			return nil, fmt.Errorf("could not find Stop")
+		}
+
+		var err error
+		// dann sagen was rauf
+		if i.Body.LoadList != nil && i.Body.LoadTillFull != nil {
+			err = stop.SetLoadCommand(*i.Body.LoadList, *i.Body.LoadTillFull, gs)
+			if err != nil {
+				return nil, fmt.Errorf("could not set Load Command; %s", err.Error())
+			}
+		}
+
+		// dann was weg
+		if i.Body.UnloadList != nil && i.Body.UnloadTillEmpty != nil {
+			err = stop.SetUnloadCommand(*i.Body.UnloadList, *i.Body.UnloadTillEmpty, gs)
+			if err != nil {
+				return nil, fmt.Errorf("could not set Unload Command; %s", err.Error())
+			}
+		}
+		return ds.CreateGenericResponse("updated Stop"), nil
+	})
 }
 
 // endregion schedules
