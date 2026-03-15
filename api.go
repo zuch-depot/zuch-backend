@@ -387,7 +387,7 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kriegt man infos zu einer schedule
 	huma.Get(*api, "/schedule/{id}", func(ctx context.Context, i *struct {
-		Id int `path:"id"`
+		Id int `path:"id" example:"1"`
 	}) (*struct {
 		Body struct {
 			Schedule ds.Schedule
@@ -404,13 +404,13 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man eine Plattform anhängen
 	huma.Post(*api, "/schedule/{id}/append", func(ctx context.Context, i *struct {
-		Id   int `path:"id"`
+		Id   int `path:"id" example:"1"`
 		Body struct {
 			PlattformPos    [2]int
-			LoadList        *[]string `required:"false" doc:"both LoadList and LoadTillFull both have to be either used or omitted"`
-			LoadTillFull    *bool     `required:"false" doc:"both LoadList and LoadTillFull both have to be either used or omitted"`
-			UnloadList      *[]string `required:"false" doc:"both UnloadList and UnloadTillFull both have to be either used or omitted"`
-			UnloadTillEmpty *bool     `required:"false" doc:"both UnloadList and UnloadTillFull both have to be either used or omitted"`
+			LoadList        *[]string `example:"Sonnenblumenöl" required:"false" doc:"both LoadList and LoadTillFull both have to be either used or omitted"`
+			LoadTillFull    *bool     `example:"false" required:"false" doc:"both LoadList and LoadTillFull both have to be either used or omitted"`
+			UnloadList      *[]string `example:"Sonnenblumenöl" required:"false" doc:"both UnloadList and UnloadTillFull both have to be either used or omitted"`
+			UnloadTillEmpty *bool     `example:"false" required:"false" doc:"both UnloadList and UnloadTillFull both have to be either used or omitted"`
 		}
 	}) (*ds.GenericResponse, error) {
 
@@ -449,10 +449,10 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man waypoints hinzufügen
 	huma.Post(*api, "/schedule/{id}/append-waypoint", func(ctx context.Context, i *struct {
-		Id   int `path:"id"`
+		Id   int `path:"id" example:"1"`
 		Body struct {
-			Pos  [3]int
-			Name string
+			Pos  [3]int `example:"[1,2,3]"`
+			Name string `example:"Fred"`
 		}
 	}) (*ds.GenericResponse, error) {
 		schedule, ok := gs.Schedules[i.Id]
@@ -468,10 +468,10 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man eine schedule löschen, die arme
 	huma.Post(*api, "/schedule/{id}/remove-stop", func(ctx context.Context, i *struct {
-		Id   int `path:"id"`
+		Id   int `path:"id" example:"1"`
 		Body struct {
-			Index    *int
-			Index_to *int `required:"false"`
+			Index    *int `example:"1"`
+			Index_to *int `required:"false" example:"2"`
 		}
 	}) (*ds.GenericResponse, error) {
 		schedule, ok := gs.Schedules[i.Id]
@@ -481,7 +481,7 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 
 		var err error
 		// wenn man von x bis y löschen will
-		if i.Body.Index_to != nil {
+		if i.Body.Index_to == nil {
 			err = schedule.RemoveStop(*i.Body.Index, gs)
 		} else {
 			// wenn nur x weicht
@@ -495,7 +495,7 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man die ganze schedule löschen
 	huma.Delete(*api, "/schedule/{id}", func(ctx context.Context, i *struct {
-		Id int `path:"id"`
+		Id int `path:"id" example:"1"`
 	}) (*ds.GenericResponse, error) {
 		err := gs.RemoveSchedule(i.Id)
 		if err != nil {
@@ -506,9 +506,9 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man eine schedule umbenennen
 	huma.Post(*api, "/schedule/{id}/rename", func(ctx context.Context, i *struct {
-		Id   int `path:"id"`
+		Id   int `path:"id" example:"1"`
 		Body struct {
-			Name string
+			Name string `example:"Fred"`
 		}
 	}) (*ds.GenericResponse, error) {
 		schedule, ok := gs.Schedules[i.Id]
@@ -524,7 +524,7 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 
 	// Hier kann man die reihenfolge ändern
 	huma.Post(*api, "/schedule/{id}/sequence", func(ctx context.Context, i *struct {
-		Id   int `path:"id"`
+		Id   int `path:"id" example:"1"`
 		Body struct {
 			Index     int
 			Index_Two int
@@ -543,13 +543,13 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 
 	// Hier kann man eine Schedule updaten
 	huma.Post(*api, "/schedule/{id}/change", func(ctx context.Context, i *struct {
-		Id   int `path:"id"`
+		Id   int `path:"id" example:"1"`
 		Body struct {
 			Stop_Index      int
-			LoadList        *[]string `required:"false" doc:"both LoadList and LoadTillFull both have to be either used or omitted"`
-			LoadTillFull    *bool     `required:"false" doc:"both LoadList and LoadTillFull both have to be either used or omitted"`
-			UnloadList      *[]string `required:"false" doc:"both UnloadList and UnloadTillFull both have to be either used or omitted"`
-			UnloadTillEmpty *bool     `required:"false" doc:"both UnloadList and UnloadTillFull both have to be either used or omitted"`
+			LoadList        *[]string `example:"Sonnenblumenöl" required:"false" doc:"both LoadList and LoadTillFull both have to be either used or omitted"`
+			LoadTillFull    *bool     `example:"false" required:"false" doc:"both LoadList and LoadTillFull both have to be either used or omitted"`
+			UnloadList      *[]string `example:"Sonnenblumenöl" required:"false" doc:"both UnloadList and UnloadTillFull both have to be either used or omitted"`
+			UnloadTillEmpty *bool     `example:"false" required:"false" doc:"both UnloadList and UnloadTillFull both have to be either used or omitted"`
 		}
 	}) (*ds.GenericResponse, error) {
 		schedule, ok := gs.Schedules[i.Id]
