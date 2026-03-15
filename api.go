@@ -280,7 +280,7 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("Train does not exist")
 		}
 		var err error
-		if i.Body.Pos.Position_to != nil {
+		if i.Body.Pos.Position_to == nil {
 			err = train.AddWaggon(*i.Body.Pos.Position, i.Body.Waggontype, gs)
 
 		} else {
@@ -362,12 +362,12 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 		if !ok {
 			return nil, fmt.Errorf("Train does not exist")
 		}
-		schedule, ok := gs.Trains[i.Body.ScheduleId]
+		schedule, ok := gs.Schedules[i.Body.ScheduleId]
 		if !ok {
 			return nil, fmt.Errorf("schedule does not exist")
 		}
 
-		train.AssignSchedule(schedule.Schedule, gs)
+		train.AssignSchedule(schedule, gs)
 		return ds.CreateGenericResponse("assigned Schedule"), nil
 	}, huma.OperationTags("train"))
 
