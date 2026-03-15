@@ -206,6 +206,17 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 // endregion tracks
 // region trains
 func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
+	// hier kriegt man alle Züge
+	huma.Get(*api, "/trains", func(ctx context.Context, i *struct{}) (*struct {
+		Body struct {
+			Schedules map[int]*ds.Train
+		}
+	}, error) {
+		return &struct {
+			Body struct{ Schedules map[int]*ds.Train }
+		}{Body: struct{ Schedules map[int]*ds.Train }{Schedules: gs.Trains}}, nil
+	}, huma.OperationTags("schedule"))
+
 	// Hier kriegt man infos zu einem Zug
 	huma.Get(*api, "/train/{id}", func(ctx context.Context, i *struct {
 		Id int `path:"id"`
