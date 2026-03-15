@@ -369,6 +369,115 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 }
 
 // endregion trains
+
+// region schedules
+func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
+	// hier kriegt man infos zu einer schedule
+	huma.Get(*api, "/schedule/{id}", func(ctx context.Context, i *struct {
+		Id int `path:"id"`
+	}) (*ds.Schedule, error) {
+		schedule, ok := gs.Schedules[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Schedule does not exist")
+		}
+		return schedule, nil
+	}, huma.OperationTags("schedule"))
+
+	// hier kann man eine Plattform anhängen
+	huma.Post(*api, "/schedule/{id}/append", func(ctx context.Context, i *struct {
+		Id   int `path:"id"`
+		Body struct {
+			PlattformPos    [2]int
+			LoadList        *[]string `required:"false" doc:"both LoadList and LoadTillFull both have to be either used or omitted"`
+			LoadTillFull    *bool     `required:"false" doc:"both LoadList and LoadTillFull both have to be either used or omitted"`
+			UnloadList      *[]string `required:"false" doc:"both UnloadList and UnloadTillFull both have to be either used or omitted"`
+			UnloadTillEmpty *bool     `required:"false" doc:"both UnloadList and UnloadTillFull both have to be either used or omitted"`
+		}
+	}) (*ds.GenericResponse, error) {
+
+		// erstmal muss ich den Stop erstellen
+		schedule, ok := gs.Schedules[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Schedule does not exist")
+		}
+
+		plattform, err := gs.GetPlattform(i.Body.PlattformPos)
+		if err != nil {
+			return nil, fmt.Errorf("Plattform does not exist")
+		}
+		stop, err := schedule.AddStopStation(plattform, gs)
+		if err != nil {
+			return nil, fmt.Errorf("could not add Plattform; %s", err.Error())
+		}
+		// dann sagen was rauf
+		if i.Body.LoadList != nil && i.Body.LoadTillFull != nil {
+			err = stop.SetLoadCommand(*i.Body.LoadList, *i.Body.LoadTillFull, gs)
+			if err != nil {
+				return nil, fmt.Errorf("could not set Load Command; %s", err.Error())
+			}
+		}
+
+		// dann was weg
+		if i.Body.UnloadList != nil && i.Body.UnloadTillEmpty != nil {
+			err = stop.SetUnloadCommand(*i.Body.UnloadList, *i.Body.UnloadTillEmpty, gs)
+			if err != nil {
+				return nil, fmt.Errorf("could not set Unload Command; %s", err.Error())
+			}
+		}
+
+		return ds.CreateGenericResponse("added Stop"), nil
+	})
+
+	// hier kann man waypoints hinzufügen
+	huma.Post(*api, "/schedule/{id}/append-waypoint", func(ctx context.Context, i *struct {
+		Id   int `path:"id"`
+		Body struct {
+			Pos  [3]int
+			Name string
+		}
+	}) (*ds.GenericResponse, error) {
+		schedule, ok := gs.Schedules[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Schedule does not exist")
+		}
+		_, err := schedule.AddStopWaypoint(i.Body.Pos, i.Body.Name, gs)
+		if err != nil {
+			return nil, fmt.Errorf("could not add waypoint; %s", err.Error())
+		}
+		return ds.CreateGenericResponse("added Waypoint"), nil
+	})
+
+	// hier kann man eine schedule löschen, die arme
+	huma.Post(*api, "/schedule/{id}/remove-stop", func(ctx context.Context, i *struct {
+		Id   int `path:"id"`
+		Body struct {
+			Index    *int
+			Index_to *int `required:"false"`
+		}
+	}) (*ds.GenericResponse, error) {
+		schedule, ok := gs.Schedules[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Schedule does not exist")
+		}
+
+		var err error
+		// wenn man von x bis y löschen will
+		if i.Body.Index_to != nil {
+			err = schedule.RemoveStop(*i.Body.Index, gs)
+		} else {
+			// wenn nur x weicht
+			err = schedule.RemoveStops(*i.Body.Index, *i.Body.Index_to, gs)
+		}
+		if err != nil {
+			return nil, fmt.Errorf("could not remove Stops; %s", err.Error())
+		}
+		return ds.CreateGenericResponse("removed Stop(s)"), nil
+	})
+
+}
+
+// endregion schedules
+
 // region tiles
 func registerTileRoutes(api *huma.API, gs *ds.GameState) {
 	huma.Get(*api, "/tiles", func(ctx context.Context, i *struct{}) (*ds.TileMessage, error) {
