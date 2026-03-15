@@ -75,6 +75,7 @@ func startServer(gs *ds.GameState) {
 	registerTrainRoutes(&api, gs)
 	registerTileRoutes(&api, gs)
 	registerScheduleRoutes(&api, gs)
+	registerStationRoutes(&api, gs)
 
 	// die werden später noch als teil des WS umgesetzt (denke ich mal), aber zum testen erstmal so
 	http.HandleFunc("/save", func(w http.ResponseWriter, r *http.Request) { // Muss so gelöst werden damit ich noch die referenz zum Gamestate übertragen kann
@@ -209,23 +210,27 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 	// hier kriegt man alle Züge
 	huma.Get(*api, "/trains", func(ctx context.Context, i *struct{}) (*struct {
 		Body struct {
-			Schedules map[int]*ds.Train
+			Trains map[int]*ds.Train
 		}
 	}, error) {
 		return &struct {
-			Body struct{ Schedules map[int]*ds.Train }
-		}{Body: struct{ Schedules map[int]*ds.Train }{Schedules: gs.Trains}}, nil
-	}, huma.OperationTags("schedule"))
+			Body struct{ Trains map[int]*ds.Train }
+		}{Body: struct{ Trains map[int]*ds.Train }{Trains: gs.Trains}}, nil
+	}, huma.OperationTags("train"))
 
 	// Hier kriegt man infos zu einem Zug
 	huma.Get(*api, "/train/{id}", func(ctx context.Context, i *struct {
 		Id int `path:"id"`
-	}) (*ds.Train, error) {
+	}) (*struct {
+		Body struct {
+			Train *ds.Train
+		}
+	}, error) {
 		train, ok := gs.Trains[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Train does not exist")
 		}
-		return train, nil
+		return &struct{ Body struct{ Train *ds.Train } }{Body: struct{ Train *ds.Train }{Train: train}}, nil
 	}, huma.OperationTags("train"))
 
 	// Hier kann man einen Zug bauen
@@ -528,9 +533,9 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 		}
 		err := schedule.Rename(i.Body.Name)
 		if err != nil {
-			return nil, fmt.Errorf("could not rename Station; %s", err.Error())
+			return nil, fmt.Errorf("could not rename Schedule; %s", err.Error())
 		}
-		return ds.CreateGenericResponse("rename station"), nil
+		return ds.CreateGenericResponse("rename Schedule"), nil
 	}, huma.OperationTags("schedule"))
 
 	// Hier kann man die reihenfolge ändern
@@ -593,6 +598,139 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 }
 
 // endregion schedules
+// region station
+func registerStationRoutes(api *huma.API, gs *ds.GameState) {
+	// hier kriegt man alle Stationen
+	huma.Get(*api, "/stations", func(ctx context.Context, i *struct{}) (*struct {
+		Body struct {
+			Stations map[int]*ds.Station
+		}
+	}, error) {
+		return &struct {
+			Body struct{ Stations map[int]*ds.Station }
+		}{Body: struct{ Stations map[int]*ds.Station }{Stations: gs.Stations}}, nil
+	}, huma.OperationTags("station"))
+
+	// hier kann man Inofs zu einer Station bekommen
+	// Hier kriegt man infos zu einem Zug
+	huma.Get(*api, "/station/{id}", func(ctx context.Context, i *struct {
+		Id int `path:"id" example:"1"`
+	}) (*struct {
+		Body struct {
+			Station ds.Station
+		}
+	}, error) {
+		station, ok := gs.Stations[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Station does not exist")
+		}
+		return &struct{ Body struct{ Station ds.Station } }{Body: struct{ Station ds.Station }{Station: *station}}, nil
+	}, huma.OperationTags("station"))
+
+	// hier kann man eine Station umbenennen
+	huma.Post(*api, "/station/{id}/rename", func(ctx context.Context, i *struct {
+		Id   int `path:"id" example:"1"`
+		Body struct {
+			Name string `example:"Fred"`
+		}
+	}) (*ds.GenericResponse, error) {
+		station, ok := gs.Stations[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Station does not exist")
+		}
+		err := station.Rename(i.Body.Name)
+		if err != nil {
+			return nil, fmt.Errorf("could not rename Station; %s", err.Error())
+		}
+		return ds.CreateGenericResponse("renamed station"), nil
+	}, huma.OperationTags("station"))
+
+	// hier kann man die ganze Station löschen
+	huma.Delete(*api, "/station/{id}", func(ctx context.Context, i *struct {
+		Id int `path:"id" example:"1"`
+	}) (*ds.GenericResponse, error) {
+		station, ok := gs.Stations[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Station does not exist")
+		}
+		// das ding lässt einen auch zeugs löschen das es nicht gibt
+		err := gs.RemoveStation(station)
+		if err != nil {
+			return nil, fmt.Errorf("could not remove Station; %s", err.Error())
+		}
+		return ds.CreateGenericResponse("removed station"), nil
+	}, huma.OperationTags("station"))
+
+	// hier kriegt man einfos über eine Plattform
+	huma.Get(*api, "/station/{id}/plattform/{idPlat}", func(ctx context.Context, i *struct {
+		Id     int `path:"id" example:"1"`
+		IdPlat int `path:"idPlat" example:"1"`
+	}) (*struct {
+		Body struct {
+			Plattform ds.Plattform
+		}
+	}, error) {
+		station, ok := gs.Stations[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Station does not exist")
+		}
+		platform, ok := station.Plattforms[i.IdPlat]
+		if !ok {
+			return nil, fmt.Errorf("could not find Plattform")
+		}
+
+		return &struct {
+			Body struct{ Plattform ds.Plattform }
+		}{Body: struct{ Plattform ds.Plattform }{Plattform: *platform}}, nil
+	}, huma.OperationTags("station"))
+
+	// hier nennt man eine Plattform um
+	huma.Post(*api, "/station/{id}/plattform/{idPlat}/rename", func(ctx context.Context, i *struct {
+		Id     int `path:"id" example:"1"`
+		IdPlat int `path:"idPlat" example:"1"`
+		Body   struct {
+			Name string `example:"Fred"`
+		}
+	}) (*ds.GenericResponse, error) {
+		station, ok := gs.Stations[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Station does not exist")
+		}
+		platform, ok := station.Plattforms[i.IdPlat]
+		if !ok {
+			return nil, fmt.Errorf("could not find Plattform")
+		}
+		err := platform.Rename(i.Body.Name)
+		if err != nil {
+			return nil, fmt.Errorf("could not rename Plattform; %s", err.Error())
+		}
+
+		return ds.CreateGenericResponse("renamed Plattform"), nil
+	}, huma.OperationTags("station"))
+
+	// hier löscht man eine Plattform
+	huma.Post(*api, "/station/{id}/plattform/{idPlat}/delete", func(ctx context.Context, i *struct {
+		Id     int `path:"id" example:"1"`
+		IdPlat int `path:"idPlat" example:"1"`
+	}) (*ds.GenericResponse, error) {
+		station, ok := gs.Stations[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Station does not exist")
+		}
+		platform, ok := station.Plattforms[i.IdPlat]
+		if !ok {
+			return nil, fmt.Errorf("could not find Plattform")
+		}
+		err := station.RemovePlattform(platform.Id, gs)
+		if err != nil {
+			return nil, fmt.Errorf("could not remove Plattform; %s", err.Error())
+		}
+
+		return ds.CreateGenericResponse("removed Plattform"), nil
+	}, huma.OperationTags("station"))
+}
+
+// endregion station
 
 // region tiles
 func registerTileRoutes(api *huma.API, gs *ds.GameState) {
