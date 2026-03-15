@@ -376,13 +376,13 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 	// hier kriegt man alle schedules
 	huma.Get(*api, "/schedules", func(ctx context.Context, i *struct{}) (*struct {
-		Schedules map[int]*ds.Schedule
+		Body struct {
+			Schedules map[int]*ds.Schedule
+		}
 	}, error) {
 		return &struct {
-			Schedules map[int]*ds.Schedule
-		}{
-			Schedules: gs.Schedules,
-		}, nil
+			Body struct{ Schedules map[int]*ds.Schedule }
+		}{Body: struct{ Schedules map[int]*ds.Schedule }{Schedules: gs.Schedules}}, nil
 	}, huma.OperationTags("schedule"))
 
 	// hier kriegt man infos zu einer schedule
