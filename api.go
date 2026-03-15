@@ -388,12 +388,18 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 	// hier kriegt man infos zu einer schedule
 	huma.Get(*api, "/schedule/{id}", func(ctx context.Context, i *struct {
 		Id int `path:"id"`
-	}) (*ds.Schedule, error) {
+	}) (*struct {
+		Body struct {
+			Schedule ds.Schedule
+		}
+	}, error) {
 		schedule, ok := gs.Schedules[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Schedule does not exist")
 		}
-		return schedule, nil
+		return &struct {
+			Body struct{ Schedule ds.Schedule }
+		}{Body: struct{ Schedule ds.Schedule }{Schedule: *schedule}}, nil
 	}, huma.OperationTags("schedule"))
 
 	// hier kann man eine Plattform anhängen
