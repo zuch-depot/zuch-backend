@@ -68,11 +68,13 @@ func startServer(gs *ds.GameState) {
 	config.DocsRenderer = huma.DocsRendererScalar
 	api := humachi.New(router, config)
 
+	// hier werden die einzelnen routen hinzugefügt, da steht auch genau drinne was wie welche methode nutzt
 	registerGameRoutes(&api, gs)
 	registerSignalRoutes(&api, gs)
 	registerTrackRoutes(&api, gs)
 	registerTrainRoutes(&api, gs)
 	registerTileRoutes(&api, gs)
+	registerScheduleRoutes(&api, gs)
 
 	// die werden später noch als teil des WS umgesetzt (denke ich mal), aber zum testen erstmal so
 	http.HandleFunc("/save", func(w http.ResponseWriter, r *http.Request) { // Muss so gelöst werden damit ich noch die referenz zum Gamestate übertragen kann
@@ -372,6 +374,17 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 
 // region schedules
 func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
+	// hier kriegt man alle schedules
+	huma.Get(*api, "/schedules", func(ctx context.Context, i *struct{}) (*struct {
+		Schedules map[int]*ds.Schedule
+	}, error) {
+		return &struct {
+			Schedules map[int]*ds.Schedule
+		}{
+			Schedules: gs.Schedules,
+		}, nil
+	}, huma.OperationTags("schedule"))
+
 	// hier kriegt man infos zu einer schedule
 	huma.Get(*api, "/schedule/{id}", func(ctx context.Context, i *struct {
 		Id int `path:"id"`
@@ -426,7 +439,7 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 		}
 
 		return ds.CreateGenericResponse("added Stop"), nil
-	})
+	}, huma.OperationTags("schedule"))
 
 	// hier kann man waypoints hinzufügen
 	huma.Post(*api, "/schedule/{id}/append-waypoint", func(ctx context.Context, i *struct {
@@ -445,7 +458,7 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("could not add waypoint; %s", err.Error())
 		}
 		return ds.CreateGenericResponse("added Waypoint"), nil
-	})
+	}, huma.OperationTags("schedule"))
 
 	// hier kann man eine schedule löschen, die arme
 	huma.Post(*api, "/schedule/{id}/remove-stop", func(ctx context.Context, i *struct {
@@ -472,7 +485,7 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("could not remove Stops; %s", err.Error())
 		}
 		return ds.CreateGenericResponse("removed Stop(s)"), nil
-	})
+	}, huma.OperationTags("schedule"))
 
 	// hier kann man die ganze schedule löschen
 	huma.Delete(*api, "/schedule/{id}", func(ctx context.Context, i *struct {
@@ -483,7 +496,7 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("could not remove schedule; %s", err.Error())
 		}
 		return ds.CreateGenericResponse("removed schedule"), nil
-	})
+	}, huma.OperationTags("schedule"))
 
 	// hier kann man eine schedule umbenennen
 	huma.Post(*api, "/schedule/{id}/rename", func(ctx context.Context, i *struct {
@@ -501,7 +514,7 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("could not rename Station; %s", err.Error())
 		}
 		return ds.CreateGenericResponse("rename station"), nil
-	})
+	}, huma.OperationTags("schedule"))
 
 	// Hier kann man die reihenfolge ändern
 	huma.Post(*api, "/schedule/{id}/sequence", func(ctx context.Context, i *struct {
@@ -520,7 +533,7 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("could not change sequence; %s", err.Error())
 		}
 		return ds.CreateGenericResponse("changed sequence"), nil
-	})
+	}, huma.OperationTags("schedule"))
 
 	// Hier kann man eine Schedule updaten
 	huma.Post(*api, "/schedule/{id}/change", func(ctx context.Context, i *struct {
@@ -559,7 +572,7 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 			}
 		}
 		return ds.CreateGenericResponse("updated Stop"), nil
-	})
+	}, huma.OperationTags("schedule"))
 }
 
 // endregion schedules
