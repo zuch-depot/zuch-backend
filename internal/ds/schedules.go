@@ -106,7 +106,7 @@ func (s *Schedule) RemoveStop(index int, gs *GameState) error {
 // entfernt alle Stops innerhalb des Intervalls
 func (s *Schedule) RemoveStops(indexStart int, indexEnde int, gs *GameState) error {
 
-	if indexStart <= indexEnde {
+	if indexStart >= indexEnde {
 		return fmt.Errorf("Please provide valid indices. The first one can not be grater than the second.")
 	}
 

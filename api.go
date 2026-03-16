@@ -68,11 +68,14 @@ func startServer(gs *ds.GameState) {
 	config.DocsRenderer = huma.DocsRendererScalar
 	api := humachi.New(router, config)
 
+	// hier werden die einzelnen routen hinzugefügt, da steht auch genau drinne was wie welche methode nutzt
 	registerGameRoutes(&api, gs)
 	registerSignalRoutes(&api, gs)
 	registerTrackRoutes(&api, gs)
 	registerTrainRoutes(&api, gs)
 	registerTileRoutes(&api, gs)
+	registerScheduleRoutes(&api, gs)
+	registerStationRoutes(&api, gs)
 
 	// die werden später noch als teil des WS umgesetzt (denke ich mal), aber zum testen erstmal so
 	http.HandleFunc("/save", func(w http.ResponseWriter, r *http.Request) { // Muss so gelöst werden damit ich noch die referenz zum Gamestate übertragen kann
@@ -204,15 +207,30 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 // endregion tracks
 // region trains
 func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
+	// hier kriegt man alle Züge
+	huma.Get(*api, "/trains", func(ctx context.Context, i *struct{}) (*struct {
+		Body struct {
+			Trains map[int]*ds.Train
+		}
+	}, error) {
+		return &struct {
+			Body struct{ Trains map[int]*ds.Train }
+		}{Body: struct{ Trains map[int]*ds.Train }{Trains: gs.Trains}}, nil
+	}, huma.OperationTags("train"))
+
 	// Hier kriegt man infos zu einem Zug
 	huma.Get(*api, "/train/{id}", func(ctx context.Context, i *struct {
 		Id int `path:"id"`
-	}) (*ds.Train, error) {
+	}) (*struct {
+		Body struct {
+			Train *ds.Train
+		}
+	}, error) {
 		train, ok := gs.Trains[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Train does not exist")
 		}
-		return train, nil
+		return &struct{ Body struct{ Train *ds.Train } }{Body: struct{ Train *ds.Train }{Train: train}}, nil
 	}, huma.OperationTags("train"))
 
 	// Hier kann man einen Zug bauen
@@ -262,7 +280,7 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("Train does not exist")
 		}
 		var err error
-		if i.Body.Pos.Position_to != nil {
+		if i.Body.Pos.Position_to == nil {
 			err = train.AddWaggon(*i.Body.Pos.Position, i.Body.Waggontype, gs)
 
 		} else {
@@ -317,13 +335,20 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 	// hier könnte man einen zug umbennen
 	// aber ich finde die funktion dazu nicht
 	huma.Post(*api, "/train/{id}/rename", func(ctx context.Context, i *struct {
-		Id int `path:"id"`
+		Id   int `path:"id"`
+		Body struct {
+			Name string
+		}
 	}) (*ds.GenericResponse, error) {
-		_, ok := gs.Trains[i.Id]
+		train, ok := gs.Trains[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Train does not exist")
 		}
-		return nil, huma.Error501NotImplemented("joa ich finde wilkens funktion dazu nicht")
+		err := train.Rename(i.Body.Name)
+		if err != nil {
+			return nil, fmt.Errorf("could not rename Train; %s", err.Error())
+		}
+		return ds.CreateGenericResponse("renamed train"), nil
 	}, huma.OperationTags("train"))
 
 	// hier kann man schedules zuweisen
@@ -337,12 +362,12 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 		if !ok {
 			return nil, fmt.Errorf("Train does not exist")
 		}
-		schedule, ok := gs.Trains[i.Body.ScheduleId]
+		schedule, ok := gs.Schedules[i.Body.ScheduleId]
 		if !ok {
 			return nil, fmt.Errorf("schedule does not exist")
 		}
 
-		train.AssignSchedule(schedule.Schedule, gs)
+		train.AssignSchedule(schedule, gs)
 		return ds.CreateGenericResponse("assigned Schedule"), nil
 	}, huma.OperationTags("train"))
 
@@ -362,6 +387,351 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 }
 
 // endregion trains
+
+// region schedules
+func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
+	// hier kriegt man alle schedules
+	huma.Get(*api, "/schedules", func(ctx context.Context, i *struct{}) (*struct {
+		Body struct {
+			Schedules map[int]*ds.Schedule
+		}
+	}, error) {
+		return &struct {
+			Body struct{ Schedules map[int]*ds.Schedule }
+		}{Body: struct{ Schedules map[int]*ds.Schedule }{Schedules: gs.Schedules}}, nil
+	}, huma.OperationTags("schedule"))
+
+	// hier kriegt man infos zu einer schedule
+	huma.Get(*api, "/schedule/{id}", func(ctx context.Context, i *struct {
+		Id int `path:"id" example:"1"`
+	}) (*struct {
+		Body struct {
+			Schedule ds.Schedule
+		}
+	}, error) {
+		schedule, ok := gs.Schedules[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Schedule does not exist")
+		}
+		return &struct {
+			Body struct{ Schedule ds.Schedule }
+		}{Body: struct{ Schedule ds.Schedule }{Schedule: *schedule}}, nil
+	}, huma.OperationTags("schedule"))
+
+	// hier kann man eine Plattform anhängen
+	huma.Post(*api, "/schedule/{id}/append", func(ctx context.Context, i *struct {
+		Id   int `path:"id" example:"1"`
+		Body struct {
+			PlattformPos    [2]int
+			LoadList        *[]string `example:"Sonnenblumenöl" required:"false" doc:"both LoadList and LoadTillFull both have to be either used or omitted"`
+			LoadTillFull    *bool     `example:"false" required:"false" doc:"both LoadList and LoadTillFull both have to be either used or omitted"`
+			UnloadList      *[]string `example:"Sonnenblumenöl" required:"false" doc:"both UnloadList and UnloadTillFull both have to be either used or omitted"`
+			UnloadTillEmpty *bool     `example:"false" required:"false" doc:"both UnloadList and UnloadTillFull both have to be either used or omitted"`
+		}
+	}) (*ds.GenericResponse, error) {
+
+		// erstmal muss ich den Stop erstellen
+		schedule, ok := gs.Schedules[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Schedule does not exist")
+		}
+
+		plattform, err := gs.GetPlattform(i.Body.PlattformPos)
+		if err != nil {
+			return nil, fmt.Errorf("Plattform does not exist")
+		}
+		stop, err := schedule.AddStopStation(plattform, gs)
+		if err != nil {
+			return nil, fmt.Errorf("could not add Plattform; %s", err.Error())
+		}
+		// dann sagen was rauf
+		if i.Body.LoadList != nil && i.Body.LoadTillFull != nil {
+			err = stop.SetLoadCommand(*i.Body.LoadList, *i.Body.LoadTillFull, gs)
+			if err != nil {
+				return nil, fmt.Errorf("could not set Load Command; %s", err.Error())
+			}
+		}
+
+		// dann was weg
+		if i.Body.UnloadList != nil && i.Body.UnloadTillEmpty != nil {
+			err = stop.SetUnloadCommand(*i.Body.UnloadList, *i.Body.UnloadTillEmpty, gs)
+			if err != nil {
+				return nil, fmt.Errorf("could not set Unload Command; %s", err.Error())
+			}
+		}
+
+		return ds.CreateGenericResponse("added Stop"), nil
+	}, huma.OperationTags("schedule"))
+
+	// hier kann man waypoints hinzufügen
+	huma.Post(*api, "/schedule/{id}/append-waypoint", func(ctx context.Context, i *struct {
+		Id   int `path:"id" example:"1"`
+		Body struct {
+			Pos  [3]int `example:"[1,2,3]"`
+			Name string `example:"Fred"`
+		}
+	}) (*ds.GenericResponse, error) {
+		schedule, ok := gs.Schedules[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Schedule does not exist")
+		}
+		_, err := schedule.AddStopWaypoint(i.Body.Pos, i.Body.Name, gs)
+		if err != nil {
+			return nil, fmt.Errorf("could not add waypoint; %s", err.Error())
+		}
+		return ds.CreateGenericResponse("added Waypoint"), nil
+	}, huma.OperationTags("schedule"))
+
+	// hier kann man eine schedule löschen, die arme
+	huma.Post(*api, "/schedule/{id}/remove-stop", func(ctx context.Context, i *struct {
+		Id   int `path:"id" example:"1"`
+		Body struct {
+			Index    *int `example:"1"`
+			Index_to *int `required:"false" example:"2"`
+		}
+	}) (*ds.GenericResponse, error) {
+		schedule, ok := gs.Schedules[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Schedule does not exist")
+		}
+
+		var err error
+		// wenn man von x bis y löschen will
+		if i.Body.Index_to == nil {
+			err = schedule.RemoveStop(*i.Body.Index, gs)
+		} else {
+			// wenn nur x weicht
+			err = schedule.RemoveStops(*i.Body.Index, *i.Body.Index_to, gs)
+		}
+		if err != nil {
+			return nil, fmt.Errorf("could not remove Stops; %s", err.Error())
+		}
+		return ds.CreateGenericResponse("removed Stop(s)"), nil
+	}, huma.OperationTags("schedule"))
+
+	// hier kann man die ganze schedule löschen
+	huma.Delete(*api, "/schedule/{id}", func(ctx context.Context, i *struct {
+		Id int `path:"id" example:"1"`
+	}) (*ds.GenericResponse, error) {
+		err := gs.RemoveSchedule(i.Id)
+		if err != nil {
+			return nil, fmt.Errorf("could not remove schedule; %s", err.Error())
+		}
+		return ds.CreateGenericResponse("removed schedule"), nil
+	}, huma.OperationTags("schedule"))
+
+	// hier kann man eine schedule umbenennen
+	huma.Post(*api, "/schedule/{id}/rename", func(ctx context.Context, i *struct {
+		Id   int `path:"id" example:"1"`
+		Body struct {
+			Name string `example:"Fred"`
+		}
+	}) (*ds.GenericResponse, error) {
+		schedule, ok := gs.Schedules[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Schedule does not exist")
+		}
+		err := schedule.Rename(i.Body.Name)
+		if err != nil {
+			return nil, fmt.Errorf("could not rename Schedule; %s", err.Error())
+		}
+		return ds.CreateGenericResponse("rename Schedule"), nil
+	}, huma.OperationTags("schedule"))
+
+	// Hier kann man die reihenfolge ändern
+	huma.Post(*api, "/schedule/{id}/sequence", func(ctx context.Context, i *struct {
+		Id   int `path:"id" example:"1"`
+		Body struct {
+			Index     int
+			Index_Two int
+		}
+	}) (*ds.GenericResponse, error) {
+		schedule, ok := gs.Schedules[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Schedule does not exist")
+		}
+		err := schedule.ChangeSquence(i.Body.Index, i.Body.Index_Two)
+		if err != nil {
+			return nil, fmt.Errorf("could not change sequence; %s", err.Error())
+		}
+		return ds.CreateGenericResponse("changed sequence"), nil
+	}, huma.OperationTags("schedule"))
+
+	// Hier kann man eine Schedule updaten
+	huma.Post(*api, "/schedule/{id}/change", func(ctx context.Context, i *struct {
+		Id   int `path:"id" example:"1"`
+		Body struct {
+			Stop_Index      int
+			LoadList        *[]string `example:"Sonnenblumenöl" required:"false" doc:"both LoadList and LoadTillFull both have to be either used or omitted"`
+			LoadTillFull    *bool     `example:"false" required:"false" doc:"both LoadList and LoadTillFull both have to be either used or omitted"`
+			UnloadList      *[]string `example:"Sonnenblumenöl" required:"false" doc:"both UnloadList and UnloadTillFull both have to be either used or omitted"`
+			UnloadTillEmpty *bool     `example:"false" required:"false" doc:"both UnloadList and UnloadTillFull both have to be either used or omitted"`
+		}
+	}) (*ds.GenericResponse, error) {
+		schedule, ok := gs.Schedules[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Schedule does not exist")
+		}
+		stop := schedule.Stops[i.Body.Stop_Index]
+		if stop == nil {
+			return nil, fmt.Errorf("could not find Stop")
+		}
+
+		var err error
+		// dann sagen was rauf
+		if i.Body.LoadList != nil && i.Body.LoadTillFull != nil {
+			err = stop.SetLoadCommand(*i.Body.LoadList, *i.Body.LoadTillFull, gs)
+			if err != nil {
+				return nil, fmt.Errorf("could not set Load Command; %s", err.Error())
+			}
+		}
+
+		// dann was weg
+		if i.Body.UnloadList != nil && i.Body.UnloadTillEmpty != nil {
+			err = stop.SetUnloadCommand(*i.Body.UnloadList, *i.Body.UnloadTillEmpty, gs)
+			if err != nil {
+				return nil, fmt.Errorf("could not set Unload Command; %s", err.Error())
+			}
+		}
+		return ds.CreateGenericResponse("updated Stop"), nil
+	}, huma.OperationTags("schedule"))
+}
+
+// endregion schedules
+// region station
+func registerStationRoutes(api *huma.API, gs *ds.GameState) {
+	// hier kriegt man alle Stationen
+	huma.Get(*api, "/stations", func(ctx context.Context, i *struct{}) (*struct {
+		Body struct {
+			Stations map[int]*ds.Station
+		}
+	}, error) {
+		return &struct {
+			Body struct{ Stations map[int]*ds.Station }
+		}{Body: struct{ Stations map[int]*ds.Station }{Stations: gs.Stations}}, nil
+	}, huma.OperationTags("station"))
+
+	// hier kann man Inofs zu einer Station bekommen
+	// Hier kriegt man infos zu einem Zug
+	huma.Get(*api, "/station/{id}", func(ctx context.Context, i *struct {
+		Id int `path:"id" example:"1"`
+	}) (*struct {
+		Body struct {
+			Station ds.Station
+		}
+	}, error) {
+		station, ok := gs.Stations[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Station does not exist")
+		}
+		return &struct{ Body struct{ Station ds.Station } }{Body: struct{ Station ds.Station }{Station: *station}}, nil
+	}, huma.OperationTags("station"))
+
+	// hier kann man eine Station umbenennen
+	huma.Post(*api, "/station/{id}/rename", func(ctx context.Context, i *struct {
+		Id   int `path:"id" example:"1"`
+		Body struct {
+			Name string `example:"Fred"`
+		}
+	}) (*ds.GenericResponse, error) {
+		station, ok := gs.Stations[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Station does not exist")
+		}
+		err := station.Rename(i.Body.Name)
+		if err != nil {
+			return nil, fmt.Errorf("could not rename Station; %s", err.Error())
+		}
+		return ds.CreateGenericResponse("renamed station"), nil
+	}, huma.OperationTags("station"))
+
+	// hier kann man die ganze Station löschen
+	huma.Delete(*api, "/station/{id}", func(ctx context.Context, i *struct {
+		Id int `path:"id" example:"1"`
+	}) (*ds.GenericResponse, error) {
+		station, ok := gs.Stations[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Station does not exist")
+		}
+		// das ding lässt einen auch zeugs löschen das es nicht gibt
+		err := gs.RemoveStation(station)
+		if err != nil {
+			return nil, fmt.Errorf("could not remove Station; %s", err.Error())
+		}
+		return ds.CreateGenericResponse("removed station"), nil
+	}, huma.OperationTags("station"))
+
+	// hier kriegt man einfos über eine Plattform
+	huma.Get(*api, "/station/{id}/plattform/{idPlat}", func(ctx context.Context, i *struct {
+		Id     int `path:"id" example:"1"`
+		IdPlat int `path:"idPlat" example:"1"`
+	}) (*struct {
+		Body struct {
+			Plattform ds.Plattform
+		}
+	}, error) {
+		station, ok := gs.Stations[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Station does not exist")
+		}
+		platform, ok := station.Plattforms[i.IdPlat]
+		if !ok {
+			return nil, fmt.Errorf("could not find Plattform")
+		}
+
+		return &struct {
+			Body struct{ Plattform ds.Plattform }
+		}{Body: struct{ Plattform ds.Plattform }{Plattform: *platform}}, nil
+	}, huma.OperationTags("station"))
+
+	// hier nennt man eine Plattform um
+	huma.Post(*api, "/station/{id}/plattform/{idPlat}/rename", func(ctx context.Context, i *struct {
+		Id     int `path:"id" example:"1"`
+		IdPlat int `path:"idPlat" example:"1"`
+		Body   struct {
+			Name string `example:"Fred"`
+		}
+	}) (*ds.GenericResponse, error) {
+		station, ok := gs.Stations[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Station does not exist")
+		}
+		platform, ok := station.Plattforms[i.IdPlat]
+		if !ok {
+			return nil, fmt.Errorf("could not find Plattform")
+		}
+		err := platform.Rename(i.Body.Name)
+		if err != nil {
+			return nil, fmt.Errorf("could not rename Plattform; %s", err.Error())
+		}
+
+		return ds.CreateGenericResponse("renamed Plattform"), nil
+	}, huma.OperationTags("station"))
+
+	// hier löscht man eine Plattform
+	huma.Post(*api, "/station/{id}/plattform/{idPlat}/delete", func(ctx context.Context, i *struct {
+		Id     int `path:"id" example:"1"`
+		IdPlat int `path:"idPlat" example:"1"`
+	}) (*ds.GenericResponse, error) {
+		station, ok := gs.Stations[i.Id]
+		if !ok {
+			return nil, fmt.Errorf("Station does not exist")
+		}
+		platform, ok := station.Plattforms[i.IdPlat]
+		if !ok {
+			return nil, fmt.Errorf("could not find Plattform")
+		}
+		err := station.RemovePlattform(platform.Id, gs)
+		if err != nil {
+			return nil, fmt.Errorf("could not remove Plattform; %s", err.Error())
+		}
+
+		return ds.CreateGenericResponse("removed Plattform"), nil
+	}, huma.OperationTags("station"))
+}
+
+// endregion station
+
 // region tiles
 func registerTileRoutes(api *huma.API, gs *ds.GameState) {
 	huma.Get(*api, "/tiles", func(ctx context.Context, i *struct{}) (*ds.TileMessage, error) {

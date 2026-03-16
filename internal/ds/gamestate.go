@@ -24,6 +24,7 @@ type GameState struct {
 	Tiles       [][]*Tile
 	Trains      map[int]*Train
 	ActiveTiles []*ActiveTile
+	Plattforms  map[int]*Plattform
 
 	LoadUnloadSpeed        int
 	MinLoadUloadTicks      int
