@@ -3,6 +3,7 @@ package ds
 import (
 	"fmt"
 	"log/slog"
+	"slices"
 	"strconv"
 )
 
@@ -468,15 +469,17 @@ func (t *Train) AddWaggon(position [3]int, typ string, gs *GameState) error {
 		return err
 	}
 
-	// prüft, ob das Sub-Tile valide ist
-	waggon := &Waggon{Position: position, MaxSpeed: maxSpeed, CargoStorage: &CargoStorage{Capacity: capacity, CargoCategory: typ}}
-	err = gs.checkIfWaggonsAreValid([]*Waggon{waggon})
-	if err != nil {
-		return err
+	// prüft, ob der waggon anhängt, wenn es schon welche gibt
+	if len(t.Waggons) > 0 {
+		err = t.isWaggonValid(position, gs)
+		if err != nil {
+			return err
+		}
 	}
 
 	// Waggons zu zug hinzufügen und entsprechende tiles blockieren
-	if t.Waggons[0] == nil {
+	waggon := &Waggon{Position: position, MaxSpeed: maxSpeed, CargoStorage: &CargoStorage{Capacity: capacity, CargoCategory: typ}}
+	if len(t.Waggons) > 0 {
 		t.Waggons = []*Waggon{waggon}
 	} else {
 		t.Waggons = append(t.Waggons, waggon)
@@ -488,6 +491,33 @@ func (t *Train) AddWaggon(position [3]int, typ string, gs *GameState) error {
 	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
 
 	gs.Logger.Debug("Blockiertes", slog.Int("Pos 0", position[0]), slog.Int("Pos 1", position[1]), slog.Bool("Blocked", gs.Tiles[position[0]][position[1]].IsBlocked))
+	return nil
+}
+
+// Überprüft ob die position valide wäre für einen waggon
+func (t *Train) isWaggonValid(position [3]int, gs *GameState) error {
+
+	prevWaggon := t.Waggons[len(t.Waggons)-1]
+
+	//wenn das im selben tile wie der vorgänger ist, dann wir das Tile von diesem blockiert, daher der Bau trotzdem erlaubt
+	if gs.Tiles[position[0]][position[1]].IsBlocked && prevWaggon.Position != position {
+		return fmt.Errorf("track is blocked")
+	}
+
+	// wenn es mehr als 1 waggon gibt, gucken, dass nicht da probiert wird zu bauen
+	if len(t.Waggons) > 1 {
+		if t.Waggons[len(t.Waggons)-2].Position == position {
+			return fmt.Errorf("There is already a waggon there. Please provide a valid coordinat at the end of the train.")
+		}
+	}
+
+	possibleTracks := gs.neighbourTracks(prevWaggon.Position[0], prevWaggon.Position[1], prevWaggon.Position[2])
+
+	if !slices.Contains(possibleTracks, position) {
+		return fmt.Errorf("waggons are not continuous or a track is missing")
+	}
+
+	// Gibt einen Fehler zurück falls
 	return nil
 }
 
