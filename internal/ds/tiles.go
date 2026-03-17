@@ -94,7 +94,7 @@ func (t *Tile) AddTrack(subtile int, gs *GameState) error {
 
 	if !t.Tracks[subtile-1] {
 		t.Tracks[subtile-1] = true
-		gs.BroadcastChannel <- WsEnvelope{Type: "rail.create", Msg: &TileUpdateMSG{Position: &[3]int{t.X, t.Y, subtile}}}
+		gs.BroadcastChannel <- WsEnvelope{Type: "tile.update", Msg: *t}
 		return nil
 	}
 	return fmt.Errorf("There is already a Track at that Position.")
@@ -128,7 +128,7 @@ func (t *Tile) RemoveTrack(subtile int, gs *GameState) error {
 	//entfernen des Tracks
 	t.Tracks[subtile-1] = false
 
-	gs.BroadcastChannel <- WsEnvelope{Type: "rail.remove", Msg: &TileUpdateMSG{Position: &[3]int{t.X, t.Y, subtile}}}
+	gs.BroadcastChannel <- WsEnvelope{Type: "tile.update", Msg: *t}
 	return nil
 }
 
@@ -163,7 +163,7 @@ func (t *Tile) AddSignal(subtile int, gs *GameState) error {
 
 	//hinzugügen des Signals
 	t.Signals[subtile-1] = true
-	gs.BroadcastChannel <- WsEnvelope{Type: "signal.create", Msg: &TileUpdateMSG{Position: &[3]int{t.X, t.Y, subtile}}}
+	gs.BroadcastChannel <- WsEnvelope{Type: "tile.update", Msg: *t}
 	return nil
 }
 
@@ -179,6 +179,6 @@ func (t *Tile) RemoveSignal(subtile int, gs *GameState) error {
 	}
 
 	t.Signals[subtile-1] = false
-	gs.BroadcastChannel <- WsEnvelope{Type: "signal.remove", Msg: &TileUpdateMSG{Position: &[3]int{t.X, t.Y, subtile}}}
+	gs.BroadcastChannel <- WsEnvelope{Type: "tile.update", Msg: *t}
 	return nil
 }
