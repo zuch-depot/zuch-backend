@@ -397,7 +397,7 @@ func (gs *GameState) AddTrain(name string, position [3]int, lokmotive string) (*
 		name = fmt.Sprint(gs.CurrentTrainID.Load())
 	}
 
-	train := &Train{Name: name, Id: int(gs.CurrentTrainID.Load()), Waggons: make([]*Waggon, 1)}
+	train := &Train{Name: name, Id: int(gs.CurrentTrainID.Load()), Waggons: make([]*Waggon, 0)}
 
 	// Überprüft, ob das Subtile korrekt ist
 	err := gs.iterateSubTiles(position, position, "An Error accured while adding a Train.", func(gs *GameState, coordinate [3]int) error { return nil })
@@ -414,29 +414,9 @@ func (gs *GameState) AddTrain(name string, position [3]int, lokmotive string) (*
 	gs.Trains[train.Id] = train
 	gs.CurrentTrainID.Add(1)
 
-	gs.BroadcastChannel <- WsEnvelope{Type: "train.create", Msg: train}
+	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: train}
 
 	return train, nil
-}
-
-// Überprüft ob alle waggons eine Valide Position haben, also das Gleis nicht blockiert ist, das gleis existiert und die Waggons zusammenhängend sind
-func (gs *GameState) checkIfWaggonsAreValid(waggons []*Waggon) error {
-	for i, waggon := range waggons {
-		if gs.Tiles[waggon.Position[0]][waggon.Position[1]].IsBlocked {
-			return fmt.Errorf("track is blocked")
-		}
-		// Schaut ob der n. Waggon ein Nachbar des n-1. Waggon ist, daher beim 0. Überspringen
-		if i != 0 {
-			prevWaggon := waggons[i-1]
-			possibleTracks := gs.neighbourTracks(prevWaggon.Position[0], prevWaggon.Position[1], prevWaggon.Position[2])
-
-			if !slices.Contains(possibleTracks, waggon.Position) {
-				return fmt.Errorf("waggons are not continuos or a track is missing")
-			}
-		}
-	}
-	// Gibt einen Fehler zurück falls
-	return nil
 }
 
 // nur für Main, hier eigentlich gut, oder?
@@ -614,7 +594,7 @@ func (gs *GameState) validateTrainCategories(categories []string) ([]string, err
 // fügt bei allen SubTiles zwischen den beiden SubTiles, die inklusive, wenn möglich eine Schiene ein
 func (gs *GameState) AddTracks(startSubTile [3]int, endSubTile [3]int) error {
 
-	gs.iterateSubTiles(startSubTile, endSubTile, "Error while building tracks.", func(gs *GameState, coordinate [3]int) error {
+	return gs.iterateSubTiles(startSubTile, endSubTile, "Error while building tracks.", func(gs *GameState, coordinate [3]int) error {
 		tile, error := gs.GetTile(coordinate[0], coordinate[1])
 		if error != nil {
 			gs.Logger.Error("Out of Bound, voll Scheiße, sollte nicht gehen.")
@@ -623,13 +603,12 @@ func (gs *GameState) AddTracks(startSubTile [3]int, endSubTile [3]int) error {
 		return tile.AddTrack(coordinate[2], gs)
 	})
 
-	return nil
 }
 
 // entfernt bei allen Sub-Tiles die Schienen
 func (gs *GameState) RemoveTracks(startSubTile [3]int, endSubTile [3]int) error {
 
-	gs.iterateSubTiles(startSubTile, endSubTile, "Error while removing tracks.", func(gs *GameState, coordinate [3]int) error {
+	return gs.iterateSubTiles(startSubTile, endSubTile, "Error while removing tracks.", func(gs *GameState, coordinate [3]int) error {
 		tile, error := gs.GetTile(coordinate[0], coordinate[1])
 		if error != nil {
 			gs.Logger.Error("Out of Bound, voll Scheiße, sollte nicht gehen.")
@@ -639,7 +618,6 @@ func (gs *GameState) RemoveTracks(startSubTile [3]int, endSubTile [3]int) error 
 		return tile.RemoveTrack(coordinate[2], gs)
 	})
 
-	return nil
 }
 
 // region allgemein
