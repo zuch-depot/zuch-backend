@@ -13,10 +13,7 @@ var (
 	// #endregion game
 
 	// #region Map & Tiles
-	railCreate   = WsEnvelope{Type: "rail.create", Msg: &TileUpdateMSG{}}
-	railRemove   = WsEnvelope{Type: "rail.remove", Msg: &TileUpdateMSG{}}
-	signalCreate = WsEnvelope{Type: "signal.create", Msg: &TileUpdateMSG{}}
-	signalRemove = WsEnvelope{Type: "signal.remove", Msg: &TileUpdateMSG{}}
+	railCreate = WsEnvelope{Type: "tile.update", Msg: &Tile{}}
 
 	tilesBlock   = WsEnvelope{Type: "tiles.block", Msg: &BlockedTilesMSG{}}
 	tilesUnblock = WsEnvelope{Type: "tiles.unblock", Msg: &BlockedTilesMSG{}}
@@ -43,10 +40,10 @@ var (
 
 	// #endregion Trains
 	// #region Schedule
-	scheduleCreate = WsEnvelope{Type: "schedule.create", Msg: ScheduleCreateMSG{}}
-	scheduleRemove = WsEnvelope{Type: "schedule.remove", Msg: ScheduleRemoveMSG{}}
-	scheduleAssign = WsEnvelope{Type: "schedule.assign",Msg:  ScheduleAssignMSG{}}
-	scheduleUnassign = WsEnvelope{Type: "schedule.unassign",Msg:  ScheduleAssignMSG{}}
+	scheduleCreate   = WsEnvelope{Type: "schedule.create", Msg: ScheduleCreateMSG{}}
+	scheduleRemove   = WsEnvelope{Type: "schedule.remove", Msg: ScheduleRemoveMSG{}}
+	scheduleAssign   = WsEnvelope{Type: "schedule.assign", Msg: ScheduleAssignMSG{}}
+	scheduleUnassign = WsEnvelope{Type: "schedule.unassign", Msg: ScheduleAssignMSG{}}
 	// #endregion Schedule
 
 // map.updateTile

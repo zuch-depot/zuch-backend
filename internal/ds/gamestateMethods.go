@@ -594,7 +594,7 @@ func (gs *GameState) validateTrainCategories(categories []string) ([]string, err
 // fügt bei allen SubTiles zwischen den beiden SubTiles, die inklusive, wenn möglich eine Schiene ein
 func (gs *GameState) AddTracks(startSubTile [3]int, endSubTile [3]int) error {
 
-	gs.iterateSubTiles(startSubTile, endSubTile, "Error while building tracks.", func(gs *GameState, coordinate [3]int) error {
+	return gs.iterateSubTiles(startSubTile, endSubTile, "Error while building tracks.", func(gs *GameState, coordinate [3]int) error {
 		tile, error := gs.GetTile(coordinate[0], coordinate[1])
 		if error != nil {
 			gs.Logger.Error("Out of Bound, voll Scheiße, sollte nicht gehen.")
@@ -603,13 +603,12 @@ func (gs *GameState) AddTracks(startSubTile [3]int, endSubTile [3]int) error {
 		return tile.AddTrack(coordinate[2], gs)
 	})
 
-	return nil
 }
 
 // entfernt bei allen Sub-Tiles die Schienen
 func (gs *GameState) RemoveTracks(startSubTile [3]int, endSubTile [3]int) error {
 
-	gs.iterateSubTiles(startSubTile, endSubTile, "Error while removing tracks.", func(gs *GameState, coordinate [3]int) error {
+	return gs.iterateSubTiles(startSubTile, endSubTile, "Error while removing tracks.", func(gs *GameState, coordinate [3]int) error {
 		tile, error := gs.GetTile(coordinate[0], coordinate[1])
 		if error != nil {
 			gs.Logger.Error("Out of Bound, voll Scheiße, sollte nicht gehen.")
@@ -619,7 +618,6 @@ func (gs *GameState) RemoveTracks(startSubTile [3]int, endSubTile [3]int) error 
 		return tile.RemoveTrack(coordinate[2], gs)
 	})
 
-	return nil
 }
 
 // region allgemein
