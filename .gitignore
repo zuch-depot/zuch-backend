@@ -27,6 +27,9 @@ profile.cov
 # env file
 .env
 
+# Build output
+zuch-backend
+
 # Editor/IDE
 # .idea/
 # .vscode/
