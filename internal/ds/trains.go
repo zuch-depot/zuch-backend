@@ -73,8 +73,8 @@ func (t *Train) checkUnblockOnMove(gs *GameState) [2]int {
 	letzterWaggon := t.Waggons[len(t.Waggons)-1]
 	if (len(t.Waggons) == 1 && (t.CurrentPath[0][0] != t.Waggons[0].Position[0] ||
 		t.CurrentPath[0][1] != t.Waggons[0].Position[1])) ||
-		(letzterWaggon.Position[0] != t.Waggons[len(t.Waggons)-2].Position[0] ||
-			letzterWaggon.Position[1] != t.Waggons[len(t.Waggons)-2].Position[1]) {
+		(len(t.Waggons) > 1 && (letzterWaggon.Position[0] != t.Waggons[len(t.Waggons)-2].Position[0] ||
+			letzterWaggon.Position[1] != t.Waggons[len(t.Waggons)-2].Position[1])) {
 
 		entblocken = [2]int{letzterWaggon.Position[0], letzterWaggon.Position[1]}
 
