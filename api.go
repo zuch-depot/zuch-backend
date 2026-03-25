@@ -91,6 +91,7 @@ func startServer(gs *ds.GameState) {
 // Hier werden die HUMA Routen für die Signale erstellt
 // Heißt hier werden auch die eigentlichen methoden aufgerufen und fehler abgefangen
 func registerSignalRoutes(api *huma.API, gs *ds.GameState) {
+	// hier kann man ein oder mehr signale bauen
 	huma.Post(*api, "/signal", func(ctx context.Context, i *struct{ Body ds.TileUpdateMSG }) (*ds.GenericResponse, error) {
 		tile, err := gs.GetTile(i.Body.Position[0], i.Body.Position[1])
 		if err != nil {
@@ -101,7 +102,10 @@ func registerSignalRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("Tile was found but could not create signal; %s", err.Error())
 		}
 		return ds.CreateGenericResponse("created signal"), nil
-	}, huma.OperationTags("signal"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"signal"}
+		o.Summary = "Signal bauen"
+	})
 
 	huma.Delete(*api, "/signal", func(ctx context.Context, i *struct{ Body ds.TileUpdateMSG }) (*ds.GenericResponse, error) {
 		tile, err := gs.GetTile(i.Body.Position[0], i.Body.Position[1])
@@ -113,7 +117,10 @@ func registerSignalRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("Tile was found but could not remove signal; %s", err.Error())
 		}
 		return ds.CreateGenericResponse("removed signal"), nil
-	}, huma.OperationTags("signal"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"signal"}
+		o.Summary = "Signal zerstören"
+	})
 }
 
 // endregion signals
@@ -122,12 +129,18 @@ func registerGameRoutes(api *huma.API, gs *ds.GameState) {
 	huma.Get(*api, "/game/pause", func(ctx context.Context, i *struct{}) (*ds.GenericResponse, error) {
 		pauseGame(gs)
 		return ds.CreateGenericResponse("game paused"), nil
-	}, huma.OperationTags("game"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"game"}
+		o.Summary = "Spiel pausieren"
+	})
 
 	huma.Get(*api, "/game/unpause", func(ctx context.Context, i *struct{}) (*ds.GenericResponse, error) {
 		unPauseGame(gs)
 		return ds.CreateGenericResponse("game unpaused"), nil
-	}, huma.OperationTags("game"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"game"}
+		o.Summary = "Spiel fortsetzen"
+	})
 
 	huma.Get(*api, "/game/save", func(ctx context.Context, i *struct{}) (*ds.SaveGameResponse, error) {
 		filename, err := saveGame(gs, "")
@@ -139,7 +152,10 @@ func registerGameRoutes(api *huma.API, gs *ds.GameState) {
 		msg.Body.Success = true
 		msg.Body.Path = filename
 		return msg, nil
-	}, huma.OperationTags("game"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"game"}
+		o.Summary = "Spielstand speichern"
+	})
 
 	huma.Put(*api, "/game/load", func(ctx context.Context, i *ds.SaveGameResponse) (*ds.GenericResponse, error) {
 		err := loadGame(gs, "") // hier könnte man später noch den dateinamen mitgeben
@@ -147,7 +163,10 @@ func registerGameRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, err
 		}
 		return ds.CreateGenericResponse("Loaded new Save"), nil
-	}, huma.OperationTags("game"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"game"}
+		o.Summary = "Spielstand laden"
+	})
 }
 
 // endregion game
@@ -174,7 +193,10 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 			}
 		}
 		return ds.CreateGenericResponse("created track(s)"), nil
-	}, huma.OperationTags("track"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"track"}
+		o.Summary = "Gleis(e) bauen"
+	})
 
 	// hier um Gleise zu entfernen, zum entfernen von mehreren Gleisen warte ich noch auf wilken
 	huma.Delete(*api, "/track", func(ctx context.Context, i *struct{ Body ds.TileUpdateMSG }) (*ds.GenericResponse, error) {
@@ -201,7 +223,10 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 		// dann rückmelden
 		return ds.CreateGenericResponse("removed track(s)"), nil
 
-	}, huma.OperationTags("track"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"track"}
+		o.Summary = "Gleis(e) zerstören"
+	})
 }
 
 // endregion tracks
@@ -216,7 +241,10 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 		return &struct {
 			Body struct{ Trains map[int]*ds.Train }
 		}{Body: struct{ Trains map[int]*ds.Train }{Trains: gs.Trains}}, nil
-	}, huma.OperationTags("train"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"train"}
+		o.Summary = "Züge auflisten"
+	})
 
 	// Hier kriegt man infos zu einem Zug
 	huma.Get(*api, "/train/{id}", func(ctx context.Context, i *struct {
@@ -231,7 +259,10 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("Train does not exist")
 		}
 		return &struct{ Body struct{ Train *ds.Train } }{Body: struct{ Train *ds.Train }{Train: train}}, nil
-	}, huma.OperationTags("train"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"train"}
+		o.Summary = "Details zu Zug"
+	})
 
 	// Hier kann man einen Zug bauen
 	huma.Post(*api, "/train", func(ctx context.Context, i *struct{ Body ds.TrainCreateMSG }) (*ds.GenericResponse, error) {
@@ -240,7 +271,10 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("Could not create Train; %s", err.Error())
 		}
 		return ds.CreateGenericResponse("created Train"), nil
-	}, huma.OperationTags("train"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"train"}
+		o.Summary = "Zug hinzufügen"
+	})
 
 	// Hier kann man einen Zug pausieren
 	huma.Post(*api, "/train/{id}/pause", func(ctx context.Context, i *struct {
@@ -252,9 +286,12 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 		}
 		train.Pause(gs)
 		return ds.CreateGenericResponse("paused Train"), nil
-	}, huma.OperationTags("train"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"train"}
+		o.Summary = "Zug pausieren"
+	})
 
-	// Hier kann man einen Zug pausieren
+	// Hier kann man einen Zug fortsetzen
 	huma.Post(*api, "/train/{id}/unpause", func(ctx context.Context, i *struct {
 		Id int `path:"id"`
 	}) (*ds.GenericResponse, error) {
@@ -264,7 +301,10 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 		}
 		train.UnPause(gs)
 		return ds.CreateGenericResponse("resumed Train"), nil
-	}, huma.OperationTags("train"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"train"}
+		o.Summary = "Zug entpausieren?"
+	})
 
 	// hier kann man Waggons anhängen
 	huma.Post(*api, "/train/{id}/append", func(ctx context.Context, i *struct {
@@ -291,7 +331,10 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("Could not add waggon(s); %s", err.Error())
 		}
 		return ds.CreateGenericResponse("added waggons to train"), nil
-	}, huma.OperationTags("train"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"train"}
+		o.Summary = "Waggons anhängen"
+	})
 
 	// hier kann man züge entfernen
 	huma.Delete(*api, "/train/{id}/remove", func(ctx context.Context, i *struct {
@@ -315,7 +358,10 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("could not remove waggon(s) %s", err.Error())
 		}
 		return ds.CreateGenericResponse("removed waggon(s)"), nil
-	}, huma.OperationTags("train"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"train"}
+		o.Summary = "Waggons zerstören"
+	})
 
 	// hier kann man einen zug brutalst umbringen
 	huma.Delete(*api, "/train/{id}", func(ctx context.Context, i *struct {
@@ -330,10 +376,12 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("could not remove train %s", err.Error())
 		}
 		return ds.CreateGenericResponse("removed train"), nil
-	}, huma.OperationTags("train"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"train"}
+		o.Summary = "Zug ermorden"
+	})
 
 	// hier könnte man einen zug umbennen
-	// aber ich finde die funktion dazu nicht
 	huma.Post(*api, "/train/{id}/rename", func(ctx context.Context, i *struct {
 		Id   int `path:"id"`
 		Body struct {
@@ -349,7 +397,10 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("could not rename Train; %s", err.Error())
 		}
 		return ds.CreateGenericResponse("renamed train"), nil
-	}, huma.OperationTags("train"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"train"}
+		o.Summary = "Zug unmbennen"
+	})
 
 	// hier kann man schedules zuweisen
 	huma.Post(*api, "/train/{id}/schedule", func(ctx context.Context, i *struct {
@@ -369,9 +420,12 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 
 		train.AssignSchedule(schedule, gs)
 		return ds.CreateGenericResponse("assigned Schedule"), nil
-	}, huma.OperationTags("train"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"train"}
+		o.Summary = "Schedule zuweisen"
+	})
 
-	// hier kann man schedules zuweisen
+	// hier kann man schedules von zügen entfernen
 	huma.Post(*api, "/train/{id}/schedule_unassign", func(ctx context.Context, i *struct {
 		Id int `path:"id"`
 	}) (*ds.GenericResponse, error) {
@@ -382,7 +436,10 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 
 		train.UnassignSchedule(gs)
 		return ds.CreateGenericResponse("unassigned Schedule"), nil
-	}, huma.OperationTags("train"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"train"}
+		o.Summary = "Schedule entfernen"
+	})
 
 }
 
@@ -399,7 +456,10 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 		return &struct {
 			Body struct{ Schedules map[int]*ds.Schedule }
 		}{Body: struct{ Schedules map[int]*ds.Schedule }{Schedules: gs.Schedules}}, nil
-	}, huma.OperationTags("schedule"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"schedule"}
+		o.Summary = "Schedules auslisten"
+	})
 
 	// hier kriegt man infos zu einer schedule
 	huma.Get(*api, "/schedule/{id}", func(ctx context.Context, i *struct {
@@ -416,7 +476,10 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 		return &struct {
 			Body struct{ Schedule ds.Schedule }
 		}{Body: struct{ Schedule ds.Schedule }{Schedule: *schedule}}, nil
-	}, huma.OperationTags("schedule"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"schedule"}
+		o.Summary = "Details zu einer Schedule"
+	})
 
 	// hier kann man eine Plattform anhängen
 	huma.Post(*api, "/schedule/{id}/append", func(ctx context.Context, i *struct {
@@ -461,7 +524,10 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 		}
 
 		return ds.CreateGenericResponse("added Stop"), nil
-	}, huma.OperationTags("schedule"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"schedule"}
+		o.Summary = "Stop hinzufügen"
+	})
 
 	// hier kann man waypoints hinzufügen
 	huma.Post(*api, "/schedule/{id}/append-waypoint", func(ctx context.Context, i *struct {
@@ -480,9 +546,12 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("could not add waypoint; %s", err.Error())
 		}
 		return ds.CreateGenericResponse("added Waypoint"), nil
-	}, huma.OperationTags("schedule"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"schedule"}
+		o.Summary = "Waypoint hinzufügen"
+	})
 
-	// hier kann man eine schedule löschen, die arme
+	// hier kann man Stops aus einer  schedule löschen, die arme
 	huma.Post(*api, "/schedule/{id}/remove-stop", func(ctx context.Context, i *struct {
 		Id   int `path:"id" example:"1"`
 		Body struct {
@@ -507,7 +576,10 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("could not remove Stops; %s", err.Error())
 		}
 		return ds.CreateGenericResponse("removed Stop(s)"), nil
-	}, huma.OperationTags("schedule"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"schedule"}
+		o.Summary = "Stops entfernen"
+	})
 
 	// hier kann man die ganze schedule löschen
 	huma.Delete(*api, "/schedule/{id}", func(ctx context.Context, i *struct {
@@ -518,7 +590,10 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("could not remove schedule; %s", err.Error())
 		}
 		return ds.CreateGenericResponse("removed schedule"), nil
-	}, huma.OperationTags("schedule"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"schedule"}
+		o.Summary = "Schedule zerstören"
+	})
 
 	// hier kann man eine schedule umbenennen
 	huma.Post(*api, "/schedule/{id}/rename", func(ctx context.Context, i *struct {
@@ -536,7 +611,10 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("could not rename Schedule; %s", err.Error())
 		}
 		return ds.CreateGenericResponse("rename Schedule"), nil
-	}, huma.OperationTags("schedule"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"schedule"}
+		o.Summary = "Schedule umbennenen"
+	})
 
 	// Hier kann man die reihenfolge ändern
 	huma.Post(*api, "/schedule/{id}/sequence", func(ctx context.Context, i *struct {
@@ -555,7 +633,10 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("could not change sequence; %s", err.Error())
 		}
 		return ds.CreateGenericResponse("changed sequence"), nil
-	}, huma.OperationTags("schedule"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"schedule"}
+		o.Summary = "Reihenfolge einer schedule ändern"
+	})
 
 	// Hier kann man eine Schedule updaten
 	huma.Post(*api, "/schedule/{id}/change", func(ctx context.Context, i *struct {
@@ -594,7 +675,10 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 			}
 		}
 		return ds.CreateGenericResponse("updated Stop"), nil
-	}, huma.OperationTags("schedule"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"schedule"}
+		o.Summary = "Stop aktualisieren"
+	})
 }
 
 // endregion schedules
@@ -609,10 +693,12 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 		return &struct {
 			Body struct{ Stations map[int]*ds.Station }
 		}{Body: struct{ Stations map[int]*ds.Station }{Stations: gs.Stations}}, nil
-	}, huma.OperationTags("station"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"station"}
+		o.Summary = "Stationen auflisten"
+	})
 
 	// hier kann man Inofs zu einer Station bekommen
-	// Hier kriegt man infos zu einem Zug
 	huma.Get(*api, "/station/{id}", func(ctx context.Context, i *struct {
 		Id int `path:"id" example:"1"`
 	}) (*struct {
@@ -625,7 +711,10 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("Station does not exist")
 		}
 		return &struct{ Body struct{ Station ds.Station } }{Body: struct{ Station ds.Station }{Station: *station}}, nil
-	}, huma.OperationTags("station"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"station"}
+		o.Summary = "Details zu einer Station"
+	})
 
 	// hier kann man eine Station umbenennen
 	huma.Post(*api, "/station/{id}/rename", func(ctx context.Context, i *struct {
@@ -643,7 +732,10 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("could not rename Station; %s", err.Error())
 		}
 		return ds.CreateGenericResponse("renamed station"), nil
-	}, huma.OperationTags("station"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"station"}
+		o.Summary = "Station umbennenen"
+	})
 
 	// hier kann man die ganze Station löschen
 	huma.Delete(*api, "/station/{id}", func(ctx context.Context, i *struct {
@@ -659,7 +751,10 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("could not remove Station; %s", err.Error())
 		}
 		return ds.CreateGenericResponse("removed station"), nil
-	}, huma.OperationTags("station"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"station"}
+		o.Summary = "Station zerstören"
+	})
 
 	// hier kriegt man einfos über eine Plattform
 	huma.Get(*api, "/station/{id}/plattform/{idPlat}", func(ctx context.Context, i *struct {
@@ -682,7 +777,10 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 		return &struct {
 			Body struct{ Plattform ds.Plattform }
 		}{Body: struct{ Plattform ds.Plattform }{Plattform: *platform}}, nil
-	}, huma.OperationTags("station"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"station"}
+		o.Summary = "Details zu einer Plattform"
+	})
 
 	// hier nennt man eine Plattform um
 	huma.Post(*api, "/station/{id}/plattform/{idPlat}/rename", func(ctx context.Context, i *struct {
@@ -706,7 +804,10 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 		}
 
 		return ds.CreateGenericResponse("renamed Plattform"), nil
-	}, huma.OperationTags("station"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"station"}
+		o.Summary = "Plattform einer station umbennenen"
+	})
 
 	// hier löscht man eine Plattform
 	huma.Post(*api, "/station/{id}/plattform/{idPlat}/delete", func(ctx context.Context, i *struct {
@@ -727,7 +828,10 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 		}
 
 		return ds.CreateGenericResponse("removed Plattform"), nil
-	}, huma.OperationTags("station"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"station"}
+		o.Summary = "Plattform entfernen"
+	})
 }
 
 // endregion station
@@ -738,7 +842,10 @@ func registerTileRoutes(api *huma.API, gs *ds.GameState) {
 		mes := &ds.TileMessage{}
 		mes.Body.Tiles = gs.Tiles
 		return mes, nil
-	}, huma.OperationTags("tiles"))
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"tiles"}
+		o.Summary = "Tiles auflisten"
+	})
 }
 
 // endregion tiles

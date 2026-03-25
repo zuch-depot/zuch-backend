@@ -1,0 +1,3556 @@
+{
+    "Users": {},
+    "Schedules": {
+        "1": {
+            "Id": 1,
+            "Name": "Schdule Nord",
+            "Stops": [
+                {
+                    "Id": 1,
+                    "Plattform": {
+                        "Id": 1,
+                        "Name": "Gleis 1",
+                        "Tiles": [
+                            [
+                                3,
+                                0
+                            ],
+                            [
+                                2,
+                                0
+                            ]
+                        ]
+                    },
+                    "Goal": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "IsPlattform": true,
+                    "Name": "",
+                    "LoadUnloadCommand": [
+                        {
+                            "WaitTillFull": false,
+                            "Loading": false,
+                            "CargoTypes": []
+                        },
+                        {
+                            "WaitTillFull": false,
+                            "Loading": true,
+                            "CargoTypes": []
+                        }
+                    ]
+                },
+                {
+                    "Id": 2,
+                    "Plattform": {
+                        "Id": 3,
+                        "Name": "Gleis 2",
+                        "Tiles": [
+                            [
+                                9,
+                                5
+                            ],
+                            [
+                                9,
+                                4
+                            ]
+                        ]
+                    },
+                    "Goal": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "IsPlattform": true,
+                    "Name": "",
+                    "LoadUnloadCommand": [
+                        {
+                            "WaitTillFull": false,
+                            "Loading": false,
+                            "CargoTypes": []
+                        },
+                        {
+                            "WaitTillFull": false,
+                            "Loading": true,
+                            "CargoTypes": []
+                        }
+                    ]
+                }
+            ]
+        },
+        "2": {
+            "Id": 2,
+            "Name": "Schedule Süd",
+            "Stops": [
+                {
+                    "Id": 3,
+                    "Plattform": {
+                        "Id": 3,
+                        "Name": "Gleis 2",
+                        "Tiles": [
+                            [
+                                9,
+                                5
+                            ],
+                            [
+                                9,
+                                4
+                            ]
+                        ]
+                    },
+                    "Goal": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "IsPlattform": true,
+                    "Name": "",
+                    "LoadUnloadCommand": [
+                        {
+                            "WaitTillFull": false,
+                            "Loading": false,
+                            "CargoTypes": []
+                        },
+                        {
+                            "WaitTillFull": false,
+                            "Loading": true,
+                            "CargoTypes": []
+                        }
+                    ]
+                },
+                {
+                    "Id": 4,
+                    "Plattform": {
+                        "Id": 2,
+                        "Name": "Gleis 31",
+                        "Tiles": [
+                            [
+                                5,
+                                7
+                            ],
+                            [
+                                4,
+                                7
+                            ],
+                            [
+                                3,
+                                7
+                            ]
+                        ]
+                    },
+                    "Goal": [
+                        0,
+                        0,
+                        0
+                    ],
+                    "IsPlattform": true,
+                    "Name": "",
+                    "LoadUnloadCommand": [
+                        {
+                            "WaitTillFull": false,
+                            "Loading": false,
+                            "CargoTypes": []
+                        },
+                        {
+                            "WaitTillFull": false,
+                            "Loading": true,
+                            "CargoTypes": []
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "Stations": {
+        "1": {
+            "Id": 1,
+            "Name": "Station Nord",
+            "Storage": {},
+            "Capacity": 100,
+            "Plattforms": {
+                "1": {
+                    "Id": 1,
+                    "Name": "Gleis 1",
+                    "Tiles": [
+                        [
+                            3,
+                            0
+                        ],
+                        [
+                            2,
+                            0
+                        ]
+                    ]
+                }
+            }
+        },
+        "2": {
+            "Id": 2,
+            "Name": "Station Süd",
+            "Storage": {},
+            "Capacity": 150,
+            "Plattforms": {
+                "2": {
+                    "Id": 2,
+                    "Name": "Gleis 31",
+                    "Tiles": [
+                        [
+                            5,
+                            7
+                        ],
+                        [
+                            4,
+                            7
+                        ],
+                        [
+                            3,
+                            7
+                        ]
+                    ]
+                }
+            }
+        },
+        "3": {
+            "Id": 3,
+            "Name": "Station Ost",
+            "Storage": {},
+            "Capacity": 100,
+            "Plattforms": {
+                "3": {
+                    "Id": 3,
+                    "Name": "Gleis 2",
+                    "Tiles": [
+                        [
+                            9,
+                            5
+                        ],
+                        [
+                            9,
+                            4
+                        ]
+                    ]
+                }
+            }
+        }
+    },
+    "Tiles": [
+        [
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 0,
+                "Y": 0,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 0,
+                "Y": 1,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 0,
+                "Y": 2,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 0,
+                "Y": 3,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 0,
+                "Y": 4,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 0,
+                "Y": 5,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 0,
+                "Y": 6,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 0,
+                "Y": 7,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 0,
+                "Y": 8,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 0,
+                "Y": 9,
+                "IsLocked": true
+            }
+        ],
+        [
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    true,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 1,
+                "Y": 0,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    true,
+                    false,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 1,
+                "Y": 1,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    true,
+                    false,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 1,
+                "Y": 2,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    true,
+                    false,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    true
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 1,
+                "Y": 3,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    true,
+                    true,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 1,
+                "Y": 4,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 1,
+                "Y": 5,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 1,
+                "Y": 6,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 1,
+                "Y": 7,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    true,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 1,
+                "Y": 8,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    true,
+                    true,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 1,
+                "Y": 9,
+                "IsLocked": true
+            }
+        ],
+        [
+            {
+                "Tracks": [
+                    true,
+                    false,
+                    true,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": true,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 2,
+                "Y": 0,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 3,
+                    "Category": {
+                        "Produktionszyklen": null
+                    },
+                    "Name": "Bauernhof Nord",
+                    "Level": 0,
+                    "Stations": [
+                        {
+                            "Id": 1,
+                            "Name": "Station Nord",
+                            "Storage": {},
+                            "Capacity": 100,
+                            "Plattforms": {
+                                "1": {
+                                    "Id": 1,
+                                    "Name": "Gleis 1",
+                                    "Tiles": [
+                                        [
+                                            3,
+                                            0
+                                        ],
+                                        [
+                                            2,
+                                            0
+                                        ]
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "Storage": null,
+                    "MaxStorage": 150
+                },
+                "X": 2,
+                "Y": 1,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 2,
+                "Y": 2,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 2,
+                "Y": 3,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    true,
+                    false,
+                    true,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 2,
+                "Y": 4,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    true,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 2,
+                "Y": 5,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    true,
+                    false,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 2,
+                "Y": 6,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    true,
+                    true,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 2,
+                "Y": 7,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    true,
+                    true,
+                    false,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 2,
+                "Y": 8,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    true,
+                    true,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 2,
+                "Y": 9,
+                "IsLocked": true
+            }
+        ],
+        [
+            {
+                "Tracks": [
+                    true,
+                    false,
+                    true,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": true,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 3,
+                "Y": 0,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 3,
+                "Y": 1,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 3,
+                "Y": 2,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 3,
+                "Y": 3,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    true,
+                    false,
+                    true,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": true,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 3,
+                "Y": 4,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    true,
+                    false,
+                    true,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 3,
+                "Y": 5,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 3,
+                "Y": 6,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    true,
+                    false,
+                    true,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": true,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 3,
+                "Y": 7,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 3,
+                "Y": 8,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 3,
+                "Y": 9,
+                "IsLocked": true
+            }
+        ],
+        [
+            {
+                "Tracks": [
+                    true,
+                    false,
+                    true,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 4,
+                "Y": 0,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    true,
+                    true,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 4,
+                "Y": 1,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 4,
+                "Y": 2,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 4,
+                "Y": 3,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    true,
+                    false,
+                    true,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 4,
+                "Y": 4,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    true,
+                    true,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    true,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 4,
+                "Y": 5,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 4,
+                "Y": 6,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    true,
+                    false,
+                    true,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": true,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 4,
+                "Y": 7,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 4,
+                "Y": 8,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 4,
+                "Y": 9,
+                "IsLocked": true
+            }
+        ],
+        [
+            {
+                "Tracks": [
+                    true,
+                    false,
+                    true,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 5,
+                "Y": 0,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    true,
+                    true,
+                    false,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 5,
+                "Y": 1,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    true,
+                    true,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 5,
+                "Y": 2,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 5,
+                "Y": 3,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    true,
+                    false,
+                    true,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 5,
+                "Y": 4,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 5,
+                "Y": 5,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 5,
+                "Y": 6,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    true,
+                    false,
+                    true,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": true,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 5,
+                "Y": 7,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 5,
+                "Y": 8,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 1,
+                    "Category": {
+                        "Produktionszyklen": null
+                    },
+                    "Name": "Lebensmittelfabrik Süd",
+                    "Level": 0,
+                    "Stations": [
+                        {
+                            "Id": 2,
+                            "Name": "Station Süd",
+                            "Storage": {},
+                            "Capacity": 150,
+                            "Plattforms": {
+                                "2": {
+                                    "Id": 2,
+                                    "Name": "Gleis 31",
+                                    "Tiles": [
+                                        [
+                                            5,
+                                            7
+                                        ],
+                                        [
+                                            4,
+                                            7
+                                        ],
+                                        [
+                                            3,
+                                            7
+                                        ]
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "Storage": {
+                        "Kartoffeln": 100,
+                        "Sonnenblumenöl": 50
+                    },
+                    "MaxStorage": 50
+                },
+                "X": 5,
+                "Y": 9,
+                "IsLocked": true
+            }
+        ],
+        [
+            {
+                "Tracks": [
+                    true,
+                    false,
+                    true,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 6,
+                "Y": 0,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 6,
+                "Y": 1,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    true,
+                    false,
+                    false,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 6,
+                "Y": 2,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    true,
+                    false,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 6,
+                "Y": 3,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    true,
+                    true,
+                    true,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 6,
+                "Y": 4,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    true,
+                    false,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": true,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 6,
+                "Y": 5,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    true,
+                    false,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": true,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 6,
+                "Y": 6,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    true,
+                    true,
+                    false,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 6,
+                "Y": 7,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    true,
+                    false,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 6,
+                "Y": 8,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    true,
+                    false,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 6,
+                "Y": 9,
+                "IsLocked": true
+            }
+        ],
+        [
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 7,
+                "Y": 0,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 7,
+                "Y": 1,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 7,
+                "Y": 2,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 7,
+                "Y": 3,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    true,
+                    false,
+                    true,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 7,
+                "Y": 4,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    true,
+                    false,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    true,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 7,
+                "Y": 5,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    true,
+                    true,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 7,
+                "Y": 6,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 7,
+                "Y": 7,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 7,
+                "Y": 8,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 7,
+                "Y": 9,
+                "IsLocked": true
+            }
+        ],
+        [
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 8,
+                "Y": 0,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 8,
+                "Y": 1,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 8,
+                "Y": 2,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    true,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 8,
+                "Y": 3,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    true,
+                    true,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 8,
+                "Y": 4,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 2,
+                    "Category": {
+                        "Produktionszyklen": null
+                    },
+                    "Name": "Wuppertal",
+                    "Level": 0,
+                    "Stations": [
+                        {
+                            "Id": 3,
+                            "Name": "Station Ost",
+                            "Storage": {},
+                            "Capacity": 100,
+                            "Plattforms": {
+                                "3": {
+                                    "Id": 3,
+                                    "Name": "Gleis 2",
+                                    "Tiles": [
+                                        [
+                                            9,
+                                            5
+                                        ],
+                                        [
+                                            9,
+                                            4
+                                        ]
+                                    ]
+                                }
+                            }
+                        }
+                    ],
+                    "Storage": null,
+                    "MaxStorage": 50
+                },
+                "X": 8,
+                "Y": 5,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    true,
+                    false,
+                    true,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 8,
+                "Y": 6,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 8,
+                "Y": 7,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 8,
+                "Y": 8,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 8,
+                "Y": 9,
+                "IsLocked": true
+            }
+        ],
+        [
+            {
+                "Tracks": [
+                    false,
+                    true,
+                    false,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 9,
+                "Y": 0,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    true,
+                    false,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 9,
+                "Y": 1,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    true,
+                    false,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 9,
+                "Y": 2,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    true,
+                    true,
+                    false,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 9,
+                "Y": 3,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    true,
+                    false,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": true,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 9,
+                "Y": 4,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    true,
+                    false,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": true,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 9,
+                "Y": 5,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    true,
+                    true,
+                    false,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 9,
+                "Y": 6,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    true,
+                    false,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 9,
+                "Y": 7,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    true,
+                    false,
+                    true
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 9,
+                "Y": 8,
+                "IsLocked": true
+            },
+            {
+                "Tracks": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "Signals": [
+                    false,
+                    false,
+                    false,
+                    false
+                ],
+                "IsPlattform": false,
+                "IsBlocked": false,
+                "ActiveTile": {
+                    "Id": 0,
+                    "Category": null,
+                    "Name": "",
+                    "Level": 0,
+                    "Stations": null,
+                    "Storage": null,
+                    "MaxStorage": 0
+                },
+                "X": 9,
+                "Y": 9,
+                "IsLocked": true
+            }
+        ]
+    ],
+    "Trains": {
+        "1": {
+            "Id": 1,
+            "Name": "RE1",
+            "Waggons": [
+                {
+                    "Position": [
+                        3,
+                        4,
+                        3
+                    ],
+                    "MaxSpeed": 77,
+                    "CargoStorage": {
+                        "Capacity": 30,
+                        "Filled": 0,
+                        "FilledCargoType": "",
+                        "CargoCategory": ""
+                    },
+                    "Power": 100,
+                    "EmptyWeight": 20
+                }
+            ],
+            "Schedule": {
+                "Id": 1,
+                "Name": "Schdule Nord",
+                "Stops": [
+                    {
+                        "Id": 1,
+                        "Plattform": {
+                            "Id": 1,
+                            "Name": "Gleis 1",
+                            "Tiles": [
+                                [
+                                    3,
+                                    0
+                                ],
+                                [
+                                    2,
+                                    0
+                                ]
+                            ]
+                        },
+                        "Goal": [
+                            0,
+                            0,
+                            0
+                        ],
+                        "IsPlattform": true,
+                        "Name": "",
+                        "LoadUnloadCommand": [
+                            {
+                                "WaitTillFull": false,
+                                "Loading": false,
+                                "CargoTypes": []
+                            },
+                            {
+                                "WaitTillFull": false,
+                                "Loading": true,
+                                "CargoTypes": []
+                            }
+                        ]
+                    },
+                    {
+                        "Id": 2,
+                        "Plattform": {
+                            "Id": 3,
+                            "Name": "Gleis 2",
+                            "Tiles": [
+                                [
+                                    9,
+                                    5
+                                ],
+                                [
+                                    9,
+                                    4
+                                ]
+                            ]
+                        },
+                        "Goal": [
+                            0,
+                            0,
+                            0
+                        ],
+                        "IsPlattform": true,
+                        "Name": "",
+                        "LoadUnloadCommand": [
+                            {
+                                "WaitTillFull": false,
+                                "Loading": false,
+                                "CargoTypes": []
+                            },
+                            {
+                                "WaitTillFull": false,
+                                "Loading": true,
+                                "CargoTypes": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            "NextStop": {
+                "Id": 1,
+                "Plattform": {
+                    "Id": 1,
+                    "Name": "Gleis 1",
+                    "Tiles": [
+                        [
+                            3,
+                            0
+                        ],
+                        [
+                            2,
+                            0
+                        ]
+                    ]
+                },
+                "Goal": [
+                    0,
+                    0,
+                    0
+                ],
+                "IsPlattform": true,
+                "Name": "",
+                "LoadUnloadCommand": [
+                    {
+                        "WaitTillFull": false,
+                        "Loading": false,
+                        "CargoTypes": []
+                    },
+                    {
+                        "WaitTillFull": false,
+                        "Loading": true,
+                        "CargoTypes": []
+                    }
+                ]
+            },
+            "CurrentPath": null,
+            "CurrentPathSignals": null,
+            "LoadingTime": 1,
+            "FinishedLoading": false
+        },
+        "2": {
+            "Id": 2,
+            "Name": "RE2",
+            "Waggons": [
+                {
+                    "Position": [
+                        6,
+                        5,
+                        4
+                    ],
+                    "MaxSpeed": 77,
+                    "CargoStorage": {
+                        "Capacity": 30,
+                        "Filled": 0,
+                        "FilledCargoType": "",
+                        "CargoCategory": "Lebensmittel"
+                    },
+                    "Power": 0,
+                    "EmptyWeight": 10
+                }
+            ],
+            "Schedule": {
+                "Id": 2,
+                "Name": "Schedule Süd",
+                "Stops": [
+                    {
+                        "Id": 3,
+                        "Plattform": {
+                            "Id": 3,
+                            "Name": "Gleis 2",
+                            "Tiles": [
+                                [
+                                    9,
+                                    5
+                                ],
+                                [
+                                    9,
+                                    4
+                                ]
+                            ]
+                        },
+                        "Goal": [
+                            0,
+                            0,
+                            0
+                        ],
+                        "IsPlattform": true,
+                        "Name": "",
+                        "LoadUnloadCommand": [
+                            {
+                                "WaitTillFull": false,
+                                "Loading": false,
+                                "CargoTypes": []
+                            },
+                            {
+                                "WaitTillFull": false,
+                                "Loading": true,
+                                "CargoTypes": []
+                            }
+                        ]
+                    },
+                    {
+                        "Id": 4,
+                        "Plattform": {
+                            "Id": 2,
+                            "Name": "Gleis 31",
+                            "Tiles": [
+                                [
+                                    5,
+                                    7
+                                ],
+                                [
+                                    4,
+                                    7
+                                ],
+                                [
+                                    3,
+                                    7
+                                ]
+                            ]
+                        },
+                        "Goal": [
+                            0,
+                            0,
+                            0
+                        ],
+                        "IsPlattform": true,
+                        "Name": "",
+                        "LoadUnloadCommand": [
+                            {
+                                "WaitTillFull": false,
+                                "Loading": false,
+                                "CargoTypes": []
+                            },
+                            {
+                                "WaitTillFull": false,
+                                "Loading": true,
+                                "CargoTypes": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            "NextStop": {
+                "Id": 3,
+                "Plattform": {
+                    "Id": 3,
+                    "Name": "Gleis 2",
+                    "Tiles": [
+                        [
+                            9,
+                            5
+                        ],
+                        [
+                            9,
+                            4
+                        ]
+                    ]
+                },
+                "Goal": [
+                    0,
+                    0,
+                    0
+                ],
+                "IsPlattform": true,
+                "Name": "",
+                "LoadUnloadCommand": [
+                    {
+                        "WaitTillFull": false,
+                        "Loading": false,
+                        "CargoTypes": []
+                    },
+                    {
+                        "WaitTillFull": false,
+                        "Loading": true,
+                        "CargoTypes": []
+                    }
+                ]
+            },
+            "CurrentPath": null,
+            "CurrentPathSignals": null,
+            "LoadingTime": 1,
+            "FinishedLoading": false
+        }
+    },
+    "ActiveTiles": [
+        {
+            "Id": 3,
+            "Category": {
+                "Produktionszyklen": null
+            },
+            "Name": "Bauernhof Nord",
+            "Level": 0,
+            "Stations": [
+                {
+                    "Id": 1,
+                    "Name": "Station Nord",
+                    "Storage": {},
+                    "Capacity": 100,
+                    "Plattforms": {
+                        "1": {
+                            "Id": 1,
+                            "Name": "Gleis 1",
+                            "Tiles": [
+                                [
+                                    3,
+                                    0
+                                ],
+                                [
+                                    2,
+                                    0
+                                ]
+                            ]
+                        }
+                    }
+                }
+            ],
+            "Storage": null,
+            "MaxStorage": 150
+        },
+        {
+            "Id": 2,
+            "Category": {
+                "Produktionszyklen": null
+            },
+            "Name": "Wuppertal",
+            "Level": 0,
+            "Stations": [
+                {
+                    "Id": 3,
+                    "Name": "Station Ost",
+                    "Storage": {},
+                    "Capacity": 100,
+                    "Plattforms": {
+                        "3": {
+                            "Id": 3,
+                            "Name": "Gleis 2",
+                            "Tiles": [
+                                [
+                                    9,
+                                    5
+                                ],
+                                [
+                                    9,
+                                    4
+                                ]
+                            ]
+                        }
+                    }
+                }
+            ],
+            "Storage": null,
+            "MaxStorage": 50
+        },
+        {
+            "Id": 1,
+            "Category": {
+                "Produktionszyklen": null
+            },
+            "Name": "Lebensmittelfabrik Süd",
+            "Level": 0,
+            "Stations": [
+                {
+                    "Id": 2,
+                    "Name": "Station Süd",
+                    "Storage": {},
+                    "Capacity": 150,
+                    "Plattforms": {
+                        "2": {
+                            "Id": 2,
+                            "Name": "Gleis 31",
+                            "Tiles": [
+                                [
+                                    5,
+                                    7
+                                ],
+                                [
+                                    4,
+                                    7
+                                ],
+                                [
+                                    3,
+                                    7
+                                ]
+                            ]
+                        }
+                    }
+                }
+            ],
+            "Storage": {
+                "Kartoffeln": 100,
+                "Sonnenblumenöl": 50
+            },
+            "MaxStorage": 50
+        }
+    ],
+    "LoadUnloadSpeed": 25,
+    "MinLoadUloadTicks": 2,
+    "CapacityPerStationTile": 50,
+    "ConfigData": {
+        "Train Categories": null,
+        "Aktive Tiles": null
+    },
+    "StationRange": 2,
+    "CurrentTrainID": 3,
+    "CurrentScheduleID": 3,
+    "CurrentStopID": 5,
+    "CurrentStationID": 4,
+    "CurrentPlattformID": 4,
+    "CurrentActiveTileID": 1,
+    "Tick": 1,
+    "SizeX": 10,
+    "SizeY": 10,
+    "SizeSubtile": 4
+}
