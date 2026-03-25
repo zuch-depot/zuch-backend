@@ -157,7 +157,7 @@ func (t *Train) move(gs *GameState) [2]int {
 			if !foundValidStop {
 				//TODO Nachricht: Konnte kein Ziel erreichen, Zug ist stuck
 				gs.Logger.Debug(fmt.Sprintln("Zug", t.Name, "kann kein Ziel erreichen."))
-				return [2]int{}
+				return [2]int{-1, -1}
 			}
 		}
 	}
@@ -267,11 +267,11 @@ func (t *Train) calculateTrain(gs *GameState) [2]int {
 	//var r [2]int
 
 	if t.paused {
-		return [2]int{}
+		return [2]int{-1, -1}
 	}
 
 	if t.Schedule == nil {
-		return [2]int{}
+		return [2]int{-1, -1}
 	}
 
 	//ist gerade in die Staion eingefahren. wird in loadTime gespeichert als. die station ist die, des aktuellen Stoppes. Muss sich nicht bewegen, wenn gerade in station eingelaufen
@@ -282,7 +282,7 @@ func (t *Train) calculateTrain(gs *GameState) [2]int {
 
 		t.LoadingTime++
 
-		return [2]int{}
+		return [2]int{-1, -1}
 	} else if !t.NextStop.IsPlattform && len(t.CurrentPath) == 0 {
 		//wenn das aktuelle Ziel ein Wegpunkt ist und man angekommen ist, braucht man einfach den nächsten Stop aussuchen und fahren
 		return t.move(gs)
