@@ -137,7 +137,7 @@ func (t *Tile) RemoveTrack(subtile int, gs *GameState) error {
 func (t *Tile) AddSignal(subtile int, gs *GameState) error {
 
 	//ist subTile valid?
-	if 0 < subtile || subtile < 5 {
+	if subtile < 1 || 4 < subtile {
 		return fmt.Errorf("An error accured while adding a signal. Please provide valid subtile coordinates between 1 and 4.")
 	}
 
