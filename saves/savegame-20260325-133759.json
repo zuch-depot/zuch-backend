@@ -1,11 +1,5 @@
 {
-    "Users": {
-        "user-n5lvypf1-6sb5v9b3": {
-            "Username": "user-n5lvypf1-6sb5v9b3",
-            "IsConnected": false,
-            "Connection": {}
-        }
-    },
+    "Users": {},
     "Schedules": {
         "1": {
             "Id": 1,
@@ -38,17 +32,12 @@
                         {
                             "WaitTillFull": false,
                             "Loading": false,
-                            "CargoTypes": [
-                                "Pommes"
-                            ]
+                            "CargoTypes": []
                         },
                         {
                             "WaitTillFull": false,
                             "Loading": true,
-                            "CargoTypes": [
-                                "Kartoffeln",
-                                "Sonnenblumenöl"
-                            ]
+                            "CargoTypes": []
                         }
                     ]
                 },
@@ -79,17 +68,12 @@
                         {
                             "WaitTillFull": false,
                             "Loading": false,
-                            "CargoTypes": [
-                                "Kartoffeln",
-                                "Sonnenblumenöl"
-                            ]
+                            "CargoTypes": []
                         },
                         {
                             "WaitTillFull": false,
                             "Loading": true,
-                            "CargoTypes": [
-                                "Pommes"
-                            ]
+                            "CargoTypes": []
                         }
                     ]
                 }
@@ -126,17 +110,12 @@
                         {
                             "WaitTillFull": false,
                             "Loading": false,
-                            "CargoTypes": [
-                                "Pommes"
-                            ]
+                            "CargoTypes": []
                         },
                         {
                             "WaitTillFull": false,
                             "Loading": true,
-                            "CargoTypes": [
-                                "Kartoffeln",
-                                "Sonnenblumenöl"
-                            ]
+                            "CargoTypes": []
                         }
                     ]
                 },
@@ -171,17 +150,12 @@
                         {
                             "WaitTillFull": false,
                             "Loading": false,
-                            "CargoTypes": [
-                                "Kartoffeln",
-                                "Sonnenblumenöl"
-                            ]
+                            "CargoTypes": []
                         },
                         {
                             "WaitTillFull": false,
                             "Loading": true,
-                            "CargoTypes": [
-                                "Pommes"
-                            ]
+                            "CargoTypes": []
                         }
                     ]
                 }
@@ -192,10 +166,7 @@
         "1": {
             "Id": 1,
             "Name": "Station Nord",
-            "Storage": {
-                "Kartoffeln": 20,
-                "Sonnenblumenöl": 10
-            },
+            "Storage": {},
             "Capacity": 100,
             "Plattforms": {
                 "1": {
@@ -217,9 +188,7 @@
         "2": {
             "Id": 2,
             "Name": "Station Süd",
-            "Storage": {
-                "Pommes": 20
-            },
+            "Storage": {},
             "Capacity": 150,
             "Plattforms": {
                 "2": {
@@ -493,10 +462,10 @@
             },
             {
                 "Tracks": [
-                    true,
-                    true,
                     false,
-                    true
+                    false,
+                    false,
+                    false
                 ],
                 "Signals": [
                     false,
@@ -522,7 +491,7 @@
             {
                 "Tracks": [
                     false,
-                    true,
+                    false,
                     false,
                     false
                 ],
@@ -551,8 +520,8 @@
         [
             {
                 "Tracks": [
-                    true,
-                    true,
+                    false,
+                    false,
                     true,
                     true
                 ],
@@ -619,7 +588,7 @@
                     false
                 ],
                 "IsPlattform": false,
-                "IsBlocked": true,
+                "IsBlocked": false,
                 "ActiveTile": {
                     "Id": 0,
                     "Category": null,
@@ -647,7 +616,7 @@
                     true
                 ],
                 "IsPlattform": false,
-                "IsBlocked": true,
+                "IsBlocked": false,
                 "ActiveTile": {
                     "Id": 0,
                     "Category": null,
@@ -663,10 +632,10 @@
             },
             {
                 "Tracks": [
+                    false,
                     true,
                     true,
-                    true,
-                    true
+                    false
                 ],
                 "Signals": [
                     false,
@@ -775,8 +744,8 @@
             },
             {
                 "Tracks": [
-                    true,
-                    true,
+                    false,
+                    false,
                     true,
                     true
                 ],
@@ -803,10 +772,10 @@
             },
             {
                 "Tracks": [
+                    false,
                     true,
                     true,
-                    true,
-                    true
+                    false
                 ],
                 "Signals": [
                     false,
@@ -875,21 +844,9 @@
                 "IsPlattform": false,
                 "IsBlocked": false,
                 "ActiveTile": {
-                    "Id": 0,
+                    "Id": 3,
                     "Category": {
-                        "Produktionszyklen": [
-                            {
-                                "Verbrauch": {},
-                                "Produktion": {
-                                    "Kartoffeln": 2,
-                                    "Sonnenblumenöl": 1
-                                },
-                                "verfügbareLevelUndScaling": [
-                                    2,
-                                    2
-                                ]
-                            }
-                        ]
+                        "Produktionszyklen": null
                     },
                     "Name": "Bauernhof Nord",
                     "Level": 0,
@@ -897,10 +854,7 @@
                         {
                             "Id": 1,
                             "Name": "Station Nord",
-                            "Storage": {
-                                "Kartoffeln": 20,
-                                "Sonnenblumenöl": 10
-                            },
+                            "Storage": {},
                             "Capacity": 100,
                             "Plattforms": {
                                 "1": {
@@ -920,10 +874,7 @@
                             }
                         }
                     ],
-                    "Storage": {
-                        "Kartoffeln": 0,
-                        "Sonnenblumenöl": 0
-                    },
+                    "Storage": null,
                     "MaxStorage": 150
                 },
                 "X": 2,
@@ -1016,8 +967,8 @@
             },
             {
                 "Tracks": [
-                    true,
-                    true,
+                    false,
+                    false,
                     true,
                     true
                 ],
@@ -1072,7 +1023,7 @@
             },
             {
                 "Tracks": [
-                    true,
+                    false,
                     true,
                     true,
                     true
@@ -1102,7 +1053,7 @@
                 "Tracks": [
                     true,
                     true,
-                    true,
+                    false,
                     true
                 ],
                 "Signals": [
@@ -1130,8 +1081,8 @@
                 "Tracks": [
                     true,
                     true,
-                    true,
-                    true
+                    false,
+                    false
                 ],
                 "Signals": [
                     false,
@@ -1282,7 +1233,7 @@
                     false
                 ],
                 "IsPlattform": false,
-                "IsBlocked": false,
+                "IsBlocked": true,
                 "ActiveTile": {
                     "Id": 0,
                     "Category": null,
@@ -1441,7 +1392,7 @@
             {
                 "Tracks": [
                     true,
-                    true,
+                    false,
                     true,
                     true
                 ],
@@ -1468,10 +1419,10 @@
             },
             {
                 "Tracks": [
+                    false,
                     true,
                     true,
-                    true,
-                    true
+                    false
                 ],
                 "Signals": [
                     false,
@@ -1553,7 +1504,7 @@
             {
                 "Tracks": [
                     true,
-                    true,
+                    false,
                     true,
                     true
                 ],
@@ -1582,8 +1533,8 @@
                 "Tracks": [
                     true,
                     true,
-                    true,
-                    true
+                    false,
+                    false
                 ],
                 "Signals": [
                     false,
@@ -1723,7 +1674,7 @@
             {
                 "Tracks": [
                     true,
-                    true,
+                    false,
                     true,
                     true
                 ],
@@ -1752,7 +1703,7 @@
                 "Tracks": [
                     true,
                     true,
-                    true,
+                    false,
                     true
                 ],
                 "Signals": [
@@ -1778,10 +1729,10 @@
             },
             {
                 "Tracks": [
+                    false,
                     true,
                     true,
-                    true,
-                    true
+                    false
                 ],
                 "Signals": [
                     false,
@@ -1988,23 +1939,9 @@
                 "IsPlattform": false,
                 "IsBlocked": false,
                 "ActiveTile": {
-                    "Id": 0,
+                    "Id": 1,
                     "Category": {
-                        "Produktionszyklen": [
-                            {
-                                "Verbrauch": {
-                                    "Kartoffeln": 4,
-                                    "Sonnenblumenöl": 1
-                                },
-                                "Produktion": {
-                                    "Pommes": 2
-                                },
-                                "verfügbareLevelUndScaling": [
-                                    2,
-                                    2
-                                ]
-                            }
-                        ]
+                        "Produktionszyklen": null
                     },
                     "Name": "Lebensmittelfabrik Süd",
                     "Level": 0,
@@ -2012,9 +1949,7 @@
                         {
                             "Id": 2,
                             "Name": "Station Süd",
-                            "Storage": {
-                                "Pommes": 20
-                            },
+                            "Storage": {},
                             "Capacity": 150,
                             "Plattforms": {
                                 "2": {
@@ -2039,9 +1974,8 @@
                         }
                     ],
                     "Storage": {
-                        "Kartoffeln": 60,
-                        "Pommes": 0,
-                        "Sonnenblumenöl": 40
+                        "Kartoffeln": 100,
+                        "Sonnenblumenöl": 50
                     },
                     "MaxStorage": 50
                 },
@@ -2110,8 +2044,8 @@
             {
                 "Tracks": [
                     true,
-                    true,
-                    true,
+                    false,
+                    false,
                     true
                 ],
                 "Signals": [
@@ -2205,7 +2139,7 @@
                     false
                 ],
                 "IsPlattform": false,
-                "IsBlocked": false,
+                "IsBlocked": true,
                 "ActiveTile": {
                     "Id": 0,
                     "Category": null,
@@ -2233,7 +2167,7 @@
                     false
                 ],
                 "IsPlattform": false,
-                "IsBlocked": false,
+                "IsBlocked": true,
                 "ActiveTile": {
                     "Id": 0,
                     "Category": null,
@@ -2251,7 +2185,7 @@
                 "Tracks": [
                     true,
                     true,
-                    true,
+                    false,
                     true
                 ],
                 "Signals": [
@@ -2448,7 +2382,7 @@
             {
                 "Tracks": [
                     true,
-                    true,
+                    false,
                     true,
                     true
                 ],
@@ -2503,10 +2437,10 @@
             },
             {
                 "Tracks": [
+                    false,
                     true,
                     true,
-                    true,
-                    true
+                    false
                 ],
                 "Signals": [
                     false,
@@ -2701,8 +2635,8 @@
             },
             {
                 "Tracks": [
-                    true,
-                    true,
+                    false,
+                    false,
                     true,
                     true
                 ],
@@ -2731,8 +2665,8 @@
                 "Tracks": [
                     true,
                     true,
-                    true,
-                    true
+                    false,
+                    false
                 ],
                 "Signals": [
                     false,
@@ -2771,20 +2705,9 @@
                 "IsPlattform": false,
                 "IsBlocked": false,
                 "ActiveTile": {
-                    "Id": 0,
+                    "Id": 2,
                     "Category": {
-                        "Produktionszyklen": [
-                            {
-                                "Verbrauch": {
-                                    "Pommes": 4
-                                },
-                                "Produktion": {},
-                                "verfügbareLevelUndScaling": [
-                                    2,
-                                    2
-                                ]
-                            }
-                        ]
+                        "Produktionszyklen": null
                     },
                     "Name": "Wuppertal",
                     "Level": 0,
@@ -2812,9 +2735,7 @@
                             }
                         }
                     ],
-                    "Storage": {
-                        "Pommes": 0
-                    },
+                    "Storage": null,
                     "MaxStorage": 50
                 },
                 "X": 8,
@@ -3023,7 +2944,7 @@
                 "Tracks": [
                     true,
                     true,
-                    true,
+                    false,
                     true
                 ],
                 "Signals": [
@@ -3033,7 +2954,7 @@
                     false
                 ],
                 "IsPlattform": false,
-                "IsBlocked": true,
+                "IsBlocked": false,
                 "ActiveTile": {
                     "Id": 0,
                     "Category": null,
@@ -3061,7 +2982,7 @@
                     false
                 ],
                 "IsPlattform": true,
-                "IsBlocked": true,
+                "IsBlocked": false,
                 "ActiveTile": {
                     "Id": 0,
                     "Category": null,
@@ -3089,7 +3010,7 @@
                     false
                 ],
                 "IsPlattform": true,
-                "IsBlocked": true,
+                "IsBlocked": false,
                 "ActiveTile": {
                     "Id": 0,
                     "Category": null,
@@ -3107,7 +3028,7 @@
                 "Tracks": [
                     true,
                     true,
-                    true,
+                    false,
                     true
                 ],
                 "Signals": [
@@ -3224,63 +3145,19 @@
             "Waggons": [
                 {
                     "Position": [
-                        1,
                         3,
-                        4
+                        4,
+                        3
                     ],
                     "MaxSpeed": 77,
                     "CargoStorage": {
                         "Capacity": 30,
                         "Filled": 0,
                         "FilledCargoType": "",
-                        "CargoCategory": "Lebensmittel"
+                        "CargoCategory": ""
                     },
-                    "Power": 0
-                },
-                {
-                    "Position": [
-                        1,
-                        3,
-                        2
-                    ],
-                    "MaxSpeed": 77,
-                    "CargoStorage": {
-                        "Capacity": 30,
-                        "Filled": 0,
-                        "FilledCargoType": "",
-                        "CargoCategory": "Lebensmittel"
-                    },
-                    "Power": 0
-                },
-                {
-                    "Position": [
-                        1,
-                        2,
-                        4
-                    ],
-                    "MaxSpeed": 77,
-                    "CargoStorage": {
-                        "Capacity": 30,
-                        "Filled": 0,
-                        "FilledCargoType": "",
-                        "CargoCategory": "Lebensmittel"
-                    },
-                    "Power": 0
-                },
-                {
-                    "Position": [
-                        1,
-                        2,
-                        2
-                    ],
-                    "MaxSpeed": 77,
-                    "CargoStorage": {
-                        "Capacity": 30,
-                        "Filled": 0,
-                        "FilledCargoType": "",
-                        "CargoCategory": "Lebensmittel"
-                    },
-                    "Power": 0
+                    "Power": 100,
+                    "EmptyWeight": 20
                 }
             ],
             "Schedule": {
@@ -3314,17 +3191,12 @@
                             {
                                 "WaitTillFull": false,
                                 "Loading": false,
-                                "CargoTypes": [
-                                    "Pommes"
-                                ]
+                                "CargoTypes": []
                             },
                             {
                                 "WaitTillFull": false,
                                 "Loading": true,
-                                "CargoTypes": [
-                                    "Kartoffeln",
-                                    "Sonnenblumenöl"
-                                ]
+                                "CargoTypes": []
                             }
                         ]
                     },
@@ -3355,35 +3227,30 @@
                             {
                                 "WaitTillFull": false,
                                 "Loading": false,
-                                "CargoTypes": [
-                                    "Kartoffeln",
-                                    "Sonnenblumenöl"
-                                ]
+                                "CargoTypes": []
                             },
                             {
                                 "WaitTillFull": false,
                                 "Loading": true,
-                                "CargoTypes": [
-                                    "Pommes"
-                                ]
+                                "CargoTypes": []
                             }
                         ]
                     }
                 ]
             },
             "NextStop": {
-                "Id": 2,
+                "Id": 1,
                 "Plattform": {
-                    "Id": 3,
-                    "Name": "Gleis 2",
+                    "Id": 1,
+                    "Name": "Gleis 1",
                     "Tiles": [
                         [
-                            9,
-                            5
+                            3,
+                            0
                         ],
                         [
-                            9,
-                            4
+                            2,
+                            0
                         ]
                     ]
                 },
@@ -3398,156 +3265,18 @@
                     {
                         "WaitTillFull": false,
                         "Loading": false,
-                        "CargoTypes": [
-                            "Kartoffeln",
-                            "Sonnenblumenöl"
-                        ]
+                        "CargoTypes": []
                     },
                     {
                         "WaitTillFull": false,
                         "Loading": true,
-                        "CargoTypes": [
-                            "Pommes"
-                        ]
+                        "CargoTypes": []
                     }
                 ]
             },
-            "CurrentPath": [
-                [
-                    1,
-                    4,
-                    2
-                ],
-                [
-                    1,
-                    4,
-                    3
-                ],
-                [
-                    2,
-                    4,
-                    1
-                ],
-                [
-                    2,
-                    4,
-                    3
-                ],
-                [
-                    3,
-                    4,
-                    1
-                ],
-                [
-                    3,
-                    4,
-                    3
-                ],
-                [
-                    4,
-                    4,
-                    1
-                ],
-                [
-                    4,
-                    4,
-                    3
-                ],
-                [
-                    5,
-                    4,
-                    1
-                ],
-                [
-                    5,
-                    4,
-                    3
-                ],
-                [
-                    6,
-                    4,
-                    1
-                ],
-                [
-                    6,
-                    4,
-                    3
-                ],
-                [
-                    7,
-                    4,
-                    1
-                ],
-                [
-                    7,
-                    4,
-                    3
-                ],
-                [
-                    8,
-                    4,
-                    1
-                ],
-                [
-                    8,
-                    4,
-                    2
-                ],
-                [
-                    8,
-                    3,
-                    4
-                ],
-                [
-                    8,
-                    3,
-                    3
-                ],
-                [
-                    9,
-                    3,
-                    1
-                ],
-                [
-                    9,
-                    3,
-                    4
-                ],
-                [
-                    9,
-                    4,
-                    2
-                ],
-                [
-                    9,
-                    4,
-                    4
-                ],
-                [
-                    9,
-                    5,
-                    2
-                ],
-                [
-                    9,
-                    5,
-                    4
-                ]
-            ],
-            "CurrentPathSignals": [
-                [
-                    1,
-                    3,
-                    4
-                ],
-                [
-                    9,
-                    5,
-                    4
-                ]
-            ],
-            "Waiting": false,
-            "LoadingTime": 0,
+            "CurrentPath": null,
+            "CurrentPathSignals": null,
+            "LoadingTime": 1,
             "FinishedLoading": false
         },
         "2": {
@@ -3556,8 +3285,8 @@
             "Waggons": [
                 {
                     "Position": [
-                        9,
-                        4,
+                        6,
+                        5,
                         4
                     ],
                     "MaxSpeed": 77,
@@ -3567,52 +3296,8 @@
                         "FilledCargoType": "",
                         "CargoCategory": "Lebensmittel"
                     },
-                    "Power": 0
-                },
-                {
-                    "Position": [
-                        9,
-                        4,
-                        2
-                    ],
-                    "MaxSpeed": 77,
-                    "CargoStorage": {
-                        "Capacity": 30,
-                        "Filled": 0,
-                        "FilledCargoType": "",
-                        "CargoCategory": "Lebensmittel"
-                    },
-                    "Power": 0
-                },
-                {
-                    "Position": [
-                        9,
-                        3,
-                        4
-                    ],
-                    "MaxSpeed": 77,
-                    "CargoStorage": {
-                        "Capacity": 30,
-                        "Filled": 0,
-                        "FilledCargoType": "",
-                        "CargoCategory": "Lebensmittel"
-                    },
-                    "Power": 0
-                },
-                {
-                    "Position": [
-                        9,
-                        3,
-                        1
-                    ],
-                    "MaxSpeed": 77,
-                    "CargoStorage": {
-                        "Capacity": 30,
-                        "Filled": 0,
-                        "FilledCargoType": "",
-                        "CargoCategory": "Lebensmittel"
-                    },
-                    "Power": 0
+                    "Power": 0,
+                    "EmptyWeight": 10
                 }
             ],
             "Schedule": {
@@ -3646,17 +3331,12 @@
                             {
                                 "WaitTillFull": false,
                                 "Loading": false,
-                                "CargoTypes": [
-                                    "Pommes"
-                                ]
+                                "CargoTypes": []
                             },
                             {
                                 "WaitTillFull": false,
                                 "Loading": true,
-                                "CargoTypes": [
-                                    "Kartoffeln",
-                                    "Sonnenblumenöl"
-                                ]
+                                "CargoTypes": []
                             }
                         ]
                     },
@@ -3691,17 +3371,12 @@
                             {
                                 "WaitTillFull": false,
                                 "Loading": false,
-                                "CargoTypes": [
-                                    "Kartoffeln",
-                                    "Sonnenblumenöl"
-                                ]
+                                "CargoTypes": []
                             },
                             {
                                 "WaitTillFull": false,
                                 "Loading": true,
-                                "CargoTypes": [
-                                    "Pommes"
-                                ]
+                                "CargoTypes": []
                             }
                         ]
                     }
@@ -3734,61 +3409,26 @@
                     {
                         "WaitTillFull": false,
                         "Loading": false,
-                        "CargoTypes": [
-                            "Pommes"
-                        ]
+                        "CargoTypes": []
                     },
                     {
                         "WaitTillFull": false,
                         "Loading": true,
-                        "CargoTypes": [
-                            "Kartoffeln",
-                            "Sonnenblumenöl"
-                        ]
+                        "CargoTypes": []
                     }
                 ]
             },
-            "CurrentPath": [
-                [
-                    9,
-                    5,
-                    2
-                ],
-                [
-                    9,
-                    5,
-                    4
-                ]
-            ],
-            "CurrentPathSignals": [
-                [
-                    9,
-                    5,
-                    4
-                ]
-            ],
-            "Waiting": false,
-            "LoadingTime": 0,
+            "CurrentPath": null,
+            "CurrentPathSignals": null,
+            "LoadingTime": 1,
             "FinishedLoading": false
         }
     },
     "ActiveTiles": [
         {
-            "Id": 0,
+            "Id": 3,
             "Category": {
-                "Produktionszyklen": [
-                    {
-                        "Verbrauch": {},
-                        "Produktion": {
-                            "Kartoffeln": 2,
-                            "Sonnenblumenöl": 1
-                        },
-                        "verfügbareLevelUndScaling": [
-                            2,
-                            2
-                        ]
-                    }
-                ]
+                "Produktionszyklen": null
             },
             "Name": "Bauernhof Nord",
             "Level": 0,
@@ -3796,10 +3436,7 @@
                 {
                     "Id": 1,
                     "Name": "Station Nord",
-                    "Storage": {
-                        "Kartoffeln": 20,
-                        "Sonnenblumenöl": 10
-                    },
+                    "Storage": {},
                     "Capacity": 100,
                     "Plattforms": {
                         "1": {
@@ -3819,27 +3456,13 @@
                     }
                 }
             ],
-            "Storage": {
-                "Kartoffeln": 180,
-                "Sonnenblumenöl": 90
-            },
+            "Storage": null,
             "MaxStorage": 150
         },
         {
-            "Id": 0,
+            "Id": 2,
             "Category": {
-                "Produktionszyklen": [
-                    {
-                        "Verbrauch": {
-                            "Pommes": 4
-                        },
-                        "Produktion": {},
-                        "verfügbareLevelUndScaling": [
-                            2,
-                            2
-                        ]
-                    }
-                ]
+                "Produktionszyklen": null
             },
             "Name": "Wuppertal",
             "Level": 0,
@@ -3867,29 +3490,13 @@
                     }
                 }
             ],
-            "Storage": {
-                "Pommes": 0
-            },
+            "Storage": null,
             "MaxStorage": 50
         },
         {
-            "Id": 0,
+            "Id": 1,
             "Category": {
-                "Produktionszyklen": [
-                    {
-                        "Verbrauch": {
-                            "Kartoffeln": 4,
-                            "Sonnenblumenöl": 1
-                        },
-                        "Produktion": {
-                            "Pommes": 2
-                        },
-                        "verfügbareLevelUndScaling": [
-                            2,
-                            2
-                        ]
-                    }
-                ]
+                "Produktionszyklen": null
             },
             "Name": "Lebensmittelfabrik Süd",
             "Level": 0,
@@ -3897,9 +3504,7 @@
                 {
                     "Id": 2,
                     "Name": "Station Süd",
-                    "Storage": {
-                        "Pommes": 20
-                    },
+                    "Storage": {},
                     "Capacity": 150,
                     "Plattforms": {
                         "2": {
@@ -3924,9 +3529,8 @@
                 }
             ],
             "Storage": {
-                "Kartoffeln": 0,
-                "Pommes": 30,
-                "Sonnenblumenöl": 25
+                "Kartoffeln": 100,
+                "Sonnenblumenöl": 50
             },
             "MaxStorage": 50
         }
@@ -3935,106 +3539,17 @@
     "MinLoadUloadTicks": 2,
     "CapacityPerStationTile": 50,
     "ConfigData": {
-        "Train Categories": {
-            "Flüssigkeiten": [
-                "Erdöl",
-                "Treibstoff"
-            ],
-            "Lebensmittel": [
-                "Kartoffeln",
-                "Pommes",
-                "Sonnenblumenöl"
-            ],
-            "Schüttgut": [
-                "Kohle",
-                "Eisenerz"
-            ]
-        },
-        "Aktive Tiles": {
-            "Bauernhof": {
-                "Produktionszyklen": [
-                    {
-                        "Verbrauch": {},
-                        "Produktion": {
-                            "Kartoffeln": 2,
-                            "Sonnenblumenöl": 1
-                        },
-                        "verfügbareLevelUndScaling": [
-                            2,
-                            2
-                        ]
-                    }
-                ]
-            },
-            "Kohle Bergwerk": {
-                "Produktionszyklen": [
-                    {
-                        "Verbrauch": {},
-                        "Produktion": {
-                            "Kohle": 10
-                        },
-                        "verfügbareLevelUndScaling": [
-                            2,
-                            2
-                        ]
-                    }
-                ]
-            },
-            "Kohlekraftwerk": {
-                "Produktionszyklen": [
-                    {
-                        "Verbrauch": {
-                            "Kohle": 20
-                        },
-                        "Produktion": {},
-                        "verfügbareLevelUndScaling": [
-                            2,
-                            2
-                        ]
-                    }
-                ]
-            },
-            "Lebensmittelfabrik": {
-                "Produktionszyklen": [
-                    {
-                        "Verbrauch": {
-                            "Kartoffeln": 4,
-                            "Sonnenblumenöl": 1
-                        },
-                        "Produktion": {
-                            "Pommes": 2
-                        },
-                        "verfügbareLevelUndScaling": [
-                            2,
-                            2
-                        ]
-                    }
-                ]
-            },
-            "Stadt": {
-                "Produktionszyklen": [
-                    {
-                        "Verbrauch": {
-                            "Pommes": 4
-                        },
-                        "Produktion": {},
-                        "verfügbareLevelUndScaling": [
-                            2,
-                            2
-                        ]
-                    }
-                ]
-            }
-        }
+        "Train Categories": null,
+        "Aktive Tiles": null
     },
     "StationRange": 2,
-    "CurrentTrainID": 6,
-    "CurrentScheduleID": 6,
-    "CurrentStopID": 10,
-    "CurrentStationID": 8,
-    "CurrentPlattformID": 8,
-    "CurrentActiveTileID": 2,
-    "Tick": 1001,
+    "CurrentTrainID": 3,
+    "CurrentScheduleID": 3,
+    "CurrentStopID": 5,
+    "CurrentStationID": 4,
+    "CurrentPlattformID": 4,
+    "CurrentActiveTileID": 1,
+    "Tick": 1,
     "SizeX": 10,
     "SizeY": 10,
     "SizeSubtile": 4

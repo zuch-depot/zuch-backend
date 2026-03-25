@@ -78,12 +78,13 @@ func (s *Schedule) nextStop(currentStop *Stop) *Stop {
 }
 
 // Entfernt den Stop mit der passenden Id. Löscht nicht den Schedule, wenn es der letzte Stop war. Die kann man nur mit der Funktion löschen
-// index von 0 startend
-// TODO errors, umändern in index
+// index von 1 startend
 func (s *Schedule) RemoveStop(index int, gs *GameState) error {
 	var err error
 
-	if index < 0 || index > len(s.Stops) {
+	index -= 1
+
+	if index < 0 || index >= len(s.Stops) {
 		return fmt.Errorf("Please provide a valid index.")
 	}
 
@@ -111,7 +112,9 @@ func (s *Schedule) RemoveStops(indexStart int, indexEnde int, gs *GameState) err
 	}
 
 	for i := indexStart; i <= indexEnde; i++ {
-		err := s.RemoveStop(i, gs)
+
+		//immer den ersten idex, da beim löschen die nachfolgenden nachrücken
+		err := s.RemoveStop(indexStart, gs)
 		if err != nil {
 			return err
 		}
