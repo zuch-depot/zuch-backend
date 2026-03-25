@@ -278,7 +278,7 @@ func checkIfCoordinatesAreValid(position [3]int, gs *ds.GameState) error {
 // warum hast du das so komisch gemacht Jannis?
 // -> wenn du die funktionen direkt aufrufst, sieht das in der Übersicht besser aus
 // Führt das callback mit den daten des envelopes aus, tritt ein fehler aus wird der zurück gegeben, andererseits wird die nachricht an alle geschickt
-func executeAndReply(callback func(int, *ds.GameState) (bool, string), envelope *ds.RecieveWSEnvelope, update *ds.TileUpdateMSG, gs *ds.GameState) error {
+func executeAndReply(callback func(int, *ds.GameState) (bool, string), envelope *ds.RecieveWSEnvelope, update *ds.MultitileUpdateMSG, gs *ds.GameState) error {
 	success, msg := callback(update.Position[2], gs)
 	if success {
 		envelope.Reply(success, "", gs)
