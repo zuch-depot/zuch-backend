@@ -20,8 +20,8 @@ var (
 
 	// #endregion Map & Tiles
 	// #region Stationen
-	addStation    = WsEnvelope{Type: "station.create", Msg: &TileUpdateMSG{}}
-	removeStation = WsEnvelope{Type: "station.remove", Msg: &TileUpdateMSG{}}
+	addStation    = WsEnvelope{Type: "station.create", Msg: &MultitileUpdateMSG{}}
+	removeStation = WsEnvelope{Type: "station.remove", Msg: &MultitileUpdateMSG{}}
 	// und zurück
 	addStationOut    = WsEnvelope{Type: "station.create", Msg: &Station{}}
 	removeStationOut = WsEnvelope{Type: "station.remove", Msg: &Station{}}
