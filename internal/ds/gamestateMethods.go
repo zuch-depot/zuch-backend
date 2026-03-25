@@ -663,13 +663,18 @@ func (gs *GameState) iterateSubTiles(startSubTile [3]int, endSubTile [3]int, def
 		//edititeren der Tiles
 		curTile := sst
 		countUp := (sst[0] == est[0] && sst[2] < est[2]) || sst[0] < est[0] // ob sst links von est ist
-		for curTile[0] != est[0] || curTile[1] != est[1] || curTile[2] != est[2] {
+		for {
 
 			//Methode auf Tile anwenden, signal,
 			error := methodForEach(gs, curTile)
 
 			if error != nil {
 				notEdit = append(notEdit, "("+strconv.Itoa(curTile[0])+", "+strconv.Itoa(curTile[1])+", "+strconv.Itoa(curTile[2])+") "+error.Error())
+			}
+
+			//abbruchbedingung, wenn das betrachtete Subtile das letzte war
+			if curTile[0] == est[0] && curTile[2] == est[2] {
+				break
 			}
 
 			if countUp {
@@ -699,12 +704,17 @@ func (gs *GameState) iterateSubTiles(startSubTile [3]int, endSubTile [3]int, def
 		//jedes Sub-tile durchiterieren
 		curTile := sst
 		countUp := (sst[1] == est[1] && sst[2] < est[2]) || sst[1] < est[1] // ob sst unter est ist
-		for curTile[0] != est[0] || curTile[1] != est[1] || curTile[2] != est[2] {
+		for true {
 
 			error := methodForEach(gs, curTile)
 
 			if error != nil {
 				notEdit = append(notEdit, "("+strconv.Itoa(curTile[0])+", "+strconv.Itoa(curTile[1])+", "+strconv.Itoa(curTile[2])+") "+error.Error())
+			}
+
+			//abbruchbedingung, wenn das betrachtete Subtile das letzt war
+			if curTile[1] == est[1] && curTile[2] == est[2] {
+				break
 			}
 
 			if countUp {

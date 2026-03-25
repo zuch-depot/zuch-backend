@@ -72,7 +72,7 @@ func main() {
 	// wenn wer rausfliegt sollten die sachen noch da sein
 
 	//lade das akutellste Savegame
-	loadGame(&gs, "")
+	// loadGame(&gs, "")
 
 	// hier den Server starten
 	go startServer(&gs)

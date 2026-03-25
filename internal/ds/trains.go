@@ -487,7 +487,7 @@ func (t *Train) AddWaggon(position [3]int, typ string, gs *GameState) error {
 
 	// Waggons zu zug hinzufügen und entsprechende tiles blockieren
 	waggon := &Waggon{Position: position, MaxSpeed: maxSpeed, CargoStorage: &CargoStorage{Capacity: capacity, CargoCategory: typ}}
-	if len(t.Waggons) > 0 {
+	if len(t.Waggons) == 0 {
 		t.Waggons = []*Waggon{waggon}
 	} else {
 		t.Waggons = append(t.Waggons, waggon)
@@ -508,14 +508,20 @@ func (t *Train) isWaggonValid(position [3]int, gs *GameState) error {
 	prevWaggon := t.Waggons[len(t.Waggons)-1]
 
 	//wenn das im selben tile wie der vorgänger ist, dann wir das Tile von diesem blockiert, daher der Bau trotzdem erlaubt
-	if gs.Tiles[position[0]][position[1]].IsBlocked && prevWaggon.Position != position {
+	if gs.Tiles[position[0]][position[1]].IsBlocked && (prevWaggon.Position[0] != position[0] || prevWaggon.Position[1] != position[1]) {
 		return fmt.Errorf("track is blocked")
 	}
 
-	// wenn es mehr als 1 waggon gibt, gucken, dass nicht da probiert wird zu bauen
+	// man kann nicht auf dem gleichen SubTile wie der vorher letzte Waggon bauen
+	if t.Waggons[len(t.Waggons)-1].Position == position {
+		return fmt.Errorf("There is already a waggon there. Please provide a valid coordinate at the end of the train.")
+	}
+
+	// wenn es mehr als 1 waggon gibt, gucken, dass er nicht zwischendurch bauen möchte
 	if len(t.Waggons) > 1 {
-		if t.Waggons[len(t.Waggons)-2].Position == position {
-			return fmt.Errorf("There is already a waggon there. Please provide a valid coordinat at the end of the train.")
+		secondLastPos := t.Waggons[len(t.Waggons)-2].Position
+		if secondLastPos[0] == position[0] && secondLastPos[1] == position[1] {
+			return fmt.Errorf("Please only try to add waggons to the end of the train.")
 		}
 	}
 
