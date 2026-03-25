@@ -137,7 +137,7 @@ func (t *Tile) RemoveTrack(subtile int, gs *GameState) error {
 func (t *Tile) AddSignal(subtile int, gs *GameState) error {
 
 	//ist subTile valid?
-	if 0 < subtile || subtile < 5 {
+	if 1 > subtile || subtile > 4 {
 		return fmt.Errorf("An error accured while adding a signal. Please provide valid subtile coordinates between 1 and 4.")
 	}
 
@@ -149,7 +149,7 @@ func (t *Tile) AddSignal(subtile int, gs *GameState) error {
 		return fmt.Errorf("The Tile is a Plattform, no Signal can be build there.")
 	}
 
-	if t.Tracks[subtile-1] {
+	if !t.Tracks[subtile-1] {
 		return fmt.Errorf("There are no Track to place the signal.")
 	}
 
@@ -170,11 +170,11 @@ func (t *Tile) AddSignal(subtile int, gs *GameState) error {
 // Entfernt bei i das Signal, wenn da eins ist und das Tile nicht locked ist
 func (t *Tile) RemoveSignal(subtile int, gs *GameState) error {
 
-	if t.Signals[subtile-1] {
+	if !t.Signals[subtile-1] {
 		return fmt.Errorf("There is no Signal to remove.")
 	}
 
-	if t.IsLocked {
+	if t.IsBlocked {
 		return fmt.Errorf("The Tile is currently blocked, the signal could not be demolished.")
 	}
 
