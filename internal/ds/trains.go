@@ -475,6 +475,14 @@ func (t *Train) AddWaggon(position [3]int, typ string, gs *GameState) error {
 		if err != nil {
 			return err
 		}
+	} else {
+		//wenn das die Lokomotive ist, muss man manuell überprüfen, ob da ein Track ist und ob das blockiert ist, sonst in isWaggonValid
+		if !gs.Tiles[position[0]][position[1]].Tracks[position[2]-1] {
+			return fmt.Errorf("Could not build a waggon there, there is no track on that position.")
+		}
+		if gs.Tiles[position[0]][position[1]].IsBlocked {
+			return fmt.Errorf("Could not build a waggon there, the tile is blocked.")
+		}
 	}
 
 	// Waggons zu zug hinzufügen und entsprechende tiles blockieren
