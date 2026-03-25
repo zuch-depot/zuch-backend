@@ -18,6 +18,8 @@ import (
 // Zum Debuggen: LevelInfo zu LevelDebug wechseln
 var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true, Level: slog.LevelInfo}))
 
+// var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true, Level: slog.LevelDebug}))
+
 func main() {
 	utils.Logger = logger
 

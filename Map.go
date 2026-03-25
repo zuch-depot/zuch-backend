@@ -85,7 +85,7 @@ func createDemoTrains(gs *ds.GameState) {
 	stop.SetUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false, gs)
 
 	train, err := gs.AddTrain("RE1", [3]int{3, 4, 3}, "")
-	train.AddWaggons([3]int{3, 4, 1}, [3]int{2, 4, 1}, "Lebensmittel", gs)
+	train.AddWaggons([3]int{3, 4, 1}, [3]int{2, 4, 1}, "", gs) // SIND KEINE LEBENSMITTEl, können gerade nichts laden
 	train.AssignSchedule(schedule, gs)
 	if err != nil {
 		gs.Logger.Error("Fehler, aber ist im demo ding egal")

@@ -115,10 +115,8 @@ func (t *Train) move(gs *GameState) [2]int {
 	entblocken := [2]int{-1, -1}
 
 	if t.LoadingTime != 0 {
-		fmt.Println("Loading")
 		if !t.FinishedLoading {
 			// noch nicht fertig mit entladen, also nicht losfahren
-			fmt.Println(t.Name, "not ready with loading")
 			return entblocken
 		} else {
 			// fertig mit entladen, also damit aufhören und wieder fahren
@@ -216,7 +214,6 @@ func (t *Train) move(gs *GameState) [2]int {
 			if gs.Tiles[path[i][0]][path[i][1]].IsBlocked {
 				gs.Logger.Debug("Zug " + t.Name + ": Blocked Tile found: []" + strconv.Itoa(path[i][0]) + ", " + strconv.Itoa(path[i][1]) + ", " + strconv.Itoa(path[i][2]) + ". Waiting")
 
-				fmt.Println(t.Name, "Found Blocked Tile while driving to", t.NextStop.Plattform.GetStation(gs).Name)
 				// if !t.Waiting {
 				// 	//TODO
 				// 	gs.Logger.Debug("Hallo Jannis, hier Nachricht an client, dass das Signal an Stelle " +
@@ -252,8 +249,6 @@ func (t *Train) move(gs *GameState) [2]int {
 		t.Waggons[i-1].Position = t.Waggons[i-2].Position
 	}
 
-	fmt.Println("Move Train", t.Name)
-
 	//Bewegung der Lokomotive
 	t.Waggons[0].Position = t.CurrentPath[0]
 	//rausschmeißen des Tiles, wo die Lok sich hinbewegt hat aus der Queue
@@ -282,7 +277,7 @@ func (t *Train) calculateTrain(gs *GameState) [2]int {
 	//ist gerade in die Staion eingefahren. wird in loadTime gespeichert als. die station ist die, des aktuellen Stoppes. Muss sich nicht bewegen, wenn gerade in station eingelaufen
 	// if t.NextStop.IsPlattform && t.LoadingTime == 0 && len(t.CurrentPath) == 0 {
 	goals := t.NextStop.getGoals(gs)
-	if t.NextStop.IsPlattform && slices.Contains(goals, t.Waggons[0].Position) {
+	if t.NextStop.IsPlattform && slices.Contains(goals, t.Waggons[0].Position) && !t.FinishedLoading && len(t.CurrentPath) == 0 {
 		gs.Logger.Debug("Zug " + t.Name + " in " + t.NextStop.Plattform.GetStation(gs).Name + " eingefahren.")
 
 		t.LoadingTime++
@@ -303,6 +298,8 @@ func (t *Train) loadUnload(gs *GameState) error {
 		// Ist nicht wirklich ein Fehler, wird halt einfach nicht beladen
 		return nil
 	}
+
+	t.LoadingTime++
 
 	var r bool
 
@@ -382,7 +379,8 @@ func (t *Train) loadUnload(gs *GameState) error {
 		}
 	}
 
-	if avaliableLoadUnloadSpeed < gs.LoadUnloadSpeed {
+	// if avaliableLoadUnloadSpeed < gs.LoadUnloadSpeed && t.LoadingTime >= gs.MinLoadUloadTicks {
+	if avaliableLoadUnloadSpeed > 0 && t.LoadingTime >= gs.MinLoadUloadTicks {
 		r = true
 	}
 
@@ -473,7 +471,7 @@ func (t *Train) AddWaggon(position [3]int, typ string, gs *GameState) error {
 		emptyWeight = 10
 	case "":
 		capacity = 30
-		maxSpeed = 77
+		maxSpeed = 180
 		power = 100
 		emptyWeight = 20
 	default:
