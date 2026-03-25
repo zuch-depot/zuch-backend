@@ -420,6 +420,7 @@ func (gs *GameState) AddTrain(name string, position [3]int, lokmotive string) (*
 }
 
 // nur für Main, hier eigentlich gut, oder?
+// berechnet alle Bewegungen und Pathfinding
 func (gs *GameState) CalculateTrains() {
 	// Speichern, welche Tiles am Ende des Threads entblocked werden muss
 	var tilesToUnblock [][2]int
@@ -438,6 +439,20 @@ func (gs *GameState) CalculateTrains() {
 	if len(tilesToUnblock) > 0 {
 		gs.BroadcastChannel <- WsEnvelope{Type: "tiles.unblock", Msg: BlockedTilesMSG{Tiles: tilesToUnblock}}
 	}
+}
+
+// Funktion, damit die Züge den Belade und Entladeprozess machen.
+// ist einzeln, damit es unabhängig von den Fahrtgeschwindigkeiten ist
+func (gs *GameState) LoadUndloadTrains() error {
+
+	for _, t := range gs.Trains {
+		err := t.loadUnload(gs)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // entfernt diesen zug, dazu wird er aus dem array genommen und sein currentPath wird auf nicht blockiert gesetzt, hoffe das passt so

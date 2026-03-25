@@ -219,6 +219,9 @@ func (s *Station) addCargo(cargoType string, quantity int) int {
 		s.Storage[cargoType] += quantity - overflow
 		return overflow
 	}
+
+	//TODO JANNIS die Station zum Client schicken
+
 	return quantity
 }
 

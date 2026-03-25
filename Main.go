@@ -72,7 +72,7 @@ func main() {
 	// wenn wer rausfliegt sollten die sachen noch da sein
 
 	//lade das akutellste Savegame
-	loadGame(&gs, "")
+	// loadGame(&gs, "")
 
 	// hier den Server starten
 	go startServer(&gs)
@@ -85,6 +85,8 @@ func main() {
 	}
 
 	gs.Ticker = time.NewTicker(time.Duration(ticksMilisec) * time.Millisecond)
+
+	// go saveGame(&gs, "")
 
 	// jeder Tick
 	//for gs.Tick = 0; ; gs.Tick++ { //--> gs.tick ist standartmäßig 0, wenn nicht, dann nur, weil das rausgeladen wurde
@@ -103,16 +105,20 @@ func main() {
 
 		//TEMP fürs testen
 		// if gs.Tick%1000 == 0 {
-		// 	go saveGame(&gs, "")
+		// go saveGame(&gs, "")
 		// }
 
-		// Train calculate (Läd/Entläd oder bewegt) und entblocken
-		if gs.Tick%10 == 0 {
-			gs.CalculateTrains()
+		// Züge bewegen
+		// if gs.Tick%1 == 0 {
+		gs.CalculateTrains()
+		// }
+
+		if gs.Tick&10 == 2 {
+			gs.LoadUndloadTrains()
 		}
 
 		// process factorys
-		if gs.Tick%10 == 1 {
+		if gs.Tick%20 == 1 {
 			processActiveTiles(&gs)
 		}
 

@@ -3145,9 +3145,9 @@
             "Waggons": [
                 {
                     "Position": [
-                        3,
-                        4,
-                        3
+                        8,
+                        6,
+                        1
                     ],
                     "MaxSpeed": 77,
                     "CargoStorage": {
@@ -3157,6 +3157,54 @@
                         "CargoCategory": ""
                     },
                     "Power": 100,
+                    "EmptyWeight": 20
+                },
+                {
+                    "Position": [
+                        8,
+                        6,
+                        3
+                    ],
+                    "MaxSpeed": 77,
+                    "CargoStorage": {
+                        "Capacity": 30,
+                        "Filled": 0,
+                        "FilledCargoType": "",
+                        "CargoCategory": "Lebensmittel"
+                    },
+                    "Power": 0,
+                    "EmptyWeight": 20
+                },
+                {
+                    "Position": [
+                        9,
+                        6,
+                        1
+                    ],
+                    "MaxSpeed": 77,
+                    "CargoStorage": {
+                        "Capacity": 30,
+                        "Filled": 0,
+                        "FilledCargoType": "",
+                        "CargoCategory": "Lebensmittel"
+                    },
+                    "Power": 0,
+                    "EmptyWeight": 20
+                },
+                {
+                    "Position": [
+                        9,
+                        6,
+                        2
+                    ],
+                    "MaxSpeed": 77,
+                    "CargoStorage": {
+                        "Capacity": 30,
+                        "Filled": 0,
+                        "FilledCargoType": "",
+                        "CargoCategory": "Lebensmittel"
+                    },
+                    "Power": 0,
                     "EmptyWeight": 20
                 }
             ],
@@ -3276,7 +3324,7 @@
             },
             "CurrentPath": null,
             "CurrentPathSignals": null,
-            "LoadingTime": 1,
+            "LoadingTime": 0,
             "FinishedLoading": false
         },
         "2": {
@@ -3286,8 +3334,56 @@
                 {
                     "Position": [
                         6,
-                        5,
+                        7,
+                        1
+                    ],
+                    "MaxSpeed": 77,
+                    "CargoStorage": {
+                        "Capacity": 30,
+                        "Filled": 0,
+                        "FilledCargoType": "",
+                        "CargoCategory": ""
+                    },
+                    "Power": 100,
+                    "EmptyWeight": 10
+                },
+                {
+                    "Position": [
+                        6,
+                        7,
+                        2
+                    ],
+                    "MaxSpeed": 77,
+                    "CargoStorage": {
+                        "Capacity": 30,
+                        "Filled": 0,
+                        "FilledCargoType": "",
+                        "CargoCategory": "Lebensmittel"
+                    },
+                    "Power": 0,
+                    "EmptyWeight": 10
+                },
+                {
+                    "Position": [
+                        6,
+                        6,
                         4
+                    ],
+                    "MaxSpeed": 77,
+                    "CargoStorage": {
+                        "Capacity": 30,
+                        "Filled": 0,
+                        "FilledCargoType": "",
+                        "CargoCategory": "Lebensmittel"
+                    },
+                    "Power": 0,
+                    "EmptyWeight": 10
+                },
+                {
+                    "Position": [
+                        6,
+                        6,
+                        2
                     ],
                     "MaxSpeed": 77,
                     "CargoStorage": {
@@ -3420,7 +3516,7 @@
             },
             "CurrentPath": null,
             "CurrentPathSignals": null,
-            "LoadingTime": 1,
+            "LoadingTime": 0,
             "FinishedLoading": false
         }
     },

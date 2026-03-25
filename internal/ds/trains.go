@@ -3,6 +3,7 @@ package ds
 import (
 	"fmt"
 	"log/slog"
+	"math"
 	"slices"
 	"strconv"
 )
@@ -17,11 +18,14 @@ type Train struct {
 	CurrentPath        [][3]int //ggf. nur bis zum nächsten Signal notwendig -> dann andere Bedingung finden, wann man angekommen ist
 	CurrentPathSignals [][3]int //dementsprechend ggf. unnötig -> auch unabhängig davon ggf. unnötig
 
-	Waiting         bool //hat letzten Tick ein geblockes Tile gefunden oder keinen Weg gefunden und wartet
-	LoadingTime     int  //Wie lange ist der Zug schon am be-/entladen? 0 == nicht am laden. Zeiteinheit ist wie oft methode aufgerufen wurde
-	FinishedLoading bool //wenn nichts mehr geladen wird true. Kann auch wieder zurückgenommen werden
+	// Waiting         bool //hat letzten Tick ein geblockes Tile gefunden oder keinen Weg gefunden und wartet
+
+	LoadingTime     int  //Wie lange ist der Zug schon am be-/entladen? 0 == nicht am laden, > 0 ist an nextStop.Plattform . Zeiteinheit ist wie oft methode aufgerufen wurde
+	FinishedLoading bool //wenn nichts mehr geladen wird true. Wird nur beim losfahren zurückgesetzt
 
 	paused bool //wurde er von Spieler blockiert?
+
+	tickTillNextMove int // wie oft move aufgerufen werden muss, damit er sich wieder bewegen darf
 }
 
 type Waggon struct {
@@ -29,8 +33,8 @@ type Waggon struct {
 	MaxSpeed     int
 	CargoStorage *CargoStorage
 
-	Power       int //wie viele Tonnen kann er ziehen, bei +10% 20% langsamer, +20% 50% langsamer
-	emptyWeight int //wie viel wiegt der Waggon leer
+	Power       int //wie viele Tonnen kann er ziehen
+	EmptyWeight int //wie viel wiegt der Waggon leer
 }
 
 type CargoStorage struct {
@@ -46,9 +50,9 @@ func (t *Train) GetWeight() int {
 	weight := 0
 
 	for _, waggon := range t.Waggons {
-		weight += waggon.emptyWeight
+		weight += waggon.EmptyWeight
 		//HIER LADUNGSGEWICHT BERÜCKSICHTIGEN, gerade wird die m^3 als Gewicht genommen, muss noch mit dem gewicht pro m^3 multipliziert werden
-		weight += waggon.CargoStorage.Filled // * gewichtProM^3
+		// weight += waggon.CargoStorage.Filled // * gewichtProM^3
 	}
 
 	return weight
@@ -61,6 +65,19 @@ func (t *Train) GetPower() int {
 		power += waggon.Power
 	}
 	return power
+}
+
+// Bestimmung der kleinsten maximalen Geschwindigkeit in kilometer pro stunde
+func (t *Train) GetMaxSpeed() int {
+
+	r := t.Waggons[0].MaxSpeed
+	for _, waggon := range t.Waggons[1:] {
+		if r > waggon.MaxSpeed {
+			r = waggon.MaxSpeed
+		}
+	}
+
+	return r
 }
 
 // Überprüft, ob sich der letzte Wagen rausbewegt, wenn er sich einen weiter bewegt
@@ -92,42 +109,23 @@ func (t *Train) checkUnblockOnMove(gs *GameState) [2]int {
 // WARENLOGIK UND NEU BERECHNEN NEU machen, da auch doppelungen mit Recalculate Path bestehen -------------------------------------------------------------------------
 // testet selber, ob es einen Weg gibt und berechnet bei Bedarf neu
 // für 2 Wege Signale muss geprüft werden, ob nicht schon ein Zug zum Signal auf der anderen Seite fährt
+// fährt nur, wenn nicht beim laden. Wenn fertig laden, geht selber aus Lademodus raus
 // returnt Tile zum unblocken
 func (t *Train) move(gs *GameState) [2]int {
 	entblocken := [2]int{-1, -1}
 
-	/*
-		// wenn ein Zug an einem Ziel angekommen ist und er nicht am ein/ausladen ist oder fertig damit ist, dann neu berechnen
-		if len(t.CurrentPath) == 0 && (t.LoadingTime == 0 || (t.LoadingTime > 0 && t.FinishedLoading)) {
-			//nächstes Ziel auswählen und den WEg dorthin berechnen
-			//t.LastStop = t.NextStop
-			t.NextStop = t.Schedule.nextStop(t.NextStop)
-			if t.NextStop.Id == 0 {
-				return entblocken
-			}
-			t.recalculatePath(gs)
-
-			//war das erfolgreich?
-			if len(t.CurrentPath) == 0 {
-				//TODO Nachricht: konnte das Ziel t.NextStop.Name() nicht erreichen
-				gs.Logger.Debug(fmt.Sprintln("Zug", t.Name, "konnte das Ziel", t.NextStop, "nicht finden."))
-				foundValidStop := false
-				for i := 0; i < len(t.Schedule.Stops)-1; i++ {
-					t.NextStop = t.Schedule.nextStop(t.NextStop)
-					//t.RecalculatePath(gs)
-					if len(t.CurrentPath) > 0 {
-						foundValidStop = true
-						break
-					}
-					//TODO Nachricht: ?Konnte Ziel xy nicht erreichen?
-				}
-				if !foundValidStop {
-					//TODO Nachricht: Konnte kein Ziel erreichen, Zug ist stuck
-					gs.Logger.Debug(fmt.Sprintln("Zug", t.Name, "kann kein Ziel erreichen."))
-					return [2]int{}
-				}
-			}
-		}*/
+	if t.LoadingTime != 0 {
+		fmt.Println("Loading")
+		if !t.FinishedLoading {
+			// noch nicht fertig mit entladen, also nicht losfahren
+			fmt.Println(t.Name, "not ready with loading")
+			return entblocken
+		} else {
+			// fertig mit entladen, also damit aufhören und wieder fahren
+			t.LoadingTime = 0
+			t.FinishedLoading = false
+		}
+	}
 
 	// erstmal Warenladen ignorieren
 	// wenn man am Ende des Weges angekommen ist oder bei einem Signal ist, neuberechnen
@@ -146,12 +144,12 @@ func (t *Train) move(gs *GameState) [2]int {
 
 		//war das erfolgreich?
 		if len(t.CurrentPath) == 0 {
-			//TODO Nachricht: konnte das Ziel t.NextStop.Name() nicht erreichen
-			gs.Logger.Debug(fmt.Sprintln("Zug", t.Name, "konnte das Ziel", t.NextStop, "nicht finden."))
+
+			gs.Logger.Debug(fmt.Sprintln("Zug", t.Name, "konnte das Ziel", t.NextStop.getName(gs), "nicht finden."))
 			foundValidStop := false
 			for i := 0; i < len(t.Schedule.Stops)-1; i++ {
 				t.NextStop = t.Schedule.nextStop(t.NextStop)
-				//t.RecalculatePath(gs)
+				t.recalculatePath(gs) //Hoffentlich kein Fehler
 				if len(t.CurrentPath) > 0 {
 					foundValidStop = true
 					break
@@ -165,6 +163,36 @@ func (t *Train) move(gs *GameState) [2]int {
 			}
 		}
 	}
+
+	// Weg ist da, jetzt nur fahren, wenn es der richtige Tick ist
+	if t.tickTillNextMove != 0 {
+		//ein tick weniger
+		t.tickTillNextMove -= 1
+		return entblocken
+	}
+
+	// bestimmung der geschwindigkeit und dementsprechend setzten der anzahl der Ticks dazwischen
+	// ist hardcoded, sollte vielleicht anders gelöst werden
+	percentMaxSpeed := 1.0
+	percent := float64(t.GetPower()) / float64(t.GetWeight())
+	if percent >= 1 {
+
+	} else if percent < 1 && percent >= 0.9 {
+		percentMaxSpeed = 0.8
+	} else if percent < 0.9 && percent >= 0.7 {
+		percentMaxSpeed = 0.5
+	} else if percent < 0.7 && percent >= 0.5 {
+		percentMaxSpeed = 0.1
+	} else {
+		percentMaxSpeed = 0
+	}
+
+	maxSpeed := float64(t.GetMaxSpeed()) * percentMaxSpeed // in kilometer pro stunde. Max. 720 km/h
+	// Subiltes pro Minute, pro tick 50 Millisekungen, 0,05 sekunden also max. 1200 Subtiles pro Minute
+
+	// km/h -> m/s -> subTiles/s -> subTiles/tick -> (1/..) ticks/subTile
+	speed := 1.0 / (maxSpeed / 3.6 / 10 / 20) // in ticks/subtile
+	t.tickTillNextMove = int(math.Round(speed))
 
 	path := t.CurrentPath
 	signals := t.CurrentPathSignals
@@ -188,13 +216,14 @@ func (t *Train) move(gs *GameState) [2]int {
 			if gs.Tiles[path[i][0]][path[i][1]].IsBlocked {
 				gs.Logger.Debug("Zug " + t.Name + ": Blocked Tile found: []" + strconv.Itoa(path[i][0]) + ", " + strconv.Itoa(path[i][1]) + ", " + strconv.Itoa(path[i][2]) + ". Waiting")
 
-				if !t.Waiting {
-					//TODO
-					gs.Logger.Debug("Hallo Jannis, hier Nachricht an client, dass das Signal an Stelle " +
-						fmt.Sprint(t.Waggons[0].Position) + " auf rot geschaltet werden soll")
-				}
+				fmt.Println(t.Name, "Found Blocked Tile while driving to", t.NextStop.Plattform.GetStation(gs).Name)
+				// if !t.Waiting {
+				// 	//TODO
+				// 	gs.Logger.Debug("Hallo Jannis, hier Nachricht an client, dass das Signal an Stelle " +
+				// 		fmt.Sprint(t.Waggons[0].Position) + " auf rot geschaltet werden soll")
+				// }
 
-				t.Waiting = true
+				// t.Waiting = true
 				return [2]int{-1, -1}
 			}
 		}
@@ -213,7 +242,7 @@ func (t *Train) move(gs *GameState) [2]int {
 		gs.Logger.Debug("Hallo Jannis, hier Nachricht an client, dass das Signal an Stelle " +
 			fmt.Sprint(t.Waggons[0].Position) + " auf grün geschaltet werden soll. Irgnoriere das beim laden bitte xD")
 
-		t.Waiting = false
+		// t.Waiting = false
 	}
 
 	entblocken = t.checkUnblockOnMove(gs) // in die Queue schreiben, da entblocken nur am Ende des Ticks
@@ -222,6 +251,8 @@ func (t *Train) move(gs *GameState) [2]int {
 	for i := len(t.Waggons); i > 1; i-- {
 		t.Waggons[i-1].Position = t.Waggons[i-2].Position
 	}
+
+	fmt.Println("Move Train", t.Name)
 
 	//Bewegung der Lokomotive
 	t.Waggons[0].Position = t.CurrentPath[0]
@@ -248,52 +279,31 @@ func (t *Train) calculateTrain(gs *GameState) [2]int {
 		return [2]int{}
 	}
 
-	//ist gerade in die Staion eingefahren, also speichern der aktuellen Station. Nächste Station wird bei neuberechen überschrieben
-	if t.NextStop.IsPlattform && t.LoadingTime == 0 && len(t.CurrentPath) == 0 {
+	//ist gerade in die Staion eingefahren. wird in loadTime gespeichert als. die station ist die, des aktuellen Stoppes. Muss sich nicht bewegen, wenn gerade in station eingelaufen
+	// if t.NextStop.IsPlattform && t.LoadingTime == 0 && len(t.CurrentPath) == 0 {
+	goals := t.NextStop.getGoals(gs)
+	if t.NextStop.IsPlattform && slices.Contains(goals, t.Waggons[0].Position) {
 		gs.Logger.Debug("Zug " + t.Name + " in " + t.NextStop.Plattform.GetStation(gs).Name + " eingefahren.")
-		// fmt.Println("Zug " + t.Name + " in " + t.NextStop.Plattform.GetStation(gs).Name + " eingefahren.")
+
+		t.LoadingTime++
+
+		return [2]int{}
 	} else if !t.NextStop.IsPlattform && len(t.CurrentPath) == 0 {
 		//wenn das aktuelle Ziel ein Wegpunkt ist und man angekommen ist, braucht man einfach den nächsten Stop aussuchen und fahren
 		return t.move(gs)
 	}
 
-	/*
-		Wird neu geschrieben, hate gerade sowieso keinen Einfluss
-
-		//wenn der aktuelle Stop eine Plattform ist und man an der an der Station steht
-		if t.NextStop.IsPlattform && len(t.CurrentPath) == 0 {
-			//wenn min Zeit erreicht ist überprüfen und man fertig mit laden ist, ob man fahren kann
-			if t.LoadingTime >= gs.MinLoadUloadTicks && t.FinishedLoading {
-				gs.Logger.Debug("Zug " + t.Name + " versucht aus " + t.NextStop.Plattform.GetStation(gs).Name + " auszufahren.")
-
-				r = t.move(gs)
-
-				//Ist Zug losgefahren, also Reset der Werte fürs nächste Laden
-				if !t.Waiting {
-					gs.Logger.Debug("Zug " + t.Name + " aus " + t.NextStop.getName(gs) + "ausgefahren.")
-					t.LoadingTime = 0
-					t.FinishedLoading = false
-					return r
-				}
-			}
-			//laden/entladen, wenn er noch laden muss
-			if t.LoadingTime < gs.MinLoadUloadTicks || !t.FinishedLoading {
-				t.FinishedLoading = t.loadUndload(gs)
-
-				//gs.printTrains()
-			}
-			t.LoadingTime++
-
-			//wenn er sich nicht bewegt hat
-			return [2]int{-1, -1}
-		}
-	*/
-
 	return t.move(gs)
 }
 
-// returnt ob der Zug voll ist oder nichts mehr zu laden ist, also abfahrtsbereit ist
-func (t *Train) loadUndload(gs *GameState) bool {
+// läd und entläd den Zug, wenn er gerade in einem Bahnhof ist und der Zug nicht pausiert ist oder schon losfahren möchte
+func (t *Train) loadUnload(gs *GameState) error {
+
+	if t.paused || t.LoadingTime == 0 || t.FinishedLoading {
+		// Ist nicht wirklich ein Fehler, wird halt einfach nicht beladen
+		return nil
+	}
+
 	var r bool
 
 	//station, in die der Zug steht
@@ -305,7 +315,9 @@ func (t *Train) loadUndload(gs *GameState) bool {
 	for _, command := range t.NextStop.LoadUnloadCommand {
 		//wenn man nichts mehr verladen darf, dann kann man noch nicht fertig sein
 		if avaliableLoadUnloadSpeed == 0 {
-			return false
+			r = false
+			break
+			// return false
 		}
 		if command.Loading {
 			//loading the train
@@ -377,7 +389,10 @@ func (t *Train) loadUndload(gs *GameState) bool {
 	// der user kriegt einfach den neuen zuch
 	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
 
-	return r
+	//
+	t.FinishedLoading = r
+
+	return nil
 }
 
 // return nicht geladenen Cargo. Geht davon aus, dass toLoad in Grenzen des LoadUnloadSpeedes ist
@@ -447,7 +462,7 @@ func (t *Train) unloadCargo(cargoType string, maxCargoRemoved int) int {
 // Fügt einen Wagon zu einem Zug, typ gibt die art des wagongs an, daraus basierend wird capacity und maxSpeed bestimmt, bspw "Lebensmittel"
 // TODO waggonType umstellen <----------------------------------------------
 func (t *Train) AddWaggon(position [3]int, typ string, gs *GameState) error {
-	var capacity, maxSpeed int
+	var capacity, maxSpeed, emptyWeight, power int
 
 	// Typ gibt kurz als string an was für einen Waggon man will
 	// hier werden die passenden Attribute rausgesucht
@@ -455,9 +470,12 @@ func (t *Train) AddWaggon(position [3]int, typ string, gs *GameState) error {
 	case "Lebensmittel":
 		capacity = 30
 		maxSpeed = 77
+		emptyWeight = 10
 	case "":
 		capacity = 30
 		maxSpeed = 77
+		power = 100
+		emptyWeight = 20
 	default:
 		gs.Logger.Error("Invalider Typ", slog.String("Typ", typ))
 		return fmt.Errorf("invalider Typ")
@@ -478,7 +496,7 @@ func (t *Train) AddWaggon(position [3]int, typ string, gs *GameState) error {
 	}
 
 	// Waggons zu zug hinzufügen und entsprechende tiles blockieren
-	waggon := &Waggon{Position: position, MaxSpeed: maxSpeed, CargoStorage: &CargoStorage{Capacity: capacity, CargoCategory: typ}}
+	waggon := &Waggon{Position: position, MaxSpeed: maxSpeed, EmptyWeight: emptyWeight, Power: power, CargoStorage: &CargoStorage{Capacity: capacity, CargoCategory: typ}}
 	if len(t.Waggons) > 0 {
 		t.Waggons = []*Waggon{waggon}
 	} else {
