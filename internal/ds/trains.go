@@ -617,6 +617,8 @@ func (t *Train) RemoveWaggons(indexStart int, indexEnd int, gs *GameState) error
 func (t *Train) AssignSchedule(schedule *Schedule, gs *GameState) {
 	t.Schedule = schedule
 	t.NextStop = schedule.nextStop(&Stop{Id: 0})
+	t.CurrentPath = [][3]int{}
+	t.CurrentPathSignals = [][3]int{}
 	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
 
 }
@@ -625,6 +627,8 @@ func (t *Train) AssignSchedule(schedule *Schedule, gs *GameState) {
 func (t *Train) UnassignSchedule(gs *GameState) {
 	t.Schedule = nil
 	t.NextStop = nil
+	t.CurrentPath = [][3]int{}
+	t.CurrentPathSignals = [][3]int{}
 	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
 
 }
