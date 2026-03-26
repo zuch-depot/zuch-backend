@@ -461,6 +461,22 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 		o.Summary = "Schedules auslisten"
 	})
 
+	// Schedule erstellen
+	huma.Post(*api, "/schedule", func(ctx context.Context, i *struct {
+		Body struct {
+			Name string `example:"fred"`
+		}
+	}) (*ds.GenericResponse, error) {
+		_, err := gs.AddSchedule(i.Body.Name)
+		if err != nil {
+			return nil, fmt.Errorf("Could not create Schedule; %s", err.Error())
+		}
+		return ds.CreateGenericResponse("created Schedule"), nil
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"schedule"}
+		o.Summary = "Schedule erstellen"
+	})
+
 	// hier kriegt man infos zu einer schedule
 	huma.Get(*api, "/schedule/{id}", func(ctx context.Context, i *struct {
 		Id int `path:"id" example:"1"`
