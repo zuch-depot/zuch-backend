@@ -79,7 +79,7 @@ func main() {
 	// hier den Server starten
 	go api.StartServer(&gs)
 	// Anfangen aus events an clients zu schicken
-	go startListiningToBroadcast(gs.BroadcastChannel, &gs)
+	go api.StartListiningToBroadcast(gs.BroadcastChannel, &gs)
 	// Zeit pro Tick bestimmen
 	ticksMilisec, err := strconv.Atoi(os.Getenv("TICKTIMEMILISEC"))
 	if err != nil {
@@ -136,19 +136,5 @@ func main() {
 
 		// das wartet hier bis ein tick ausgelöst wird,
 		<-gs.Ticker.C
-	}
-}
-
-func startListiningToBroadcast(broadcastChannel <-chan ds.WsEnvelope, gs *ds.GameState) {
-	for {
-		envelope, ok := <-broadcastChannel
-		if ok {
-			for _, user := range gs.Users {
-				if user.IsConnected {
-					logger.Debug("Notifying client of Change", slog.String("User", user.Username), slog.String("Type", envelope.Type))
-					user.WebSocketQueue <- envelope
-				}
-			}
-		}
 	}
 }

@@ -47,3 +47,17 @@ func StartServer(gs *ds.GameState) {
 	gs.Logger.Error("error running Webserver", slog.String("Error", http.ListenAndServe("0.0.0.0:"+os.Getenv("PORT"), router).Error()))
 
 }
+
+func StartListiningToBroadcast(broadcastChannel <-chan ds.WsEnvelope, gs *ds.GameState) {
+	for {
+		envelope, ok := <-broadcastChannel
+		if ok {
+			for _, user := range gs.Users {
+				if user.IsConnected {
+					gs.Logger.Debug("Notifying client of Change", slog.String("User", user.Username), slog.String("Type", envelope.Type))
+					user.WebSocketQueue <- envelope
+				}
+			}
+		}
+	}
+}
