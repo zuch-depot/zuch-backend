@@ -765,6 +765,34 @@ func (gs *GameState) iterateSubTiles(startSubTile [3]int, endSubTile [3]int, def
 	return nil
 }
 
+// Fügt Geld hinzu
+func (gs *GameState) AddMoney(moneyToAdd int) {
+	gs.Money += moneyToAdd
+}
+
+// Überprüft, ob genug Geld da ist und zieht das in dem Fall ab
+func (gs *GameState) SubtractMoney(moneyToSubtract int) error {
+
+	err := gs.EnoughMoney(moneyToSubtract)
+	if err != nil {
+		return err
+	}
+
+	gs.Money -= moneyToSubtract
+
+	return nil
+}
+
+// Überprüft, ob genug Geld da ists
+func (gs *GameState) EnoughMoney(moneyToSubtract int) error {
+
+	if gs.Money-moneyToSubtract >= 0 {
+		return nil
+	}
+
+	return fmt.Errorf("Not enough money.")
+}
+
 func (gs *GameState) PauseGame() {
 	gs.IsPaused = true
 	<-gs.ConfirmPause
