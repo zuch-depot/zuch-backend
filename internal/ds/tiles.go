@@ -32,11 +32,11 @@ type ActiveTile struct {
 
 // return das Tile bei den koordinaten, kontrolliert ob die in Bounds sind
 func (gs *GameState) GetTile(X int, Y int) (*Tile, error) {
-	if !(0 <= X && X < gs.SizeX) {
-		return &Tile{}, fmt.Errorf("X index is not in bounds %d", gs.SizeX)
+	if !(0 <= X && X < gs.ConfigData.SizeX) {
+		return &Tile{}, fmt.Errorf("X index is not in bounds %d", gs.ConfigData.SizeX)
 	}
-	if !(0 <= Y && Y < gs.SizeY) {
-		return &Tile{}, fmt.Errorf("Y index is not in bounds %d", gs.SizeY)
+	if !(0 <= Y && Y < gs.ConfigData.SizeY) {
+		return &Tile{}, fmt.Errorf("Y index is not in bounds %d", gs.ConfigData.SizeY)
 	}
 
 	return gs.Tiles[X][Y], nil

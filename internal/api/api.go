@@ -3,8 +3,9 @@ package api
 import (
 	"log/slog"
 	"net/http"
-	"os"
 	"zuch-backend/internal/ds"
+
+	"strconv"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humachi"
@@ -44,6 +45,6 @@ func StartServer(gs *ds.GameState) {
 	registerScheduleRoutes(&api, gs)
 	registerStationRoutes(&api, gs)
 
-	gs.Logger.Error("error running Webserver", slog.String("Error", http.ListenAndServe("0.0.0.0:"+os.Getenv("PORT"), router).Error()))
+	gs.Logger.Error("error running Webserver", slog.String("Error", http.ListenAndServe("0.0.0.0:"+strconv.Itoa(gs.ConfigData.Port), router).Error()))
 
 }

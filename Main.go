@@ -3,14 +3,12 @@ package main
 import (
 	"log/slog"
 	"os"
-	"strconv"
 	"time"
 
 	"zuch-backend/internal/api"
 	"zuch-backend/internal/ds"
 	"zuch-backend/internal/utils"
 
-	"github.com/joho/godotenv"
 	"github.com/telemachus/humane"
 )
 
@@ -33,37 +31,13 @@ func main() {
 		Schedules:        make(map[int]*ds.Schedule),
 		Logger:           logger,
 	}
-	err := godotenv.Load("main.env")
-	if err != nil {
-		logger.Error("Oh oh ein fehler in den environment variables", slog.String("Error", err.Error()))
-	}
-	// loading global variables
-	tempVar, err := strconv.ParseInt(os.Getenv("LOADUNLOADSPEED"), 10, 64)
-	if err != nil {
-		logger.Error("Error while loading LoadUnloadSpeed", slog.String("Error", err.Error()))
-	}
-	gs.LoadUnloadSpeed = int(tempVar)
-
-	tempVar, err = strconv.ParseInt(os.Getenv("MINLOADUNLOADTICKS"), 10, 64)
-	if err != nil {
-		logger.Error("Error while loading MinLoadUloadTicks", slog.String("Error", err.Error()))
-	}
-	gs.MinLoadUloadTicks = int(tempVar)
-
-	tempVar, err = strconv.ParseInt(os.Getenv("MAXDISTANCEACTIVETILETOSTATION"), 10, 64)
-	if err != nil {
-		logger.Error("Error while loading the radius of the station, where aktive Tiles are detected", slog.String("Error", err.Error()))
-	}
-	gs.StationRange = int(tempVar)
-
-	tempVar, err = strconv.ParseInt(os.Getenv("CAPACITYPERSTATIONTILE"), 10, 64)
-	if err != nil {
-		logger.Error("Error while loading the capacity per station tile", slog.String("Error", err.Error()))
-	}
-	gs.CapacityPerStationTile = int(tempVar)
+	// err := godotenv.Load("main.env")
+	// if err != nil {
+	// 	logger.Error("Oh oh ein fehler in den environment variables", slog.String("Error", err.Error()))
+	// }
 
 	// wichtig als initialisierung, bevor Züge verarbeitet werden
-	// loadConfig(&gs)
+	gs.LoadConfig()
 
 	// Ablauf
 	// beim ersten start (eventuell probieren Dateien einzulesen) sonst defaults setzen
@@ -80,13 +54,8 @@ func main() {
 	go api.StartServer(&gs)
 	// Anfangen aus events an clients zu schicken
 	go startListiningToBroadcast(gs.BroadcastChannel, &gs)
-	// Zeit pro Tick bestimmen
-	ticksMilisec, err := strconv.Atoi(os.Getenv("TICKTIMEMILISEC"))
-	if err != nil {
-		logger.Error("Failed to convert Ticktime to Int", slog.String("Error", err.Error())) // anderes Log?
-	}
 
-	gs.Ticker = time.NewTicker(time.Duration(ticksMilisec) * time.Millisecond)
+	gs.Ticker = time.NewTicker(time.Duration(gs.ConfigData.TicksMilisec) * time.Millisecond)
 
 	// go saveGame(&gs, "")
 

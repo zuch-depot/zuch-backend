@@ -26,12 +26,9 @@ type GameState struct {
 	ActiveTiles []*ActiveTile
 	Plattforms  map[int]*Plattform
 
-	LoadUnloadSpeed        int
-	MinLoadUloadTicks      int
-	CapacityPerStationTile int
-	ConfigData             ConfigData // übergeordetes Struct, in das alles aus config.json reingeladen wird
+	ConfigData ConfigData // übergeordetes Struct, in das alles aus config.json reingeladen wird
 
-	StationRange int
+	// StationRange int
 	//ALLE IDs MÜSSEN BEI 1 ANFANGEN
 	CurrentTrainID      atomic.Uint64
 	CurrentScheduleID   atomic.Uint64
@@ -50,8 +47,8 @@ type GameState struct {
 
 	Logger *slog.Logger
 
-	SizeX       int
-	SizeY       int
+	// SizeX       int
+	// SizeY       int
 	SizeSubtile int //muss immer 4 sein, Jannis hatte komische Ideen
 
 	Money int // der Kontostand
@@ -78,12 +75,8 @@ type SaveAbleGamestate struct {
 	Trains      map[int]*Train
 	ActiveTiles []*ActiveTile
 
-	LoadUnloadSpeed        int
-	MinLoadUloadTicks      int
-	CapacityPerStationTile int
-	ConfigData             ConfigData // übergeordetes Struct, in das alles aus config.json reingeladen wird
+	ConfigData ConfigData // übergeordetes Struct, in das alles aus config.json reingeladen wird
 
-	StationRange int
 	//ALLE IDs MÜSSEN BEI 1 ANFANGEN
 	CurrentTrainID      int
 	CurrentScheduleID   int
@@ -93,8 +86,6 @@ type SaveAbleGamestate struct {
 	CurrentActiveTileID int
 	Tick                int
 
-	SizeX       int
-	SizeY       int
 	SizeSubtile int
 
 	Money int

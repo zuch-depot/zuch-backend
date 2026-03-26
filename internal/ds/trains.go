@@ -308,7 +308,7 @@ func (t *Train) loadUnload(gs *GameState) error {
 
 	//es wird durch die Reihenfolge der Commands zuerst geladen, dann entladen.
 	// Dabei wird nur beladen, wenn entladen fertig ist, bzw. noch kapazität von Gütern bewegt pro Tick über gelassen hat
-	avaliableLoadUnloadSpeed := gs.LoadUnloadSpeed //misst, wie viel noch geladen und entladen werden darf
+	avaliableLoadUnloadSpeed := gs.ConfigData.LoadUnloadSpeed //misst, wie viel noch geladen und entladen werden darf
 	for _, command := range t.NextStop.LoadUnloadCommand {
 		//wenn man nichts mehr verladen darf, dann kann man noch nicht fertig sein
 		if avaliableLoadUnloadSpeed == 0 {
@@ -380,7 +380,7 @@ func (t *Train) loadUnload(gs *GameState) error {
 	}
 
 	// if avaliableLoadUnloadSpeed < gs.LoadUnloadSpeed && t.LoadingTime >= gs.MinLoadUloadTicks {
-	if avaliableLoadUnloadSpeed > 0 && t.LoadingTime >= gs.MinLoadUloadTicks {
+	if avaliableLoadUnloadSpeed > 0 && t.LoadingTime >= gs.ConfigData.MinLoadUloadTicks {
 		r = true
 	}
 

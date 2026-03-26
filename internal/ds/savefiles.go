@@ -38,16 +38,16 @@ func (gs *GameState) SaveGame(saveGameName string) (string, error) {
 	// Einzelnes Object das hoffentlich den ganzen status des Spiels darstellt
 
 	state := SaveAbleGamestate{Users: gs.Users, Schedules: gs.Schedules, Stations: gs.Stations, Tiles: gs.Tiles, Trains: gs.Trains,
-		ActiveTiles: gs.ActiveTiles, LoadUnloadSpeed: gs.LoadUnloadSpeed, MinLoadUloadTicks: gs.MinLoadUloadTicks, CapacityPerStationTile: gs.CapacityPerStationTile,
-		CurrentTrainID: int(gs.CurrentTrainID.Load()), CurrentScheduleID: int(gs.CurrentScheduleID.Load()), ConfigData: gs.ConfigData, StationRange: gs.StationRange,
+		ActiveTiles:    gs.ActiveTiles,
+		CurrentTrainID: int(gs.CurrentTrainID.Load()), CurrentScheduleID: int(gs.CurrentScheduleID.Load()), ConfigData: gs.ConfigData,
 		CurrentStopID: int(gs.CurrentStopID.Load()), CurrentStationID: int(gs.CurrentStationID.Load()), CurrentPlattformID: int(gs.CurrentPlattformID.Load()),
-		CurrentActiveTileID: int(gs.CurrentActiveTileID.Load()), SizeX: gs.SizeX, SizeY: gs.SizeY, SizeSubtile: gs.SizeSubtile, Tick: gs.Tick, Money: gs.Money}
+		CurrentActiveTileID: int(gs.CurrentActiveTileID.Load()), SizeSubtile: gs.SizeSubtile, Tick: gs.Tick, Money: gs.Money}
 	// state := ds.SendAbleGamestate{Users: gs.Users, Schedules: gs.Schedules, Stations: gs.Stations, Tiles: gs.Tiles, Trains: gs.Trains}
 	// Die Objekte werden in einer netten JSON verpackt
 
 	// Dateiname wird ggf. abgeändert wenn es nicht compressed wird
 	// format ist yyyymmdd-hhmmss
-	filename := os.Getenv("SAVELOCATION") + "/savegame-" + time.Now().Format("20060102-150405")
+	filename := gs.ConfigData.SaveLocation + "/savegame-" + time.Now().Format("20060102-150405")
 	var bytesToWrite []byte
 
 	stateByte, err := json.Marshal(state)
@@ -56,7 +56,7 @@ func (gs *GameState) SaveGame(saveGameName string) (string, error) {
 		return "", err
 	}
 
-	if os.Getenv("SAVECOMPRESSED") == "True" {
+	if gs.ConfigData.SaveCompressed {
 
 		// Damit die nicht so riesig wird, wird noch mit gzip das ganze etwas komprimiert
 		var buf bytes.Buffer
@@ -158,12 +158,8 @@ func (gs *GameState) LoadGame(saveName string) error {
 	gs.Trains = sgs.Trains
 	gs.ActiveTiles = sgs.ActiveTiles
 
-	gs.LoadUnloadSpeed = sgs.LoadUnloadSpeed
-	gs.MinLoadUloadTicks = sgs.MinLoadUloadTicks
-	gs.CapacityPerStationTile = sgs.CapacityPerStationTile
 	gs.ConfigData = sgs.ConfigData
 
-	gs.StationRange = sgs.StationRange
 	gs.CurrentTrainID.Store(uint64(sgs.CurrentTrainID))
 	gs.CurrentScheduleID.Store(uint64(sgs.CurrentScheduleID))
 	gs.CurrentStopID.Store(uint64(sgs.CurrentStopID))
@@ -173,8 +169,6 @@ func (gs *GameState) LoadGame(saveName string) error {
 
 	gs.Tick = sgs.Tick
 
-	gs.SizeX = sgs.SizeX
-	gs.SizeY = sgs.SizeY
 	gs.SizeSubtile = sgs.SizeSubtile
 
 	gs.Money = sgs.Money
