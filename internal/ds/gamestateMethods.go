@@ -104,7 +104,7 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 		station = plattform.GetStation(gs)
 
 		//verkleinerung der max. Kapazität
-		station.Capacity -= gs.CapacityPerStationTile
+		station.Capacity -= gs.ConfigData.CapacityPerStationTile
 
 		//Entfernung des Tags und weitere Berechnungen
 		err = plattform.removeTile(position, gs)
@@ -151,7 +151,7 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 				stationBordering = temp.GetStation(gs)
 			}
 		}
-		if position[0] < gs.SizeX-1 {
+		if position[0] < gs.ConfigData.SizeX-1 {
 			right = gs.Tiles[position[0]+1][position[1]]
 			if right.IsPlattform {
 				var temp *Plattform
@@ -167,7 +167,7 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 				stationBordering = temp.GetStation(gs)
 			}
 		}
-		if position[1] < gs.SizeY-1 {
+		if position[1] < gs.ConfigData.SizeY-1 {
 			under = gs.Tiles[position[0]][position[1]+1]
 			if under.IsPlattform {
 				var temp *Plattform
@@ -195,7 +195,7 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 			station = stationBordering
 		}
 		//es gibt eine Station. Da ?sicher ein Tile hinzugefügt wird, vergrößere den Platz
-		station.Capacity += gs.CapacityPerStationTile
+		station.Capacity += gs.ConfigData.CapacityPerStationTile
 
 		// Nun wird das Gleis bestimmt
 		gs.Tiles[position[0]][position[1]].IsPlattform = true
@@ -214,7 +214,7 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 			var plattform *Plattform //die Plattform, wenn eine angrenzt
 
 			//nach rechts gucken
-			if position[0] < gs.SizeX-1 {
+			if position[0] < gs.ConfigData.SizeX-1 {
 
 				//ist rechter eine Plattfrom und richtig ausgerichtet?
 				if right.Tracks[0] && right.IsPlattform {
@@ -267,7 +267,7 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 			var plattform *Plattform //die Plattform, wenn eine angrenzt
 
 			//nach unten gucken
-			if position[1] < gs.SizeY-1 {
+			if position[1] < gs.ConfigData.SizeY-1 {
 
 				//ist unten eine Plattfrom und richtig ausgerichtet?
 				if under.Tracks[1] && under.IsPlattform {
@@ -309,18 +309,18 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 	//Referenzen zu activeTiles aktualisieren
 
 	//minimum bestimmen, maximum wird in schleife geprüft, dass nicht out of bounds
-	xMin := position[0] - gs.StationRange
+	xMin := position[0] - gs.ConfigData.StationRange
 	if xMin < 0 {
 		xMin = 0
 	}
-	yMin := position[1] - gs.StationRange
+	yMin := position[1] - gs.ConfigData.StationRange
 	if yMin < 0 {
 		yMin = 0
 	}
 
 	//durchiteriren durch alle Tiles in Reichweite und innerhalb der Bounds
-	for y := yMin; y <= yMin+(gs.StationRange*2) && y < len(gs.Tiles); y++ {
-		for x := xMin; x <= xMin+(gs.StationRange*2) && x < len(gs.Tiles[0]); x++ {
+	for y := yMin; y <= yMin+(gs.ConfigData.StationRange*2) && y < len(gs.Tiles); y++ {
+		for x := xMin; x <= xMin+(gs.ConfigData.StationRange*2) && x < len(gs.Tiles[0]); x++ {
 			//jedes Aktive Tile braucht eine Category, muss also nicht existent sein, wenn keine Referenz darauf auf eine gibt
 			//daran erkenne ich jetzt, dass in dem Tile ein aktives Tile ist
 			if gs.Tiles[x][y].ActiveTile.Category != nil {

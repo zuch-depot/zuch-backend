@@ -7,15 +7,33 @@ import (
 	"time"
 )
 
-// ds = Datastructure, GS = gamestate, beides abgekürzt weil es oft vorkommen wird
+// Root-Struktur für config.json
+type ConfigData struct {
+	TrainCategories        map[string][]string           `json:"Train Categories"`
+	ActiveTileCategories   map[string]ActiveTileCategory `json:"Aktive Tiles"`
+	Port                   int
+	TicksMilisec           int
+	SizeX                  int
+	SizeY                  int
+	SaveLocation           string
+	SaveCompressed         bool
+	LOADCOMPRESSED         bool //wird das überhaupt benutzt?
+	LoadUnloadSpeed        int
+	MinLoadUloadTicks      int
+	StationRange           int
+	CapacityPerStationTile int
+	Ids                    ids
+}
 
-// type GamestateTemp struct {
-// 	Users     []*User
-// 	Schedules []*Schedule
-// 	Stations  []*Station
-// 	Tiles     [][]*Tile
-// 	Trains    []*Train
-// }
+// WICHTIG: NUR fürs speichern und laden, sonst die atmic nehmen!!
+type ids struct {
+	CurrentTrainID      int
+	CurrentScheduleID   int
+	CurrentStopID       int
+	CurrentStationID    int
+	CurrentPlattformID  int
+	CurrentActiveTileID int
+}
 
 type GameState struct {
 	Users       map[string]*User // einzigartiger name
@@ -24,40 +42,34 @@ type GameState struct {
 	Tiles       [][]*Tile
 	Trains      map[int]*Train
 	ActiveTiles []*ActiveTile
-	Plattforms  map[int]*Plattform
+	// Plattforms  map[int]*Plattform //irgendwie noch nutzlos, vielleicht irgendwann?
 
-	LoadUnloadSpeed        int
-	MinLoadUloadTicks      int
-	CapacityPerStationTile int
-	ConfigData             ConfigData // übergeordetes Struct, in das alles aus config.json reingeladen wird
+	ConfigData ConfigData // übergeordetes Struct, in das alles aus config.json reingeladen wird
 
-	StationRange int
 	//ALLE IDs MÜSSEN BEI 1 ANFANGEN
-	CurrentTrainID      atomic.Uint64
-	CurrentScheduleID   atomic.Uint64
-	CurrentStopID       atomic.Uint64
-	CurrentStationID    atomic.Uint64
-	CurrentPlattformID  atomic.Uint64
-	CurrentActiveTileID atomic.Uint64
-	Ticker              *time.Ticker
+	CurrentTrainID      atomic.Uint64 `json:"-"`
+	CurrentScheduleID   atomic.Uint64 `json:"-"`
+	CurrentStopID       atomic.Uint64 `json:"-"`
+	CurrentStationID    atomic.Uint64 `json:"-"`
+	CurrentPlattformID  atomic.Uint64 `json:"-"`
+	CurrentActiveTileID atomic.Uint64 `json:"-"`
+	Ticker              *time.Ticker  `json:"-"`
 	Tick                int
-	IsPaused            bool
+	IsPaused            bool `json:"-"` //nicht speichern, weil immer beim speichern pausiert ist.
 
-	BroadcastChannel chan WsEnvelope
-	UserInputs       chan RecieveWSEnvelope
-	UnPause          chan bool
-	ConfirmPause     chan bool
+	BroadcastChannel chan WsEnvelope        `json:"-"`
+	UserInputs       chan RecieveWSEnvelope `json:"-"`
+	UnPause          chan bool              `json:"-"`
+	ConfirmPause     chan bool              `json:"-"`
 
-	Logger *slog.Logger
+	Logger *slog.Logger `json:"-"`
 
-	SizeX       int
-	SizeY       int
 	SizeSubtile int //muss immer 4 sein, Jannis hatte komische Ideen
 
 	Money int // der Kontostand
 
-	currentTrain      *Train //nur für das einfache hinzufügen von Waggons, wird auch nicht im savegame gespeichert
-	currentWaggonType string //ebenfalls weil ich faul bin und um redundanz zu vermeiden
+	currentTrain      *Train `json:"-"` //nur für das einfache hinzufügen von Waggons, wird auch nicht im savegame gespeichert
+	currentWaggonType string `json:"-"` //ebenfalls weil ich faul bin und um redundanz zu vermeiden
 }
 
 // alle Attribute, die man am anfang senden möchte
@@ -67,35 +79,4 @@ type SendAbleGamestate struct {
 	Stations  map[int]*Station
 	Tiles     [][]*Tile
 	Trains    map[int]*Train
-}
-
-// alle attribute, die man speichern möchte
-type SaveAbleGamestate struct {
-	Users       map[string]*User // einzigartiger name
-	Schedules   map[int]*Schedule
-	Stations    map[int]*Station
-	Tiles       [][]*Tile
-	Trains      map[int]*Train
-	ActiveTiles []*ActiveTile
-
-	LoadUnloadSpeed        int
-	MinLoadUloadTicks      int
-	CapacityPerStationTile int
-	ConfigData             ConfigData // übergeordetes Struct, in das alles aus config.json reingeladen wird
-
-	StationRange int
-	//ALLE IDs MÜSSEN BEI 1 ANFANGEN
-	CurrentTrainID      int
-	CurrentScheduleID   int
-	CurrentStopID       int
-	CurrentStationID    int
-	CurrentPlattformID  int
-	CurrentActiveTileID int
-	Tick                int
-
-	SizeX       int
-	SizeY       int
-	SizeSubtile int
-
-	Money int
 }

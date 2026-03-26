@@ -3,10 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"log/slog"
-	"os"
-	"strconv"
 	"strings"
 	"zuch-backend/internal/ds"
 )
@@ -122,27 +119,16 @@ func initializeTiles(gs *ds.GameState) {
 	// Setzt die erste Zug ID, pass hier halbwegs zum initialisieren
 	gs.CurrentTrainID.Store(0)
 
-	//Map Größe aus config laden
-	sizeX, err := strconv.ParseInt(os.Getenv("XSIZE"), 10, 64)
-	if err != nil {
-		log.Println("Error while loading Size of Map in the x dimension", err)
-	}
-
-	sizeY, err := strconv.ParseInt(os.Getenv("YSIZE"), 10, 64)
-	if err != nil {
-		log.Println("Error while loading Size of Map in the y dimension", err)
-	}
-
 	//initalising 2d slice
-	gs.Tiles = make([][]*ds.Tile, sizeX)
+	gs.Tiles = make([][]*ds.Tile, gs.ConfigData.SizeX)
 	for i := range gs.Tiles {
-		gs.Tiles[i] = make([]*ds.Tile, sizeY)
+		gs.Tiles[i] = make([]*ds.Tile, gs.ConfigData.SizeY)
 	}
 
 	//Erstellung der Tiles
-	for y := range sizeY {
+	for y := range gs.ConfigData.SizeY {
 		line := strings.Split(testMap[y], ".") //testing
-		for x := range sizeX {
+		for x := range gs.ConfigData.SizeX {
 			//hier die Infos für das Tile laden
 
 			//testing
@@ -196,9 +182,7 @@ func initializeTiles(gs *ds.GameState) {
 			gs.Tiles[x][y] = &ds.Tile{IsPlattform: false, Tracks: tracks, Signals: signals, ActiveTile: &aktiveTile, IsLocked: aktiveTile.Stations == nil, X: int(x), Y: int(y)}
 		}
 	}
-	gs.SizeX = int(sizeX)
-	gs.SizeY = int(sizeY)
-	logger.Info("Tiles initialised with a Map size of", slog.Int64("SizeX", sizeX), slog.Int64("SizeY", sizeY))
+	logger.Info("Tiles initialised with a Map size of", slog.Int64("SizeX", int64(gs.ConfigData.SizeX)), slog.Int64("SizeY", int64(gs.ConfigData.SizeY)))
 }
 
 // nur fürs Testen
@@ -270,7 +254,7 @@ func unpackEnvelope[T any](envelope ds.RecieveWSEnvelope, typ T) (T, error) {
 }
 
 func checkIfCoordinatesAreValid(position [3]int, gs *ds.GameState) error {
-	if !((0 <= position[0] && position[0] < int(gs.SizeX)) && (0 <= position[1] && position[1] < int(gs.SizeY)) && (0 < position[2] && position[2] <= gs.SizeSubtile)) {
+	if !((0 <= position[0] && position[0] < int(gs.ConfigData.SizeX)) && (0 <= position[1] && position[1] < int(gs.ConfigData.SizeY)) && (0 < position[2] && position[2] <= gs.SizeSubtile)) {
 		return fmt.Errorf("coordinates are invalid")
 	} else {
 		return nil

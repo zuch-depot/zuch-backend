@@ -35,28 +35,30 @@ func (gs *GameState) SaveGame(saveGameName string) (string, error) {
 
 	gs.PauseGame()
 
-	// Einzelnes Object das hoffentlich den ganzen status des Spiels darstellt
+	//die Ids in integern speichern
+	gs.ConfigData.Ids = ids{
+		CurrentTrainID:      int(gs.CurrentTrainID.Load()),
+		CurrentScheduleID:   int(gs.CurrentScheduleID.Load()),
+		CurrentStopID:       int(gs.CurrentStopID.Load()),
+		CurrentStationID:    int(gs.CurrentStationID.Load()),
+		CurrentPlattformID:  int(gs.CurrentPlattformID.Load()),
+		CurrentActiveTileID: int(gs.CurrentActiveTileID.Load()),
+	}
 
-	state := SaveAbleGamestate{Users: gs.Users, Schedules: gs.Schedules, Stations: gs.Stations, Tiles: gs.Tiles, Trains: gs.Trains,
-		ActiveTiles: gs.ActiveTiles, LoadUnloadSpeed: gs.LoadUnloadSpeed, MinLoadUloadTicks: gs.MinLoadUloadTicks, CapacityPerStationTile: gs.CapacityPerStationTile,
-		CurrentTrainID: int(gs.CurrentTrainID.Load()), CurrentScheduleID: int(gs.CurrentScheduleID.Load()), ConfigData: gs.ConfigData, StationRange: gs.StationRange,
-		CurrentStopID: int(gs.CurrentStopID.Load()), CurrentStationID: int(gs.CurrentStationID.Load()), CurrentPlattformID: int(gs.CurrentPlattformID.Load()),
-		CurrentActiveTileID: int(gs.CurrentActiveTileID.Load()), SizeX: gs.SizeX, SizeY: gs.SizeY, SizeSubtile: gs.SizeSubtile, Tick: gs.Tick, Money: gs.Money}
-	// state := ds.SendAbleGamestate{Users: gs.Users, Schedules: gs.Schedules, Stations: gs.Stations, Tiles: gs.Tiles, Trains: gs.Trains}
 	// Die Objekte werden in einer netten JSON verpackt
 
 	// Dateiname wird ggf. abgeändert wenn es nicht compressed wird
 	// format ist yyyymmdd-hhmmss
-	filename := os.Getenv("SAVELOCATION") + "/savegame-" + time.Now().Format("20060102-150405")
+	filename := gs.ConfigData.SaveLocation + "/savegame-" + time.Now().Format("20060102-150405")
 	var bytesToWrite []byte
 
-	stateByte, err := json.Marshal(state)
+	stateByte, err := json.Marshal(gs)
 	if err != nil {
 		gs.Logger.Error("Could not convert state to JSON", slog.String("Error", err.Error()))
 		return "", err
 	}
 
-	if os.Getenv("SAVECOMPRESSED") == "True" {
+	if gs.ConfigData.SaveCompressed {
 
 		// Damit die nicht so riesig wird, wird noch mit gzip das ganze etwas komprimiert
 		var buf bytes.Buffer
@@ -132,7 +134,7 @@ func (gs *GameState) LoadGame(saveName string) error {
 
 	saveFileName = "saves/" + saveFileName
 
-	var sgs SaveAbleGamestate
+	// var sgs SaveAbleGamestate
 
 	fmt.Println(saveFileName)
 
@@ -142,42 +144,18 @@ func (gs *GameState) LoadGame(saveName string) error {
 		return err
 	}
 
-	err = json.Unmarshal(data, &sgs)
+	err = json.Unmarshal(data, &gs)
 	if err != nil {
 		gs.Logger.Error(err.Error())
 		return err
 	}
 
-	gs.Users = sgs.Users
-	for _, user := range gs.Users {
-		user.IsConnected = false
-	}
-	gs.Schedules = sgs.Schedules
-	gs.Stations = sgs.Stations
-	gs.Tiles = sgs.Tiles
-	gs.Trains = sgs.Trains
-	gs.ActiveTiles = sgs.ActiveTiles
-
-	gs.LoadUnloadSpeed = sgs.LoadUnloadSpeed
-	gs.MinLoadUloadTicks = sgs.MinLoadUloadTicks
-	gs.CapacityPerStationTile = sgs.CapacityPerStationTile
-	gs.ConfigData = sgs.ConfigData
-
-	gs.StationRange = sgs.StationRange
-	gs.CurrentTrainID.Store(uint64(sgs.CurrentTrainID))
-	gs.CurrentScheduleID.Store(uint64(sgs.CurrentScheduleID))
-	gs.CurrentStopID.Store(uint64(sgs.CurrentStopID))
-	gs.CurrentStationID.Store(uint64(sgs.CurrentStationID))
-	gs.CurrentPlattformID.Store(uint64(sgs.CurrentPlattformID))
-	gs.CurrentActiveTileID.Store(uint64(sgs.CurrentActiveTileID))
-
-	gs.Tick = sgs.Tick
-
-	gs.SizeX = sgs.SizeX
-	gs.SizeY = sgs.SizeY
-	gs.SizeSubtile = sgs.SizeSubtile
-
-	gs.Money = sgs.Money
+	gs.CurrentTrainID.Store(uint64(gs.ConfigData.Ids.CurrentTrainID))
+	gs.CurrentScheduleID.Store(uint64(gs.ConfigData.Ids.CurrentScheduleID))
+	gs.CurrentStopID.Store(uint64(gs.ConfigData.Ids.CurrentStopID))
+	gs.CurrentStationID.Store(uint64(gs.ConfigData.Ids.CurrentStationID))
+	gs.CurrentPlattformID.Store(uint64(gs.ConfigData.Ids.CurrentPlattformID))
+	gs.CurrentActiveTileID.Store(uint64(gs.ConfigData.Ids.CurrentActiveTileID))
 
 	return nil
 }

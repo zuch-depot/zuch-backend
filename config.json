@@ -1,55 +1,69 @@
 {
-    "Waggon Types" : {
-        "Diesellok 1" :{
-            "Kapazität" : 0,
+    "Port": 8081,
+    "TicksMilisec": 50,
+    "SizeX": 10,
+    "SizeY": 10,
+    "SaveLocation": "./saves",
+    "SaveCompressed": false,
+    "LOADCOMPRESSED": true,
+    "LoadUnloadSpeed": 25,
+    "MinLoadUloadTicks": 30,
+    "StationRange": 2,
+    "CapacityPerStationTile": 50,
+    "Waggon Types": {
+        "Diesellok 1": {
+            "Kapazität": 0,
             "Train Category": "",
-            "Kaufpreis" : 2000,
-            "laufende Kosten" : 75,
-            "Power" : 100,
-            "Leergewicht" : 12
+            "Kaufpreis": 2000,
+            "laufende Kosten": 75,
+            "Power": 100,
+            "Leergewicht": 12
         },
-        "Schüttgutwagen S" :{
-            "Kapazität" : 10,
+        "Schüttgutwagen S": {
+            "Kapazität": 10,
             "Train Category": "Schüttgut",
-            "Kaufpreis" : 500,
-            "laufende Kosten" : 15,
-            "Power" : 0,
-            "Leergewicht" : 3 
+            "Kaufpreis": 500,
+            "laufende Kosten": 15,
+            "Power": 0,
+            "Leergewicht": 3
         },
-        "Schüttgutwagen L" :{
-            "Kapazität" : 20,
+        "Schüttgutwagen L": {
+            "Kapazität": 20,
             "Train Category": "Schüttgut",
-            "Kaufpreis" : 1500,
-            "laufende Kosten" : 25,
-            "Power" : 0,
-            "Leergewicht" : 5
+            "Kaufpreis": 1500,
+            "laufende Kosten": 25,
+            "Power": 0,
+            "Leergewicht": 5
         },
-        "Kühlwagen S" :{
-            "Kapazität" : 8,
+        "Kühlwagen S": {
+            "Kapazität": 8,
             "Train Category": "Schüttgut",
-            "Kaufpreis" : 500,
-            "laufende Kosten" : 25,
-            "Power" : 0,
-            "Leergewicht" : 5
+            "Kaufpreis": 500,
+            "laufende Kosten": 25,
+            "Power": 0,
+            "Leergewicht": 5
         },
-        "Kühlwagen L" :{
-            "Kapazität" : 15,
+        "Kühlwagen L": {
+            "Kapazität": 15,
             "Train Category": "Schüttgut",
-            "Kaufpreis" : 500,
-            "laufende Kosten" : 50,
-            "Power" : 0,
-            "Leergewicht" : 8
+            "Kaufpreis": 500,
+            "laufende Kosten": 50,
+            "Power": 0,
+            "Leergewicht": 8
         }
     },
-    "Train Categories" : {
+    "Train Categories": {
         "Schüttgut": [
-            "Kohle", "Eisenerz"
+            "Kohle",
+            "Eisenerz"
         ],
         "Lebensmittel": [
-            "Kartoffeln", "Sonnenblumenöl"
+            "Kartoffeln",
+            "Sonnenblumenöl"
         ],
         "Flüssigkeiten": [
-            "Erdöl", "Treibstoff"
+            "Erdöl",
+            "Treibstoff"
         ],
         "gekülte Lebensmittel": [
             "Pommes"
@@ -57,39 +71,78 @@
     },
     "Aktive Tiles": {
         "Kohle Bergwerk": {
-            "Produktionszyklen": [{
-                "Verbrauch": {},
-                "Produktion": {"Kohle": 10},
-                "verfügbareLevelUndScaling": [2,2]
-            }]
+            "Produktionszyklen": [
+                {
+                    "Verbrauch": {},
+                    "Produktion": {
+                        "Kohle": 10
+                    },
+                    "verfügbareLevelUndScaling": [
+                        2,
+                        2
+                    ]
+                }
+            ]
         },
         "Kohlekraftwerk": {
-            "Produktionszyklen": [{
-                "Verbrauch": {"Kohle": 20},
-                "Produktion": {},
-                "verfügbareLevelUndScaling": [2,2]
-            }]
+            "Produktionszyklen": [
+                {
+                    "Verbrauch": {
+                        "Kohle": 20
+                    },
+                    "Produktion": {},
+                    "verfügbareLevelUndScaling": [
+                        2,
+                        2
+                    ]
+                }
+            ]
         },
         "Bauernhof": {
-            "Produktionszyklen": [{
-                "Verbrauch": {},
-                "Produktion": {"Kartoffeln": 2, "Sonnenblumenöl": 1},
-                "verfügbareLevelUndScaling": [2,2]
-            }]
+            "Produktionszyklen": [
+                {
+                    "Verbrauch": {},
+                    "Produktion": {
+                        "Kartoffeln": 2,
+                        "Sonnenblumenöl": 1
+                    },
+                    "verfügbareLevelUndScaling": [
+                        2,
+                        2
+                    ]
+                }
+            ]
         },
         "Lebensmittelfabrik": {
-            "Produktionszyklen": [{
-                "Verbrauch": {"Kartoffeln": 4, "Sonnenblumenöl": 1},
-                "Produktion": {"Pommes": 2},
-                "verfügbareLevelUndScaling": [2,2]
-            }]
+            "Produktionszyklen": [
+                {
+                    "Verbrauch": {
+                        "Kartoffeln": 4,
+                        "Sonnenblumenöl": 1
+                    },
+                    "Produktion": {
+                        "Pommes": 2
+                    },
+                    "verfügbareLevelUndScaling": [
+                        2,
+                        2
+                    ]
+                }
+            ]
         },
         "Stadt": {
-            "Produktionszyklen": [{
-                "Verbrauch": {"Pommes": 4},
-                "Produktion": {}, 
-                "verfügbareLevelUndScaling": [2,2]
-            }]
+            "Produktionszyklen": [
+                {
+                    "Verbrauch": {
+                        "Pommes": 4
+                    },
+                    "Produktion": {},
+                    "verfügbareLevelUndScaling": [
+                        2,
+                        2
+                    ]
+                }
+            ]
         }
     }
 }
