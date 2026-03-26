@@ -33,23 +33,6 @@ type ActiveTileCategory struct {
 	Productioncycles []Produktionszyklus `json:"Produktionszyklen"`
 }
 
-// Root-Struktur für config.json
-type ConfigData struct {
-	TrainCategories        map[string][]string           `json:"Train Categories"`
-	ActiveTileCategories   map[string]ActiveTileCategory `json:"Aktive Tiles"`
-	Port                   int
-	TicksMilisec           int
-	SizeX                  int
-	SizeY                  int
-	SaveLocation           string
-	SaveCompressed         bool
-	LOADCOMPRESSED         bool //wird das überhaupt bentzt?
-	LoadUnloadSpeed        int
-	MinLoadUloadTicks      int
-	StationRange           int
-	CapacityPerStationTile int
-}
-
 // muss nur noch für demo trains öffentlich sein
 // returnt die Station einer Plattform. Ist notwendig, da die Kommunikation nicht mit Zirkelverweisen klar kommt
 func (p *Plattform) GetStation(gs *GameState) *Station {

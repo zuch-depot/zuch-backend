@@ -48,7 +48,7 @@ func main() {
 	// wenn wer rausfliegt sollten die sachen noch da sein
 
 	//lade das akutellste Savegame
-	// gs.LoadGame("")
+	gs.LoadGame("")
 
 	// hier den Server starten
 	go api.StartServer(&gs)
@@ -57,7 +57,7 @@ func main() {
 
 	gs.Ticker = time.NewTicker(time.Duration(gs.ConfigData.TicksMilisec) * time.Millisecond)
 
-	// go saveGame(&gs, "")
+	// go gs.SaveGame("")
 
 	// jeder Tick
 	//for gs.Tick = 0; ; gs.Tick++ { //--> gs.tick ist standartmäßig 0, wenn nicht, dann nur, weil das rausgeladen wurde
@@ -71,7 +71,7 @@ func main() {
 			logger.Info("continuing after Pause")
 		}
 
-		//TEMP fürs testen
+		//TEMP fürs testen //MAYBER Autosaves??
 		// if gs.Tick%1000 == 0 {
 		// go saveGame(&gs, "")
 		// }
