@@ -42,7 +42,7 @@ func saveGame(gs *ds.GameState, saveGameName string) (string, error) {
 		ActiveTiles: gs.ActiveTiles, LoadUnloadSpeed: gs.LoadUnloadSpeed, MinLoadUloadTicks: gs.MinLoadUloadTicks, CapacityPerStationTile: gs.CapacityPerStationTile,
 		CurrentTrainID: int(gs.CurrentTrainID.Load()), CurrentScheduleID: int(gs.CurrentScheduleID.Load()), ConfigData: gs.ConfigData, StationRange: gs.StationRange,
 		CurrentStopID: int(gs.CurrentStopID.Load()), CurrentStationID: int(gs.CurrentStationID.Load()), CurrentPlattformID: int(gs.CurrentPlattformID.Load()),
-		CurrentActiveTileID: int(gs.CurrentActiveTileID.Load()), SizeX: gs.SizeX, SizeY: gs.SizeY, SizeSubtile: gs.SizeSubtile, Tick: gs.Tick}
+		CurrentActiveTileID: int(gs.CurrentActiveTileID.Load()), SizeX: gs.SizeX, SizeY: gs.SizeY, SizeSubtile: gs.SizeSubtile, Tick: gs.Tick, Money: gs.Money}
 	// state := ds.SendAbleGamestate{Users: gs.Users, Schedules: gs.Schedules, Stations: gs.Stations, Tiles: gs.Tiles, Trains: gs.Trains}
 	// Die Objekte werden in einer netten JSON verpackt
 
@@ -177,6 +177,8 @@ func loadGame(gs *ds.GameState, saveName string) error {
 	gs.SizeX = sgs.SizeX
 	gs.SizeY = sgs.SizeY
 	gs.SizeSubtile = sgs.SizeSubtile
+
+	gs.Money = sgs.Money
 
 	return nil
 }

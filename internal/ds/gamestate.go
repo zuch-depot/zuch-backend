@@ -51,7 +51,9 @@ type GameState struct {
 
 	SizeX       int
 	SizeY       int
-	SizeSubtile int
+	SizeSubtile int //muss immer 4 sein, Jannis hatte komische Ideen
+
+	Money int // der Kontostand
 
 	currentTrain      *Train //nur für das einfache hinzufügen von Waggons, wird auch nicht im savegame gespeichert
 	currentWaggonType string //ebenfalls weil ich faul bin und um redundanz zu vermeiden
@@ -93,4 +95,6 @@ type SaveAbleGamestate struct {
 	SizeX       int
 	SizeY       int
 	SizeSubtile int
+
+	Money int
 }

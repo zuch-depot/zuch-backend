@@ -114,6 +114,8 @@ func createDemoTrains(gs *ds.GameState) {
 		gs.Logger.Error("Fehler, aber ist im demo ding egal")
 		fmt.Println("Fehler beim erstellen der Demo sachen")
 	}
+
+	gs.Money = 100000000
 }
 
 func initializeTiles(gs *ds.GameState) {
