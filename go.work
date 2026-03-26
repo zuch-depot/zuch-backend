@@ -1,7 +1,8 @@
 go 1.25.1
 
 use (
-    .
-    ./internal/ds
-    ./internal/utils
+	.
+	./internal/ds
+	./internal/utils
+	./internal/api
 )

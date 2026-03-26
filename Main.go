@@ -1,13 +1,12 @@
 package main
 
 import (
-	"encoding/json"
 	"log/slog"
 	"os"
 	"strconv"
-	"strings"
 	"time"
 
+	"zuch-backend/internal/api"
 	"zuch-backend/internal/ds"
 	"zuch-backend/internal/utils"
 
@@ -27,6 +26,7 @@ func main() {
 		BroadcastChannel: make(chan ds.WsEnvelope, 100),
 		UnPause:          make(chan bool),
 		SizeSubtile:      4,
+		ConfirmPause:     make(chan bool),
 		Trains:           make(map[int]*ds.Train),
 		Users:            make(map[string]*ds.User),
 		Stations:         make(map[int]*ds.Station),
@@ -74,10 +74,10 @@ func main() {
 	// wenn wer rausfliegt sollten die sachen noch da sein
 
 	//lade das akutellste Savegame
-	// loadGame(&gs, "")
+	// gs.LoadGame("")
 
 	// hier den Server starten
-	go startServer(&gs)
+	go api.StartServer(&gs)
 	// Anfangen aus events an clients zu schicken
 	go startListiningToBroadcast(gs.BroadcastChannel, &gs)
 	// Zeit pro Tick bestimmen
@@ -96,14 +96,11 @@ func main() {
 
 		// Wenn pausiert wurde, warten bis entpausiert signal kommt
 		if gs.IsPaused {
-			confirmPause <- true
+			gs.ConfirmPause <- true
 			<-gs.UnPause // Hier warten bis es wieder entpausiert wird
 			gs.IsPaused = false
 			logger.Info("continuing after Pause")
 		}
-
-		// Client Inputs
-		processClientInputs(&gs)
 
 		//TEMP fürs testen
 		// if gs.Tick%1000 == 0 {
@@ -139,44 +136,6 @@ func main() {
 
 		// das wartet hier bis ein tick ausgelöst wird,
 		<-gs.Ticker.C
-	}
-}
-
-func processClientInputs(gs *ds.GameState) {
-	for len(gs.UserInputs) > 0 {
-		input := <-gs.UserInputs
-		inputCat := strings.Split(input.Type, ".")
-		var err error
-		switch inputCat[0] {
-		case "train":
-			err = handleTrainUpdate(input, gs)
-		case "station":
-			err = handleStationUpdate(input, gs)
-		case "schedule":
-			err = handleScheduleUpdate(input, gs)
-		default:
-			input.Reply(false, "Invalid Envelope Type", gs)
-		}
-		if err != nil {
-			logger.Debug(err.Error())
-			input.Reply(false, err.Error(), gs)
-		} else {
-			input.Reply(true, "", gs)
-		}
-
-	}
-}
-
-func loadConfig(gs *ds.GameState) {
-	// JSON-Datei öffnen
-	file, err := os.ReadFile("config.json")
-	if err != nil {
-		panic(err)
-	}
-
-	// Unmarshal in Struktur
-	if err := json.Unmarshal(file, &gs.ConfigData); err != nil {
-		panic(err)
 	}
 }
 

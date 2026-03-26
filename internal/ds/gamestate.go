@@ -46,6 +46,7 @@ type GameState struct {
 	BroadcastChannel chan WsEnvelope
 	UserInputs       chan RecieveWSEnvelope
 	UnPause          chan bool
+	ConfirmPause     chan bool
 
 	Logger *slog.Logger
 

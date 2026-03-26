@@ -1,7 +1,9 @@
 package ds
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 	"slices"
 	"strconv"
 	"strings"
@@ -761,4 +763,29 @@ func (gs *GameState) iterateSubTiles(startSubTile [3]int, endSubTile [3]int, def
 	}
 
 	return nil
+}
+
+func (gs *GameState) PauseGame() {
+	gs.IsPaused = true
+	<-gs.ConfirmPause
+	gs.Logger.Info("Paused Game")
+}
+
+func (gs *GameState) UnPauseGame() {
+	gs.UnPause <- true
+	gs.Logger.Info("Unpaused Game")
+
+}
+
+func (gs *GameState) LoadConfig() {
+	// JSON-Datei öffnen
+	file, err := os.ReadFile("config.json")
+	if err != nil {
+		panic(err)
+	}
+
+	// Unmarshal in Struktur
+	if err := json.Unmarshal(file, &gs.ConfigData); err != nil {
+		panic(err)
+	}
 }
