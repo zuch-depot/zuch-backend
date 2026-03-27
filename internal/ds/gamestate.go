@@ -23,6 +23,7 @@ type ConfigData struct {
 	StationRange           int
 	CapacityPerStationTile int
 	Ids                    ids
+	WaggonTypes            map[string]*WaggonType
 }
 
 // WICHTIG: NUR fürs speichern und laden, sonst die atmic nehmen!!
@@ -42,7 +43,6 @@ type GameState struct {
 	Tiles       [][]*Tile
 	Trains      map[int]*Train
 	ActiveTiles []*ActiveTile
-	// Plattforms  map[int]*Plattform //irgendwie noch nutzlos, vielleicht irgendwann?
 
 	ConfigData ConfigData // übergeordetes Struct, in das alles aus config.json reingeladen wird
 
@@ -67,6 +67,8 @@ type GameState struct {
 	SizeSubtile int //muss immer 4 sein, Jannis hatte komische Ideen
 
 	Money int // der Kontostand
+
+	WaggonTypes map[string]*WaggonType
 
 	currentTrain      *Train `json:"-"` //nur für das einfache hinzufügen von Waggons, wird auch nicht im savegame gespeichert
 	currentWaggonType string `json:"-"` //ebenfalls weil ich faul bin und um redundanz zu vermeiden

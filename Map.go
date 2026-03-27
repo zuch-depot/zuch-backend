@@ -35,13 +35,6 @@ var (
 
 // nur fürs Testen, inkl. Schedule
 func createDemoTrains(gs *ds.GameState) {
-	//TEMP
-	gs.CurrentPlattformID.Add(1)
-	gs.CurrentStationID.Add(1)
-	gs.CurrentScheduleID.Add(1)
-	gs.CurrentStopID.Add(1)
-	gs.CurrentTrainID.Add(1)
-	gs.CurrentActiveTileID.Add(1)
 
 	//stations inkl. Initialisieren
 	pos := [2]int{2, 0}
@@ -81,8 +74,8 @@ func createDemoTrains(gs *ds.GameState) {
 	stop.SetLoadCommand([]string{"Pommes"}, false, gs)
 	stop.SetUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false, gs)
 
-	train, err := gs.AddTrain("RE1", [3]int{3, 4, 3}, "")
-	train.AddWaggons([3]int{3, 4, 1}, [3]int{2, 4, 1}, "", gs) // SIND KEINE LEBENSMITTEl, können gerade nichts laden
+	train, err := gs.AddTrain("RE1", [3]int{3, 4, 3}, "Dampflock Wind", 3)
+	train.AddWaggons([3]int{3, 4, 1}, [3]int{2, 4, 1}, "Planwagen", 2, gs)
 	train.AssignSchedule(schedule, gs)
 	if err != nil {
 		gs.Logger.Error("Fehler, aber ist im demo ding egal")
@@ -98,13 +91,13 @@ func createDemoTrains(gs *ds.GameState) {
 	stop.SetLoadCommand([]string{"Pommes"}, false, gs)
 	stop.SetUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false, gs)
 
-	train, err = gs.AddTrain("RE2", [3]int{6, 6, 2}, "")
+	train, err = gs.AddTrain("RE2", [3]int{6, 6, 2}, "Diesellok Schnecke", 2)
 	// []ds.TrainCreateWaggons{
 	// 	{Position: [3]int{6, 6, 2}, Typ: "Lebensmittel"},
 	// 	{Position: [3]int{6, 5, 4}, Typ: "Lebensmittel"},
 	// 	{Position: [3]int{6, 5, 2}, Typ: "Lebensmittel"},
 	// 	{Position: [3]int{6, 4, 4}, Typ: "Lebensmittel"}})
-	train.AddWaggons([3]int{6, 5, 4}, [3]int{6, 4, 4}, "Lebensmittel", gs)
+	train.AddWaggons([3]int{6, 5, 4}, [3]int{6, 4, 4}, "Planwagen", 1, gs)
 	train.AssignSchedule(schedule, gs)
 
 	if err != nil {
@@ -117,7 +110,12 @@ func createDemoTrains(gs *ds.GameState) {
 
 func initializeTiles(gs *ds.GameState) {
 	// Setzt die erste Zug ID, pass hier halbwegs zum initialisieren
-	gs.CurrentTrainID.Store(0)
+	gs.CurrentTrainID.Store(1)
+	gs.CurrentActiveTileID.Store(1)
+	gs.CurrentPlattformID.Store(1)
+	gs.CurrentScheduleID.Store(1)
+	gs.CurrentStationID.Store(1)
+	gs.CurrentStopID.Store(1)
 
 	//initalising 2d slice
 	gs.Tiles = make([][]*ds.Tile, gs.ConfigData.SizeX)

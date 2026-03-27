@@ -48,7 +48,7 @@ func main() {
 	// wenn wer rausfliegt sollten die sachen noch da sein
 
 	//lade das akutellste Savegame
-	gs.LoadGame("")
+	// gs.LoadGame("")
 
 	// hier den Server starten
 	go api.StartServer(&gs)

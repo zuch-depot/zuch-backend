@@ -10,46 +10,66 @@
     "MinLoadUloadTicks": 30,
     "StationRange": 2,
     "CapacityPerStationTile": 50,
-    "Waggon Types": {
-        "Diesellok 1": {
-            "Kapazität": 0,
-            "Train Category": "",
-            "Kaufpreis": 2000,
-            "laufende Kosten": 75,
+    "WaggonTypes": {
+        "Diesellok Schnecke": {
             "Power": 100,
-            "Leergewicht": 12
+            "PowerIncreasePercent": 50,
+            "EmptyWeight": 12,
+            "EmptyWeightIncreasePercent": 40,
+            "MaxSpeed": 70,
+            "MaxSpeedIncreasePercent": 0,
+            "Capacity": 0,
+            "CapacityIncreasePercent": 0,
+            "CargoCategory": "",
+            "Price": 2000,
+            "PriceIncreasePercent": 60,
+            "OngoingCosts": 200,
+            "OngoingCostsIncreasePercent": 50
         },
-        "Schüttgutwagen S": {
-            "Kapazität": 10,
-            "Train Category": "Schüttgut",
-            "Kaufpreis": 500,
-            "laufende Kosten": 15,
-            "Power": 0,
-            "Leergewicht": 3
+        "Dampflock Wind": {
+            "Power": 130,
+            "PowerIncreasePercent": 50,
+            "EmptyWeight": 20,
+            "EmptyWeightIncreasePercent": 60,
+            "MaxSpeed": 200,
+            "MaxSpeedIncreasePercent": 0,
+            "Capacity": 0,
+            "CapacityIncreasePercent": 0,
+            "CargoCategory": "",
+            "Price": 10000,
+            "PriceIncreasePercent": 80,
+            "OngoingCosts": 1000,
+            "OngoingCostsIncreasePercent": 60
         },
-        "Schüttgutwagen L": {
-            "Kapazität": 20,
-            "Train Category": "Schüttgut",
-            "Kaufpreis": 1500,
-            "laufende Kosten": 25,
+        "Schüttgutwagen": {
             "Power": 0,
-            "Leergewicht": 5
+            "PowerIncreasePercent": 0,
+            "EmptyWeight": 4,
+            "EmptyWeightIncreasePercent": 30,
+            "MaxSpeed": 70,
+            "MaxSpeedIncreasePercent": 0,
+            "Capacity": 20,
+            "CapacityIncreasePercent": 40,
+            "CargoCategory": "",
+            "Price": 500,
+            "PriceIncreasePercent": 60,
+            "OngoingCosts": 200,
+            "OngoingCostsIncreasePercent": 50
         },
-        "Kühlwagen S": {
-            "Kapazität": 8,
-            "Train Category": "Schüttgut",
-            "Kaufpreis": 500,
-            "laufende Kosten": 25,
+        "Planwagen": {
             "Power": 0,
-            "Leergewicht": 5
-        },
-        "Kühlwagen L": {
-            "Kapazität": 15,
-            "Train Category": "Schüttgut",
-            "Kaufpreis": 500,
-            "laufende Kosten": 50,
-            "Power": 0,
-            "Leergewicht": 8
+            "PowerIncreasePercent": 0,
+            "EmptyWeight": 5,
+            "EmptyWeightIncreasePercent": 30,
+            "MaxSpeed": 120,
+            "MaxSpeedIncreasePercent": 30,
+            "Capacity": 15,
+            "CapacityIncreasePercent": 40,
+            "CargoCategory": "",
+            "Price": 600,
+            "PriceIncreasePercent": 60,
+            "OngoingCosts": 250,
+            "OngoingCostsIncreasePercent": 50
         }
     },
     "Train Categories": {

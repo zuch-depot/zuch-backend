@@ -29,19 +29,63 @@ type Train struct {
 }
 
 type Waggon struct {
-	Position     [3]int //x,y,sub
-	MaxSpeed     int
-	CargoStorage *CargoStorage
+	Position [3]int //x,y,sub
+	// MaxSpeed     int
+	// CargoStorage *CargoStorage
 
-	Power       int //wie viele Tonnen kann er ziehen
-	EmptyWeight int //wie viel wiegt der Waggon leer
-}
+	// Power       int //wie viele Tonnen kann er ziehen
+	// EmptyWeight int //wie viel wiegt der Waggon leer
 
-type CargoStorage struct {
-	Capacity        int //statisch
 	Filled          int
 	FilledCargoType string
-	CargoCategory   string //statisch
+
+	Age int //maybe für verkaufspreis, erstmal nicht genutzt
+
+	WaggonType *WaggonType //Pointer nicht, weil der was verändert sondern nur um Speicherplatz zu sparen ---> maybe nur der String für referenz in gs?
+	Level      int         //welches Level der Waggon ist
+}
+
+// Infos aus config
+type WaggonType struct {
+	Power                      int
+	PowerIncreasePercent       int
+	EmptyWeight                int
+	EmptyWeightIncreasePercent int
+	MaxSpeed                   int
+	MaxSpeedIncreasePercent    int
+
+	Capacity                int    // wie viel kann maximal geladen werden?
+	CapacityIncreasePercent int    // wie viel Prozent mehr pro level
+	CargoCategory           string // welche versch. Güter können geladen werden
+
+	Price                       int //Kaufpreis
+	PriceIncreasePercent        int //Preiserhöhung pro Level
+	OngoingCosts                int
+	OngoingCostsIncreasePercent int
+}
+
+func (w *Waggon) getMaxSpeed() int {
+	return w.WaggonType.MaxSpeed * (w.WaggonType.MaxSpeedIncreasePercent/100 + 1)
+}
+
+func (w *Waggon) getPower() int {
+	return w.WaggonType.Power * (w.WaggonType.PowerIncreasePercent/100 + 1)
+}
+
+func (w *Waggon) getEmptyWeight() int {
+	return w.WaggonType.EmptyWeight * (w.WaggonType.EmptyWeightIncreasePercent/100 + 1)
+}
+
+func (w *Waggon) getCapacity() int {
+	return w.WaggonType.Capacity * (w.WaggonType.CapacityIncreasePercent/100 + 1)
+}
+
+func (w *Waggon) getPrice() int {
+	return w.WaggonType.Price * (w.WaggonType.PriceIncreasePercent/100 + 1)
+}
+
+func (w *Waggon) getOngoingCosts() int {
+	return w.WaggonType.OngoingCosts * (w.WaggonType.OngoingCostsIncreasePercent/100 + 1)
 }
 
 // Todo, ebenfalls Gewicht von Ladung berücksichtigen
@@ -50,7 +94,7 @@ func (t *Train) GetWeight() int {
 	weight := 0
 
 	for _, waggon := range t.Waggons {
-		weight += waggon.EmptyWeight
+		weight += waggon.getEmptyWeight()
 		//HIER LADUNGSGEWICHT BERÜCKSICHTIGEN, gerade wird die m^3 als Gewicht genommen, muss noch mit dem gewicht pro m^3 multipliziert werden
 		// weight += waggon.CargoStorage.Filled // * gewichtProM^3
 	}
@@ -62,7 +106,7 @@ func (t *Train) GetWeight() int {
 func (t *Train) GetPower() int {
 	power := 0
 	for _, waggon := range t.Waggons {
-		power += waggon.Power
+		power += waggon.getPower()
 	}
 	return power
 }
@@ -70,10 +114,10 @@ func (t *Train) GetPower() int {
 // Bestimmung der kleinsten maximalen Geschwindigkeit in kilometer pro stunde
 func (t *Train) GetMaxSpeed() int {
 
-	r := t.Waggons[0].MaxSpeed
+	r := t.Waggons[0].getMaxSpeed()
 	for _, waggon := range t.Waggons[1:] {
-		if r > waggon.MaxSpeed {
-			r = waggon.MaxSpeed
+		if r > waggon.getMaxSpeed() {
+			r = waggon.getMaxSpeed()
 		}
 	}
 
@@ -404,25 +448,24 @@ func (t *Train) loadCargo(cargoType string, toLoad int, gs *GameState) int {
 		}
 
 		//wenn Waggon richtigen CargoType hat, wenn er schon gefüllt ist, wird gefüllt, oder wenn leer ist, die passende Category hat
-		if waggon.CargoStorage != nil {
 
-			if (waggon.CargoStorage.Filled == 0 && waggon.CargoStorage.CargoCategory == gs.getCargoCategory(cargoType)) ||
-				(cargoType == waggon.CargoStorage.FilledCargoType) {
-				emptySpace := waggon.CargoStorage.Capacity - waggon.CargoStorage.Filled
-				//wenn Waggon voll ist oder gefüllter wert, wenn was gefüllt ist, nächsten nehmen
-				if emptySpace == 0 {
-					continue
-				}
-				if emptySpace >= toLoad {
-					waggon.CargoStorage.Filled += toLoad //auffüllen mit Rest zum Laden
-					toLoad = 0                           //alles ist verladen
-				} else {
-					waggon.CargoStorage.Filled += emptySpace //auffüllen, bis voll
-					toLoad -= emptySpace                     //aufgefüllte Menge aus der, die Aufzufüllen ist, entfernen
-				}
-				waggon.CargoStorage.FilledCargoType = cargoType
+		if (waggon.Filled == 0 && waggon.WaggonType.CargoCategory == gs.getCargoCategory(cargoType)) ||
+			(cargoType == waggon.FilledCargoType) {
+			emptySpace := waggon.getCapacity() - waggon.Filled
+			//wenn Waggon voll ist oder gefüllter wert, wenn was gefüllt ist, nächsten nehmen
+			if emptySpace == 0 {
+				continue
 			}
+			if emptySpace >= toLoad {
+				waggon.Filled += toLoad //auffüllen mit Rest zum Laden
+				toLoad = 0              //alles ist verladen
+			} else {
+				waggon.Filled += emptySpace //auffüllen, bis voll
+				toLoad -= emptySpace        //aufgefüllte Menge aus der, die Aufzufüllen ist, entfernen
+			}
+			waggon.FilledCargoType = cargoType
 		}
+
 	}
 	return r + toLoad
 }
@@ -438,16 +481,16 @@ func (t *Train) unloadCargo(cargoType string, maxCargoRemoved int) int {
 			return cargoRemovedSoFar
 		}
 		//wenn richtiger CargoType gefunden wurde
-		if waggon.CargoStorage != nil && waggon.CargoStorage.FilledCargoType == cargoType {
-			cargoInWaggon := waggon.CargoStorage.Filled
+		if waggon.FilledCargoType == cargoType {
+			cargoInWaggon := waggon.Filled
 			if cargoInWaggon > 0 {
 				//wenn der noch zu entnehmende Platz größer oder gleich groß ist, als die Menge, die im Wagen ist, nehme einfach alles
 				if maxCargoRemoved-cargoRemovedSoFar >= cargoInWaggon {
-					cargoRemovedSoFar += waggon.CargoStorage.Filled
-					waggon.CargoStorage.Filled = 0
+					cargoRemovedSoFar += waggon.Filled
+					waggon.Filled = 0
 				} else {
 					//wenn nicht mehr alles rauszunehmen ist, nehme den Rest Platz aus Waggon raus und dann ist maxRemoved die Menge, die entfernt wurde
-					waggon.CargoStorage.Filled -= maxCargoRemoved - cargoRemovedSoFar
+					waggon.Filled -= maxCargoRemoved - cargoRemovedSoFar
 					return maxCargoRemoved
 				}
 			}
@@ -459,22 +502,27 @@ func (t *Train) unloadCargo(cargoType string, maxCargoRemoved int) int {
 
 // Fügt einen Wagon zu einem Zug, typ gibt die art des wagongs an, daraus basierend wird capacity und maxSpeed bestimmt, bspw "Lebensmittel"
 // TODO waggonType umstellen <----------------------------------------------
-func (t *Train) AddWaggon(position [3]int, typ string, gs *GameState) error {
-	var capacity, maxSpeed, emptyWeight, power int
+func (t *Train) AddWaggon(position [3]int, typ string, level int, gs *GameState) error {
+	// var capacity, maxSpeed, emptyWeight, power int
 
 	// Typ gibt kurz als string an was für einen Waggon man will
 	// hier werden die passenden Attribute rausgesucht
-	switch typ {
-	case "Lebensmittel":
-		capacity = 30
-		maxSpeed = 77
-		emptyWeight = 10
-	case "":
-		capacity = 30
-		maxSpeed = 180
-		power = 100
-		emptyWeight = 20
-	default:
+	// switch typ {
+	// case "Lebensmittel":
+	// 	capacity = 30
+	// 	maxSpeed = 77
+	// 	emptyWeight = 10
+	// case "":
+	// 	capacity = 30
+	// 	maxSpeed = 180
+	// 	power = 100
+	// 	emptyWeight = 20
+	// default:
+
+	// }
+
+	waggonType := gs.ConfigData.WaggonTypes[typ]
+	if waggonType == nil {
 		gs.Logger.Error("Invalider Typ", slog.String("Typ", typ))
 		return fmt.Errorf("invalider Typ")
 	}
@@ -502,7 +550,7 @@ func (t *Train) AddWaggon(position [3]int, typ string, gs *GameState) error {
 	}
 
 	// Waggons zu zug hinzufügen und entsprechende tiles blockieren
-	waggon := &Waggon{Position: position, MaxSpeed: maxSpeed, EmptyWeight: emptyWeight, Power: power, CargoStorage: &CargoStorage{Capacity: capacity, CargoCategory: typ}}
+	waggon := &Waggon{Position: position, WaggonType: waggonType, Level: level}
 	if len(t.Waggons) == 0 {
 		t.Waggons = []*Waggon{waggon}
 	} else {
@@ -552,7 +600,7 @@ func (t *Train) isWaggonValid(position [3]int, gs *GameState) error {
 }
 
 // Fügt Waggons im Bereich zu
-func (t *Train) AddWaggons(startSubTile [3]int, endSubTile [3]int, waggonType string, gs *GameState) error {
+func (t *Train) AddWaggons(startSubTile [3]int, endSubTile [3]int, waggonType string, level int, gs *GameState) error {
 
 	// zum verwenden in Methode
 	gs.currentWaggonType = waggonType
@@ -562,7 +610,7 @@ func (t *Train) AddWaggons(startSubTile [3]int, endSubTile [3]int, waggonType st
 	return gs.iterateSubTiles(startSubTile, endSubTile, "An error accured while adding waggons.", func(gs *GameState, coordinate [3]int) error {
 
 		//hinzufügen des Waggons
-		return gs.currentTrain.AddWaggon(coordinate, gs.currentWaggonType, gs)
+		return gs.currentTrain.AddWaggon(coordinate, gs.currentWaggonType, level, gs)
 
 	})
 }

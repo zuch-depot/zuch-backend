@@ -44,7 +44,8 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 
 	// Hier kann man einen Zug bauen
 	huma.Post(*api, "/train", func(ctx context.Context, i *struct{ Body ds.TrainCreateMSG }) (*ds.GenericResponse, error) {
-		_, err := gs.AddTrain(i.Body.Name, i.Body.LocomotivePosition, "") //kein Plan was du so gemacht hast, habe das mal angepasst. Musst mal gucken, ob das so passt. Siehe Funktionsbeschreibung
+		//TODO: level und lokomotive kann man angeben, auch beim anhängen. Habe erstmal default werte genommen
+		_, err := gs.AddTrain(i.Body.Name, i.Body.LocomotivePosition, "Dampflock Wind", 1) //kein Plan was du so gemacht hast, habe das mal angepasst. Musst mal gucken, ob das so passt. Siehe Funktionsbeschreibung
 		if err != nil {
 			return nil, fmt.Errorf("Could not create Train; %s", err.Error())
 		}
@@ -99,10 +100,10 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 		}
 		var err error
 		if i.Body.Pos.Position_to == nil {
-			err = train.AddWaggon(*i.Body.Pos.Position, i.Body.Waggontype, gs)
+			err = train.AddWaggon(*i.Body.Pos.Position, i.Body.Waggontype, 1, gs)
 
 		} else {
-			err = train.AddWaggons(*i.Body.Pos.Position, *i.Body.Pos.Position_to, i.Body.Waggontype, gs)
+			err = train.AddWaggons(*i.Body.Pos.Position, *i.Body.Pos.Position_to, i.Body.Waggontype, 1, gs)
 
 		}
 		if err != nil {

@@ -392,8 +392,8 @@ func (gs *GameState) getCargoCategory(cargoType string) string {
 	return ""
 }
 
-// fügt Zug hinzu, wenn name leer ist, wird Id genommen. Lokomotive erstmal leer lassen, wird als einziger Waggon angefügt.
-func (gs *GameState) AddTrain(name string, position [3]int, lokmotive string) (*Train, error) {
+// fügt Zug hinzu, wenn name leer ist, wird Id genommen.
+func (gs *GameState) AddTrain(name string, position [3]int, lokmotive string, level int) (*Train, error) {
 
 	if name == "" {
 		name = fmt.Sprint(gs.CurrentTrainID.Load())
@@ -408,7 +408,7 @@ func (gs *GameState) AddTrain(name string, position [3]int, lokmotive string) (*
 	}
 
 	// Fügt die Lock hinzu
-	err = train.AddWaggon(position, lokmotive, gs)
+	err = train.AddWaggon(position, lokmotive, level, gs)
 	if err != nil {
 		return nil, err
 	}
