@@ -59,9 +59,62 @@ func (gs *GameState) AddStationTile(position [2]int) (*Station, error) {
 	return gs.changeStationTile(false, position)
 }
 
+func (gs *GameState) AddStationTiles(positionStart [2]int, positionEnd [2]int) error {
+	return gs.changeStationTiles(false, positionStart, positionEnd)
+}
+
 // Löscht an der Position das Station Tile, kümmert sich um Löschen der  Plattform und Station.
 func (gs *GameState) RemoveStationTile(position [2]int) (*Station, error) {
 	return gs.changeStationTile(true, position)
+}
+
+func (gs *GameState) RemoveStationTiles(positionStart [2]int, positionEnd [2]int) error {
+	return gs.changeStationTiles(true, positionStart, positionEnd)
+}
+
+func (gs *GameState) changeStationTiles(remove bool, positionStart [2]int, positionEnd [2]int) error {
+	if positionStart[1] == positionEnd[1] {
+		// horizontal oder gleich
+
+		countUp := positionStart[0] <= positionEnd[0]
+
+		for {
+			_, err := gs.changeStationTile(remove, positionStart)
+			if err != nil {
+				return err
+			}
+			if positionStart == positionEnd {
+				break
+			}
+			if countUp {
+				positionStart[0]++
+			} else {
+				positionStart[0]--
+			}
+		}
+	} else if positionStart[0] == positionEnd[0] {
+		//vertikal
+
+		countUp := positionStart[1] <= positionEnd[1]
+
+		for {
+			_, err := gs.changeStationTile(remove, positionStart)
+			if err != nil {
+				return err
+			}
+			if positionStart == positionEnd {
+				break
+			}
+			if countUp {
+				positionStart[1]++
+			} else {
+				positionStart[1]--
+			}
+		}
+	} else {
+		return fmt.Errorf("Please provide coordinates that are in one line")
+	}
+	return nil
 }
 
 // remove = true -> referenz wird entfernt, = false -> wird hinzugefügt;
@@ -71,6 +124,13 @@ func (gs *GameState) RemoveStationTile(position [2]int) (*Station, error) {
 // TODO dynamische Zuweisung zu Gleisen anhand Ausrichtung und nachbarn
 func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, error) {
 	var err error
+
+	//sind die y dann in range?
+	_, error := gs.GetTile(position[0], position[1])
+	if error != nil {
+		return nil, fmt.Errorf("%s", " The koordinate has the problem: "+error.Error())
+	}
+
 	tile := gs.Tiles[position[0]][position[1]]
 	var station *Station //die Station des Tiles, wird bestimmt
 
@@ -648,7 +708,7 @@ func (gs *GameState) iterateSubTiles(startSubTile [3]int, endSubTile [3]int, def
 	sst := startSubTile
 	est := endSubTile
 
-	//sind die y dann in range?
+	//sind die y und x in range?
 	_, error := gs.GetTile(sst[0], sst[1])
 	if error != nil {
 		return fmt.Errorf("%s", defaultError+" The start koordinate have the problem: "+error.Error())
