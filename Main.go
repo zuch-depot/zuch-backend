@@ -76,10 +76,11 @@ func main() {
 		// go saveGame(&gs, "")
 		// }
 
+		// nicht saves in dem bereich
+		gs.Mutex.Lock()
+
 		// Züge bewegen
-		// if gs.Tick%1 == 0 {
 		gs.CalculateTrains()
-		// }
 
 		if gs.Tick&10 == 2 {
 			gs.LoadUndloadTrains()
@@ -90,14 +91,7 @@ func main() {
 			processActiveTiles(&gs)
 		}
 
-		if gs.Tick%10 == 2 {
-			// gs.CalculateCargoPaths()
-		}
-
-		// anzeigen Testing
-		if gs.Tick%10 == 0 {
-			// fmt.Println("tick", tick)
-		}
+		gs.Mutex.Unlock()
 
 		// if gs.Tick == 100 {
 		// 	go saveGame(&gs)

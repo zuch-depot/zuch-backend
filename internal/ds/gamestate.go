@@ -3,6 +3,7 @@ package ds
 
 import (
 	"log/slog"
+	"sync"
 	"sync/atomic"
 	"time"
 )
@@ -37,6 +38,8 @@ type ids struct {
 }
 
 type GameState struct {
+	Mutex sync.Mutex // sorgt dafür, dass hier nur einer gleichzeitig herumspielen kann
+
 	Users       map[string]*User // einzigartiger name
 	Schedules   map[int]*Schedule
 	Stations    map[int]*Station

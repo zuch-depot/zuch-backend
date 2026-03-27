@@ -31,6 +31,9 @@ func (gs *GameState) SaveGame(saveGameName string) (string, error) {
 	// 	trains []Train,
 	// }
 
+	gs.Mutex.Lock()
+	defer gs.Mutex.Unlock()
+
 	fmt.Println("Saving")
 
 	gs.PauseGame()
@@ -91,6 +94,8 @@ func (gs *GameState) SaveGame(saveGameName string) (string, error) {
 func (gs *GameState) LoadGame(saveName string) error {
 
 	//eigentlich pausieren
+	gs.Mutex.Lock()
+	defer gs.Mutex.Unlock()
 
 	//alle Dateien aus saves rauslesen
 	entries, err := os.ReadDir("saves")
