@@ -71,7 +71,7 @@ func main() {
 			logger.Info("continuing after Pause")
 		}
 
-		//TEMP fürs testen //MAYBER Autosaves??
+		//TEMP fürs testen //MAYBE Autosaves??
 		// if gs.Tick%1000 == 0 {
 		// go saveGame(&gs, "")
 		// }
@@ -88,7 +88,7 @@ func main() {
 
 		// process factorys
 		if gs.Tick%20 == 1 {
-			processActiveTiles(&gs)
+			gs.ProcessActiveTiles()
 		}
 
 		gs.Mutex.Unlock()
