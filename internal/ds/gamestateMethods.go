@@ -411,6 +411,7 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 		}
 	}
 
+	gs.BroadcastChannel <- WsEnvelope{Type: "tile.update", Msg: gs.Tiles[position[0]][position[1]]}
 	return station, nil
 }
 

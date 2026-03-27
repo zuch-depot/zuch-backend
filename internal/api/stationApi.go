@@ -158,6 +158,56 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 		o.Tags = []string{"station"}
 		o.Summary = "Plattform entfernen"
 	})
+
+	// hier kann man eine station bauen bauen
+	huma.Post(*api, "/station", func(ctx context.Context, i *struct {
+		Body struct {
+			Position    *[2]int `example:"[1,1]" minLength:"2" maxLength:"2"`
+			Position_to *[2]int `example:"[1,2]" required:"false" minLength:"2" maxLength:"2" nullable:"true"`
+		}
+	}) (*ds.GenericResponse, error) {
+		var err error
+		if i.Body.Position_to != nil {
+			// mehrere bauen
+			err = gs.AddStationTiles(*i.Body.Position, *i.Body.Position_to)
+		} else {
+			// Der hier gibt eigenlich noch die station mit
+			_, err = gs.AddStationTile(*i.Body.Position)
+		}
+		if err != nil {
+			return nil, fmt.Errorf("could not create statino; %s", err.Error())
+		}
+
+		return ds.CreateGenericResponse("build station"), nil
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"station"}
+		o.Summary = "Station bauen"
+	})
+
+	// hier kann man eine Station entfernen
+	huma.Delete(*api, "/station", func(ctx context.Context, i *struct {
+		Body struct {
+			Position    *[2]int `example:"[1,1]" minLength:"2" maxLength:"2"`
+			Position_to *[2]int `example:"[1,2]" required:"false" minLength:"2" maxLength:"2" nullable:"true"`
+		}
+	}) (*ds.GenericResponse, error) {
+		var err error
+		if i.Body.Position_to != nil {
+			// mehrere bauen
+			err = gs.RemoveStationTiles(*i.Body.Position, *i.Body.Position_to)
+		} else {
+			// Der hier gibt eigenlich noch die station mit
+			_, err = gs.RemoveStationTile(*i.Body.Position)
+		}
+		if err != nil {
+			return nil, fmt.Errorf("could not remobe statino; %s", err.Error())
+		}
+
+		return ds.CreateGenericResponse("remobe station"), nil
+	}, func(o *huma.Operation) {
+		o.Tags = []string{"station"}
+		o.Summary = "Station entfernen"
+	})
 }
 
 // endregion station
