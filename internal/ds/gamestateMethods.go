@@ -878,3 +878,79 @@ func (gs *GameState) LoadConfig() {
 		panic(err)
 	}
 }
+
+// kann auch Rechteck und nicht nur Linie, löscht alles, wenn was gelöscht werden kann
+func (gs *GameState) ClearTiles(positionStart [2]int, positionEnd [2]int) error {
+
+	//sind die y und x in range?
+	_, error := gs.GetTile(positionStart[0], positionStart[1])
+	if error != nil {
+		return fmt.Errorf("%s", "The start koordinate has the problem: "+error.Error())
+	}
+	_, error = gs.GetTile(positionEnd[0], positionEnd[1])
+	if error != nil {
+		return fmt.Errorf("%s", "The end koordinate has the problem: "+error.Error())
+	}
+
+	countUpX := positionStart[0] <= positionEnd[0]
+	countUpY := positionStart[1] <= positionEnd[1]
+
+	positionCur := positionStart
+
+	for {
+		for {
+
+			// Irgnoriert Fehler, weil nur out of bounds und blocked sein kann und out of bound schon getestet wird und blocked ignoeriert werden soll
+			gs.ClearTile(positionStart)
+
+			// Abbruchbedingung
+			if positionCur[0] == positionEnd[0] {
+				positionCur[0] = positionStart[0]
+				break
+			}
+
+			if countUpX {
+				positionCur[0]++
+			} else {
+				positionCur[0]--
+			}
+		}
+
+		// Abbruchbedingung
+		if positionCur == positionEnd {
+			break
+		}
+
+		if countUpY {
+			positionCur[1]++
+		} else {
+			positionCur[1]--
+		}
+	}
+
+	return nil
+}
+
+// macht fast alles selber, löscht alles, wenn was gelöscht werden kann
+func (gs *GameState) ClearTile(position [2]int) error {
+
+	//sind die y und x in range?
+	tile, error := gs.GetTile(position[0], position[1])
+	if error != nil {
+		return fmt.Errorf("%s", "The koordinate has the problem: "+error.Error())
+	}
+
+	if tile.IsBlocked || tile.IsLocked {
+		return fmt.Errorf("%s", "Could not clear the Tile since it's locked.")
+	}
+
+	_, error = gs.RemoveStationTile(position)
+	if error != nil {
+		return error
+	}
+
+	tile.Tracks = [4]bool{false, false, false, false}
+	tile.Signals = [4]bool{false, false, false, false}
+
+	return nil
+}

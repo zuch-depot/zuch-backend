@@ -18,6 +18,7 @@ var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: tr
 // var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true, Level: slog.LevelDebug}))
 
 func main() {
+
 	utils.Logger = logger
 
 	gs := ds.GameState{UserInputs: make(chan ds.RecieveWSEnvelope, 300),
