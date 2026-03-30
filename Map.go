@@ -99,7 +99,6 @@ func createDemoTrains(gs *ds.GameState) {
 	// 	{Position: [3]int{6, 4, 4}, Typ: "Lebensmittel"}})
 	train.AddWaggons([3]int{6, 5, 4}, [3]int{6, 4, 4}, "Planwagen", 1, gs)
 	train.AssignSchedule(schedule, gs)
-
 	if err != nil {
 		gs.Logger.Error("Fehler, aber ist im demo ding egal")
 		fmt.Println("Fehler beim erstellen der Demo sachen")
