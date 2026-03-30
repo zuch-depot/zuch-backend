@@ -23,7 +23,7 @@ type Train struct {
 	LoadingTime     int  //Wie lange ist der Zug schon am be-/entladen? 0 == nicht am laden, > 0 ist an nextStop.Plattform . Zeiteinheit ist wie oft methode aufgerufen wurde
 	FinishedLoading bool //wenn nichts mehr geladen wird true. Wird nur beim losfahren zurückgesetzt
 
-	paused bool //wurde er von Spieler blockiert?
+	Paused bool //wurde er von Spieler blockiert?
 
 	tickTillNextMove int // wie oft move aufgerufen werden muss, damit er sich wieder bewegen darf
 }
@@ -310,7 +310,7 @@ func (t *Train) move(gs *GameState) [2]int {
 func (t *Train) calculateTrain(gs *GameState) [2]int {
 	//var r [2]int
 
-	if t.paused {
+	if t.Paused {
 		return [2]int{-1, -1}
 	}
 
@@ -338,7 +338,7 @@ func (t *Train) calculateTrain(gs *GameState) [2]int {
 // läd und entläd den Zug, wenn er gerade in einem Bahnhof ist und der Zug nicht pausiert ist oder schon losfahren möchte
 func (t *Train) loadUnload(gs *GameState) error {
 
-	if t.paused || t.LoadingTime == 0 || t.FinishedLoading {
+	if t.Paused || t.LoadingTime == 0 || t.FinishedLoading {
 		// Ist nicht wirklich ein Fehler, wird halt einfach nicht beladen
 		return nil
 	}
@@ -681,16 +681,30 @@ func (t *Train) UnassignSchedule(gs *GameState) {
 
 }
 
-// keine Überprüfung
+// keine Überprüfung, setzt auch weg auf null, stop bleibt beim unpause aber gleich
 func (t *Train) Pause(gs *GameState) {
-	t.paused = true
+	t.Paused = true
+
+	// Bestimmung des vorherigen Stops und setzten von diesem, damit beim neu berechnen der aktuelle Stop wieder genommen wird
+	curStopIndex := slices.Index(t.Schedule.Stops, t.NextStop)
+	if curStopIndex == 0 {
+		curStopIndex = len(t.Schedule.Stops) - 1
+	} else {
+		curStopIndex--
+	}
+	prevStop := t.Schedule.Stops[curStopIndex]
+	t.NextStop = prevStop
+
+	t.CurrentPath = [][3]int{}
+	t.CurrentPathSignals = [][3]int{}
+
 	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
 
 }
 
 // keine Überprüfung
 func (t *Train) UnPause(gs *GameState) {
-	t.paused = false
+	t.Paused = false
 	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
 
 }
