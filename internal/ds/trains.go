@@ -550,7 +550,7 @@ func (t *Train) AddWaggon(position [3]int, typ string, level int, gs *GameState)
 	}
 
 	// Waggons zu zug hinzufügen und entsprechende tiles blockieren
-	waggon := &Waggon{Position: position, WaggonType: waggonType, Level: level, Filled: 5}
+	waggon := &Waggon{Position: position, WaggonType: waggonType, Level: level}
 	if len(t.Waggons) == 0 {
 		t.Waggons = []*Waggon{waggon}
 	} else {
