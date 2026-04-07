@@ -18,7 +18,7 @@ type ConfigData struct {
 	SizeY                  int
 	SaveLocation           string
 	SaveCompressed         bool
-	LOADCOMPRESSED         bool //wird das überhaupt benutzt?
+	LOADCOMPRESSED         bool // wird das überhaupt benutzt?
 	LoadUnloadSpeed        int
 	MinLoadUloadTicks      int
 	StationRange           int
@@ -45,11 +45,11 @@ type GameState struct {
 	Stations    map[int]*Station
 	Tiles       [][]*Tile
 	Trains      map[int]*Train
-	ActiveTiles []*ActiveTile
+	ActiveTiles map[int]*ActiveTile
 
 	ConfigData ConfigData // übergeordetes Struct, in das alles aus config.json reingeladen wird
 
-	//ALLE IDs MÜSSEN BEI 1 ANFANGEN
+	// ALLE IDs MÜSSEN BEI 1 ANFANGEN
 	CurrentTrainID      atomic.Uint64 `json:"-"`
 	CurrentScheduleID   atomic.Uint64 `json:"-"`
 	CurrentStopID       atomic.Uint64 `json:"-"`
@@ -58,7 +58,7 @@ type GameState struct {
 	CurrentActiveTileID atomic.Uint64 `json:"-"`
 	Ticker              *time.Ticker  `json:"-"`
 	Tick                int
-	IsPaused            bool `json:"-"` //nicht speichern, weil immer beim speichern pausiert ist.
+	IsPaused            bool `json:"-"` // nicht speichern, weil immer beim speichern pausiert ist.
 
 	BroadcastChannel chan WsEnvelope        `json:"-"`
 	UserInputs       chan RecieveWSEnvelope `json:"-"`
@@ -67,14 +67,14 @@ type GameState struct {
 
 	Logger *slog.Logger `json:"-"`
 
-	SizeSubtile int //muss immer 4 sein, Jannis hatte komische Ideen
+	SizeSubtile int // muss immer 4 sein, Jannis hatte komische Ideen
 
 	Money int // der Kontostand
 
 	WaggonTypes map[string]*WaggonType
 
-	currentTrain      *Train `json:"-"` //nur für das einfache hinzufügen von Waggons, wird auch nicht im savegame gespeichert
-	currentWaggonType string `json:"-"` //ebenfalls weil ich faul bin und um redundanz zu vermeiden
+	currentTrain      *Train `json:"-"` // nur für das einfache hinzufügen von Waggons, wird auch nicht im savegame gespeichert
+	currentWaggonType string `json:"-"` // ebenfalls weil ich faul bin und um redundanz zu vermeiden
 }
 
 // alle Attribute, die man am anfang senden möchte
