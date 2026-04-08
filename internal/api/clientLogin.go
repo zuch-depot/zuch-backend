@@ -3,6 +3,7 @@ package api
 import (
 	"log/slog"
 	"net/http"
+
 	"zuch-backend/internal/ds"
 
 	"github.com/gorilla/websocket"
@@ -49,7 +50,6 @@ func acceptNewClient(w http.ResponseWriter, r *http.Request, gs *ds.GameState) {
 				return
 			}
 		}
-
 	}
 	if !userExists {
 
@@ -87,7 +87,7 @@ func initializeClient(user *ds.User, gs *ds.GameState) {
 		stationMap[v.Id] = v
 	}
 
-	envelope := ds.WsEnvelope{Type: "game.initialLoad", Msg: ds.SendAbleGamestate{Users: gs.Users, Schedules: gs.Schedules, Stations: stationMap, Tiles: gs.Tiles, Trains: gs.Trains}}
+	envelope := ds.WsEnvelope{Type: "game.initialLoad", Msg: ds.SendAbleGamestate{Users: gs.Users, Schedules: gs.Schedules, Stations: stationMap, Tiles: gs.Tiles, Trains: gs.Trains, ActiveTiles: gs.ActiveTiles}}
 	err := user.Connection.WriteJSON(envelope)
 	if err != nil {
 		gs.Logger.Error("Failed parsing state to JSON", slog.String("Error", err.Error()))
@@ -108,7 +108,7 @@ func checkForClientInput(user *ds.User, gs *ds.GameState) {
 		var v ds.RecieveWSEnvelope
 		err := user.Connection.ReadJSON(&v)
 		if err != nil {
-			gs.Logger.Warn(user.Username+": Error while checking for input, Closing Connection", slog.String("Error", err.Error())) //logger or log?
+			gs.Logger.Warn(user.Username+": Error while checking for input, Closing Connection", slog.String("Error", err.Error())) // logger or log?
 			// Bei fehlern werden die Clients mit gewalt disconnected, müssen se sich halt wieder neu verbinden (oder einfach keine fehler verursachen :D)
 			user.IsConnected = false
 			user.Connection.Close()

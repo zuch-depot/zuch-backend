@@ -79,9 +79,10 @@ type GameState struct {
 
 // alle Attribute, die man am anfang senden möchte
 type SendAbleGamestate struct {
-	Users     map[string]*User // der name ist einzigartig
-	Schedules map[int]*Schedule
-	Stations  map[int]*Station
-	Tiles     [][]*Tile
-	Trains    map[int]*Train
+	Users       map[string]*User // der name ist einzigartig
+	Schedules   map[int]*Schedule
+	Stations    map[int]*Station
+	Tiles       [][]*Tile
+	Trains      map[int]*Train
+	ActiveTiles map[int]*ActiveTile
 }
