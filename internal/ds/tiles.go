@@ -29,6 +29,8 @@ type ActiveTile struct {
 	Stations   []*Station // Stationen, die in der Nähe sind. wird mit changeStationTile verwaltet
 	Storage    map[string]int
 	MaxStorage int // STANDARD für alle gleich? maximum Lager pro Gut -> sonst kann es zu unwiederruflichen auffüllen kommen. Nur für Verbrauchsgüter der Produktion
+	X          int
+	Y          int // das frontend dankt :)
 }
 
 // return das Tile bei den koordinaten, kontrolliert ob die in Bounds sind
