@@ -426,8 +426,8 @@ func (gs *GameState) CalculateTrains() {
 
 	for i := range gs.Trains {
 		temp := gs.Trains[i].calculateTrain(gs)
-		if temp[0] >= 0 {
-			tilesToUnblock = append(tilesToUnblock, temp)
+		if len(temp) >= 0 {
+			tilesToUnblock = append(tilesToUnblock, temp...)
 		}
 	}
 

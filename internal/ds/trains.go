@@ -235,26 +235,40 @@ func (t *Train) move(gs *GameState) [2]int {
 	return entblocken
 }
 
-// returned Tile zum entblcken
+// returned Tiles zum entblcken
 // wenn fertig mit Laden/entladen passiert ein Tick nichts und dann fährt er los
-func (t *Train) calculateTrain(gs *GameState) [2]int {
-	//var r [2]int
+func (t *Train) calculateTrain(gs *GameState) [][2]int {
 
+	// wenn pausiert ist den aktuellen weg löschen und entblocken
 	if t.paused {
-		return [2]int{}
+		if len(t.CurrentPath) > 0 {
+			temp := [][2]int{{t.CurrentPath[0][1], t.CurrentPath[0][1]}}
+			for i, subtile := range t.CurrentPath {
+				if temp[i] != [2]int{subtile[0], subtile[1]} {
+					temp = append(temp, [2]int{subtile[0], subtile[1]})
+				}
+			}
+			t.CurrentPath = make([][3]int, 0)
+			t.CurrentPathSignals = make([][3]int, 0)
+			return temp
+		}
+		return [][2]int{}
 	}
 
 	if t.Schedule == nil {
-		return [2]int{}
+		return [][2]int{}
 	}
 
 	//ist gerade in die Staion eingefahren, also speichern der aktuellen Station. Nächste Station wird bei neuberechen überschrieben
 	if t.NextStop.IsPlattform && t.LoadingTime == 0 && len(t.CurrentPath) == 0 {
 		gs.Logger.Debug("Zug " + t.Name + " in " + t.NextStop.Plattform.GetStation(gs).Name + " eingefahren.")
-		// fmt.Println("Zug " + t.Name + " in " + t.NextStop.Plattform.GetStation(gs).Name + " eingefahren.")
 	} else if !t.NextStop.IsPlattform && len(t.CurrentPath) == 0 {
 		//wenn das aktuelle Ziel ein Wegpunkt ist und man angekommen ist, braucht man einfach den nächsten Stop aussuchen und fahren
-		return t.move(gs)
+		temp := t.move(gs)
+		if temp[0] < 0 {
+			return [][2]int{}
+		}
+		return [][2]int{temp}
 	}
 
 	/*
@@ -289,7 +303,11 @@ func (t *Train) calculateTrain(gs *GameState) [2]int {
 		}
 	*/
 
-	return t.move(gs)
+	temp := t.move(gs)
+	if temp[0] < 0 {
+		return [][2]int{}
+	}
+	return [][2]int{temp}
 }
 
 // returnt ob der Zug voll ist oder nichts mehr zu laden ist, also abfahrtsbereit ist
