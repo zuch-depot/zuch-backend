@@ -3,6 +3,7 @@ package api
 import (
 	"log/slog"
 	"net/http"
+
 	"zuch-backend/internal/ds"
 
 	"github.com/gorilla/websocket"
@@ -49,7 +50,6 @@ func acceptNewClient(w http.ResponseWriter, r *http.Request, gs *ds.GameState) {
 				return
 			}
 		}
-
 	}
 	if !userExists {
 
@@ -70,7 +70,11 @@ func acceptNewClient(w http.ResponseWriter, r *http.Request, gs *ds.GameState) {
 }
 
 func initializeClient(user *ds.User, gs *ds.GameState) {
-	gs.PauseGame()
+	// sonst kann man sich nicht mehr bei pausierten Spielen verbinden
+	wasPaused := gs.IsPaused
+	if !wasPaused {
+		gs.PauseGame()
+	}
 
 	// Hier muss ich erstmal alles am stück einmal rüber senden
 	// Der Kriegt quasi einmal den Savefile zugeschickt und danach nur noch die änderungen
@@ -83,13 +87,17 @@ func initializeClient(user *ds.User, gs *ds.GameState) {
 		stationMap[v.Id] = v
 	}
 
-	envelope := ds.WsEnvelope{Type: "game.initialLoad", Msg: ds.SendAbleGamestate{Users: gs.Users, Schedules: gs.Schedules, Stations: stationMap, Tiles: gs.Tiles, Trains: gs.Trains}}
+	envelope := ds.WsEnvelope{Type: "game.initialLoad", Msg: ds.SendAbleGamestate{Users: gs.Users, Schedules: gs.Schedules, Stations: stationMap, Tiles: gs.Tiles, Trains: gs.Trains, ActiveTiles: gs.ActiveTiles}}
 	err := user.Connection.WriteJSON(envelope)
 	if err != nil {
 		gs.Logger.Error("Failed parsing state to JSON", slog.String("Error", err.Error()))
 	}
 	go user.StartNotifiyingSingleClient(gs)
-	gs.UnPauseGame()
+	// nur weitergehen wenn es vorher nicht pausiert war
+	// sonst nur für connection pausieren
+	if !wasPaused {
+		gs.UnPauseGame()
+	}
 }
 
 func checkForClientInput(user *ds.User, gs *ds.GameState) {
@@ -100,7 +108,7 @@ func checkForClientInput(user *ds.User, gs *ds.GameState) {
 		var v ds.RecieveWSEnvelope
 		err := user.Connection.ReadJSON(&v)
 		if err != nil {
-			gs.Logger.Warn(user.Username+": Error while checking for input, Closing Connection", slog.String("Error", err.Error())) //logger or log?
+			gs.Logger.Warn(user.Username+": Error while checking for input, Closing Connection", slog.String("Error", err.Error())) // logger or log?
 			// Bei fehlern werden die Clients mit gewalt disconnected, müssen se sich halt wieder neu verbinden (oder einfach keine fehler verursachen :D)
 			user.IsConnected = false
 			user.Connection.Close()

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"strings"
+
 	"zuch-backend/internal/ds"
 )
 
@@ -14,16 +15,16 @@ var (
 		/* 	für ecken↘↙↗↖, zeigt jeweils in die ecke wo die schiene ist
 			für Ts ↓→↑←, zeigen aud das mittlere der drei subtiles
 		0.1.2.3.4.5.6.7.8.9*/
-		" .↖.-.-.↓.↓.-. . .|", //0
-		" .|.B. .↙.←. . . .|", //1
-		" .|. . . .↙.↗. . .|", //2
-		" .|. . . . .|. .↖.←", //3
-		" .↙.-.-.↓.-.+.↓.↘.|", //4
-		" . .↖.-.↘. .|.|.S.|", //5
-		" . .|. . . .|.↙.-.←", //6
-		" . .→.-.-.-.←. . .|", //7
-		" .↖.←. . . .|. . .|", //8
-		" .↙.↘. . .L.|. . . ", //9
+		" .↖.-.-.↓.↓.-. . .|", // 0
+		" .|.B. .↙.←. . . .|", // 1
+		" .|. . . .↙.↗. . .|", // 2
+		" .|. . . . .|. .↖.←", // 3
+		" .↙.-.-.↓.-.+.↓.↘.|", // 4
+		" . .↖.-.↘. .|.|.S.|", // 5
+		" . .|. . . .|.↙.-.←", // 6
+		" . .→.-.-.-.←. . .|", // 7
+		" .↖.←. . . .|. . .|", // 8
+		" .↙.↘. . .L.|. . . ", // 9
 	}
 	testSignals = [][3]int{
 		{1, 3, 4},
@@ -35,11 +36,10 @@ var (
 
 // nur fürs Testen, inkl. Schedule
 func createDemoTrains(gs *ds.GameState) {
-
-	//stations inkl. Initialisieren
+	// stations inkl. Initialisieren
 	pos := [2]int{2, 0}
-	gs.AddStationTile(pos) //hier wird auch die Station und Plattform erstellt
-	//Bestimmung der Station zum umbenennen
+	gs.AddStationTile(pos) // hier wird auch die Station und Plattform erstellt
+	// Bestimmung der Station zum umbenennen
 	plattform, _ := gs.GetPlattform(pos)
 	plattform.GetStation(gs).Name = "Station Nord"
 	plattform.Name = "Gleis 1"
@@ -62,7 +62,7 @@ func createDemoTrains(gs *ds.GameState) {
 
 	// fmt.Println(gs.Stations)
 
-	//Zug eins mit Schedule
+	// Zug eins mit Schedule
 	var schedule *ds.Schedule
 	schedule, _ = gs.AddSchedule("Schdule Nord")
 	var stop *ds.Stop
@@ -99,7 +99,6 @@ func createDemoTrains(gs *ds.GameState) {
 	// 	{Position: [3]int{6, 4, 4}, Typ: "Lebensmittel"}})
 	train.AddWaggons([3]int{6, 5, 4}, [3]int{6, 4, 4}, "Planwagen", 1, gs)
 	train.AssignSchedule(schedule, gs)
-
 	if err != nil {
 		gs.Logger.Error("Fehler, aber ist im demo ding egal")
 		fmt.Println("Fehler beim erstellen der Demo sachen")
@@ -117,19 +116,19 @@ func initializeTiles(gs *ds.GameState) {
 	gs.CurrentStationID.Store(1)
 	gs.CurrentStopID.Store(1)
 
-	//initalising 2d slice
+	// initalising 2d slice
 	gs.Tiles = make([][]*ds.Tile, gs.ConfigData.SizeX)
 	for i := range gs.Tiles {
 		gs.Tiles[i] = make([]*ds.Tile, gs.ConfigData.SizeY)
 	}
 
-	//Erstellung der Tiles
+	// Erstellung der Tiles
 	for y := range gs.ConfigData.SizeY {
-		line := strings.Split(testMap[y], ".") //testing
+		line := strings.Split(testMap[y], ".") // testing
 		for x := range gs.ConfigData.SizeX {
-			//hier die Infos für das Tile laden
+			// hier die Infos für das Tile laden
 
-			//testing
+			// testing
 			var aktiveTile ds.ActiveTile
 			var tracks [4]bool
 			switch line[x] {
@@ -157,19 +156,19 @@ func initializeTiles(gs *ds.GameState) {
 				tracks = [4]bool{true, true, true, false}
 			case "B":
 				temp := gs.ConfigData.ActiveTileCategories["Bauernhof"]
-				aktiveTile = ds.ActiveTile{Id: 3, Name: "Bauernhof Nord", Category: &temp, MaxStorage: 150}
-				gs.ActiveTiles = append(gs.ActiveTiles, &aktiveTile)
+				aktiveTile = ds.ActiveTile{Id: 3, Name: "Bauernhof Nord", Category: &temp, MaxStorage: 150, X: x, Y: y}
+				gs.ActiveTiles[aktiveTile.Id] = &aktiveTile
 			case "L":
 				temp := gs.ConfigData.ActiveTileCategories["Lebensmittelfabrik"]
-				aktiveTile = ds.ActiveTile{Id: 1, Name: "Lebensmittelfabrik Süd", Category: &temp, MaxStorage: 50, Storage: map[string]int{"Kartoffeln": 100, "Sonnenblumenöl": 50}}
-				gs.ActiveTiles = append(gs.ActiveTiles, &aktiveTile)
+				aktiveTile = ds.ActiveTile{Id: 1, Name: "Lebensmittelfabrik Süd", Category: &temp, MaxStorage: 50, Storage: map[string]int{"Kartoffeln": 100, "Sonnenblumenöl": 50}, Y: y, X: x}
+				gs.ActiveTiles[aktiveTile.Id] = &aktiveTile
 			case "S":
 				temp := gs.ConfigData.ActiveTileCategories["Stadt"]
-				aktiveTile = ds.ActiveTile{Id: 2, Name: "Wuppertal", Category: &temp, MaxStorage: 50}
-				gs.ActiveTiles = append(gs.ActiveTiles, &aktiveTile)
+				aktiveTile = ds.ActiveTile{Id: 2, Name: "Wuppertal", Category: &temp, MaxStorage: 50, Y: y, X: x}
+				gs.ActiveTiles[aktiveTile.Id] = &aktiveTile
 			}
 
-			//signals testing
+			// signals testing
 			var signals [4]bool
 			for p := range testSignals {
 				if testSignals[p][0] == int(x) && testSignals[p][1] == int(y) {
@@ -185,7 +184,7 @@ func initializeTiles(gs *ds.GameState) {
 
 // nur fürs Testen
 func printMap(gs *ds.GameState) {
-	//i = y
+	// i = y
 	for i := range gs.Tiles {
 		fmt.Print(".")
 		for o := range gs.Tiles {

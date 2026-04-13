@@ -18,10 +18,10 @@ var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: tr
 // var logger = slog.New(humane.NewHandler(os.Stdout, &humane.Options{AddSource: true, Level: slog.LevelDebug}))
 
 func main() {
-
 	utils.Logger = logger
 
-	gs := ds.GameState{UserInputs: make(chan ds.RecieveWSEnvelope, 300),
+	gs := ds.GameState{
+		UserInputs:       make(chan ds.RecieveWSEnvelope, 300),
 		BroadcastChannel: make(chan ds.WsEnvelope, 100),
 		UnPause:          make(chan bool),
 		SizeSubtile:      4,
@@ -30,6 +30,7 @@ func main() {
 		Users:            make(map[string]*ds.User),
 		Stations:         make(map[int]*ds.Station),
 		Schedules:        make(map[int]*ds.Schedule),
+		ActiveTiles:      make(map[int]*ds.ActiveTile),
 		Logger:           logger,
 	}
 	// err := godotenv.Load("main.env")
@@ -48,7 +49,7 @@ func main() {
 	// sich merken wer wer ist
 	// wenn wer rausfliegt sollten die sachen noch da sein
 
-	//lade das akutellste Savegame
+	// lade das akutellste Savegame
 	// gs.LoadGame("")
 
 	// hier den Server starten
@@ -61,7 +62,7 @@ func main() {
 	// go gs.SaveGame("")
 
 	// jeder Tick
-	//for gs.Tick = 0; ; gs.Tick++ { //--> gs.tick ist standartmäßig 0, wenn nicht, dann nur, weil das rausgeladen wurde
+	// for gs.Tick = 0; ; gs.Tick++ { //--> gs.tick ist standartmäßig 0, wenn nicht, dann nur, weil das rausgeladen wurde
 	for ; ; gs.Tick++ {
 
 		// Wenn pausiert wurde, warten bis entpausiert signal kommt
@@ -72,7 +73,7 @@ func main() {
 			logger.Info("continuing after Pause")
 		}
 
-		//TEMP fürs testen //MAYBE Autosaves??
+		// TEMP fürs testen //MAYBE Autosaves??
 		// if gs.Tick%1000 == 0 {
 		// go saveGame(&gs, "")
 		// }
