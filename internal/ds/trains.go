@@ -695,6 +695,21 @@ func (t *Train) Pause(gs *GameState) {
 	prevStop := t.Schedule.Stops[curStopIndex]
 	t.NextStop = prevStop
 
+	// alle entblockierten
+	if len(t.CurrentPath) > 0 {
+		curTile := t.CurrentPath[0]
+		i := 0
+		for curTile != t.CurrentPathSignals[0] {
+
+			gs.Tiles[curTile[0]][curTile[1]].IsBlocked = false
+			//TODO Hier müssen Tiles unblocked werden
+
+			i++
+			curTile = t.CurrentPath[i]
+		}
+
+	}
+
 	t.CurrentPath = [][3]int{}
 	t.CurrentPathSignals = [][3]int{}
 
