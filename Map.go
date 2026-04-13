@@ -3,10 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"log/slog"
-	"os"
-	"strconv"
 	"strings"
 	"zuch-backend/internal/ds"
 )
@@ -38,13 +35,6 @@ var (
 
 // nur fürs Testen, inkl. Schedule
 func createDemoTrains(gs *ds.GameState) {
-	//TEMP
-	gs.CurrentPlattformID.Add(1)
-	gs.CurrentStationID.Add(1)
-	gs.CurrentScheduleID.Add(1)
-	gs.CurrentStopID.Add(1)
-	gs.CurrentTrainID.Add(1)
-	gs.CurrentActiveTileID.Add(1)
 
 	//stations inkl. Initialisieren
 	pos := [2]int{2, 0}
@@ -84,14 +74,8 @@ func createDemoTrains(gs *ds.GameState) {
 	stop.SetLoadCommand([]string{"Pommes"}, false, gs)
 	stop.SetUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false, gs)
 
-	train, err := gs.AddTrain("RE1", [3]int{3, 4, 3}, "")
-	// []ds.TrainCreateWaggons{
-	// 	{Position: [3]int{3, 4, 3}, Typ: "Lebensmittel"},
-	// 	{Position: [3]int{3, 4, 1}, Typ: "Lebensmittel"},
-	// 	{Position: [3]int{2, 4, 3}, Typ: "Lebensmittel"},
-	// 	{Position: [3]int{2, 4, 1}, Typ: "Lebensmittel"}},
-	// )
-	train.AddWaggons([3]int{3, 4, 1}, [3]int{2, 4, 1}, "Lebensmittel", gs)
+	train, err := gs.AddTrain("RE1", [3]int{3, 4, 3}, "Dampflock Wind", 3)
+	train.AddWaggons([3]int{3, 4, 1}, [3]int{2, 4, 1}, "Planwagen", 2, gs)
 	train.AssignSchedule(schedule, gs)
 	if err != nil {
 		gs.Logger.Error("Fehler, aber ist im demo ding egal")
@@ -107,45 +91,42 @@ func createDemoTrains(gs *ds.GameState) {
 	stop.SetLoadCommand([]string{"Pommes"}, false, gs)
 	stop.SetUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false, gs)
 
-	train, err = gs.AddTrain("RE2", [3]int{6, 6, 2}, "")
+	train, err = gs.AddTrain("RE2", [3]int{6, 6, 2}, "Diesellok Schnecke", 2)
 	// []ds.TrainCreateWaggons{
 	// 	{Position: [3]int{6, 6, 2}, Typ: "Lebensmittel"},
 	// 	{Position: [3]int{6, 5, 4}, Typ: "Lebensmittel"},
 	// 	{Position: [3]int{6, 5, 2}, Typ: "Lebensmittel"},
 	// 	{Position: [3]int{6, 4, 4}, Typ: "Lebensmittel"}})
-	train.AddWaggons([3]int{6, 5, 4}, [3]int{6, 4, 4}, "Lebensmittel", gs)
+	train.AddWaggons([3]int{6, 5, 4}, [3]int{6, 4, 4}, "Planwagen", 1, gs)
 	train.AssignSchedule(schedule, gs)
 
 	if err != nil {
 		gs.Logger.Error("Fehler, aber ist im demo ding egal")
+		fmt.Println("Fehler beim erstellen der Demo sachen")
 	}
+
+	gs.Money = 100000000
 }
 
 func initializeTiles(gs *ds.GameState) {
 	// Setzt die erste Zug ID, pass hier halbwegs zum initialisieren
-	gs.CurrentTrainID.Store(0)
-
-	//Map Größe aus config laden
-	sizeX, err := strconv.ParseInt(os.Getenv("XSIZE"), 10, 64)
-	if err != nil {
-		log.Println("Error while loading Size of Map in the x dimension", err)
-	}
-
-	sizeY, err := strconv.ParseInt(os.Getenv("YSIZE"), 10, 64)
-	if err != nil {
-		log.Println("Error while loading Size of Map in the y dimension", err)
-	}
+	gs.CurrentTrainID.Store(1)
+	gs.CurrentActiveTileID.Store(1)
+	gs.CurrentPlattformID.Store(1)
+	gs.CurrentScheduleID.Store(1)
+	gs.CurrentStationID.Store(1)
+	gs.CurrentStopID.Store(1)
 
 	//initalising 2d slice
-	gs.Tiles = make([][]*ds.Tile, sizeX)
+	gs.Tiles = make([][]*ds.Tile, gs.ConfigData.SizeX)
 	for i := range gs.Tiles {
-		gs.Tiles[i] = make([]*ds.Tile, sizeY)
+		gs.Tiles[i] = make([]*ds.Tile, gs.ConfigData.SizeY)
 	}
 
 	//Erstellung der Tiles
-	for y := range sizeY {
+	for y := range gs.ConfigData.SizeY {
 		line := strings.Split(testMap[y], ".") //testing
-		for x := range sizeX {
+		for x := range gs.ConfigData.SizeX {
 			//hier die Infos für das Tile laden
 
 			//testing
@@ -199,9 +180,7 @@ func initializeTiles(gs *ds.GameState) {
 			gs.Tiles[x][y] = &ds.Tile{IsPlattform: false, Tracks: tracks, Signals: signals, ActiveTile: &aktiveTile, IsLocked: aktiveTile.Stations == nil, X: int(x), Y: int(y)}
 		}
 	}
-	gs.SizeX = int(sizeX)
-	gs.SizeY = int(sizeY)
-	logger.Info("Tiles initialised with a Map size of", slog.Int64("SizeX", sizeX), slog.Int64("SizeY", sizeY))
+	logger.Info("Tiles initialised with a Map size of", slog.Int64("SizeX", int64(gs.ConfigData.SizeX)), slog.Int64("SizeY", int64(gs.ConfigData.SizeY)))
 }
 
 // nur fürs Testen
@@ -273,7 +252,7 @@ func unpackEnvelope[T any](envelope ds.RecieveWSEnvelope, typ T) (T, error) {
 }
 
 func checkIfCoordinatesAreValid(position [3]int, gs *ds.GameState) error {
-	if !((0 <= position[0] && position[0] < int(gs.SizeX)) && (0 <= position[1] && position[1] < int(gs.SizeY)) && (0 < position[2] && position[2] <= gs.SizeSubtile)) {
+	if !((0 <= position[0] && position[0] < int(gs.ConfigData.SizeX)) && (0 <= position[1] && position[1] < int(gs.ConfigData.SizeY)) && (0 < position[2] && position[2] <= gs.SizeSubtile)) {
 		return fmt.Errorf("coordinates are invalid")
 	} else {
 		return nil
@@ -283,7 +262,7 @@ func checkIfCoordinatesAreValid(position [3]int, gs *ds.GameState) error {
 // warum hast du das so komisch gemacht Jannis?
 // -> wenn du die funktionen direkt aufrufst, sieht das in der Übersicht besser aus
 // Führt das callback mit den daten des envelopes aus, tritt ein fehler aus wird der zurück gegeben, andererseits wird die nachricht an alle geschickt
-func executeAndReply(callback func(int, *ds.GameState) (bool, string), envelope *ds.RecieveWSEnvelope, update *ds.TileUpdateMSG, gs *ds.GameState) error {
+func executeAndReply(callback func(int, *ds.GameState) (bool, string), envelope *ds.RecieveWSEnvelope, update *ds.MultitileUpdateMSG, gs *ds.GameState) error {
 	success, msg := callback(update.Position[2], gs)
 	if success {
 		envelope.Reply(success, "", gs)

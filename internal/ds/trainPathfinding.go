@@ -1,7 +1,6 @@
 package ds
 
 import (
-	"fmt"
 	"slices"
 	"strconv"
 	"zuch-backend/internal/utils"
@@ -9,13 +8,13 @@ import (
 
 // testing
 func (gs *GameState) printTrains() {
-	for _, i := range gs.Trains {
-		gs.Logger.Debug(fmt.Sprint("Train", i.Name))
-		for _, waggon := range i.Waggons {
-			gs.Logger.Debug(fmt.Sprint(waggon.CargoStorage, ""))
-		}
-	}
-	gs.Logger.Debug(fmt.Sprintln("-----------------------"))
+	// for _, i := range gs.Trains {
+	// 	gs.Logger.Debug(fmt.Sprint("Train", i.Name))
+	// 	for _, waggon := range i.Waggons {
+	// 		// gs.Logger.Debug(fmt.Sprint(waggon.CargoStorage, ""))
+	// 	}
+	// }
+	// gs.Logger.Debug(fmt.Sprintln("-----------------------"))
 }
 
 func (t *Train) recalculatePath(gs *GameState) {

@@ -121,6 +121,11 @@ type RecieveWSEnvelope struct {
 
 // recht allgemeiner Typ der einfach 2 Positionen abbildet, wird für Tracks als auch bspw. Züge genutzt, die 2. position ist optional
 type TileUpdateMSG struct {
+	Position *[3]int `path:"Position" example:"[1,3,4]" minLength:"3" maxLength:"3" doc:"Which Tile to interact with, in the format X Y Subtile, Subtile starts with 1 and on the left side, then counts clockwise"`
+}
+
+// recht allgemeiner Typ der einfach 2 Positionen abbildet, wird für Tracks als auch bspw. Züge genutzt, die 2. position ist optional
+type MultitileUpdateMSG struct {
 	Position    *[3]int `path:"Position" example:"[1,3,4]" minLength:"3" maxLength:"3" doc:"Which Tile to interact with, in the format X Y Subtile, Subtile starts with 1 and on the left side, then counts clockwise"`
 	Position_to *[3]int `path:"Position_to" example:"[1,1,4]" required:"false" minLength:"3" maxLength:"3" nullable:"true"`
 	// 0 => links, 1 => oben, 2 => rechts, 3 => unten

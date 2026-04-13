@@ -8,8 +8,8 @@ import (
 
 type User struct {
 	Username       string
-	IsConnected    bool
-	Connection     *websocket.Conn
+	IsConnected    bool            `json:"-"`
+	Connection     *websocket.Conn `json:"-"`
 	WebSocketQueue chan WsEnvelope `json:"-"`
 }
 
