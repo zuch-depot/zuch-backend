@@ -292,7 +292,7 @@ func (gs *GameState) ProcessActiveTiles() {
 			numberStations := len(stations)
 			for _, station := range stations {
 				quantityToAdd := activeTile.Storage[prodCat] / numberStations
-				activeTile.Storage[prodCat] -= quantityToAdd - station.addCargo(prodCat, quantityToAdd)
+				activeTile.Storage[prodCat] -= quantityToAdd - station.addCargo(prodCat, quantityToAdd, gs)
 			}
 
 		}
