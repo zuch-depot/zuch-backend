@@ -698,6 +698,9 @@ func (t *Train) Pause(gs *GameState) {
 	// alle entblockierten
 	if len(t.CurrentPath) > 0 {
 		curTile := t.CurrentPath[0]
+		if curTile[0] == t.Waggons[0].Position[0] && curTile[1] == t.Waggons[0].Position[1] && len(t.CurrentPath) > 1 {
+			curTile = t.CurrentPath[1]
+		}
 		i := 0
 		for curTile != t.CurrentPathSignals[0] {
 
