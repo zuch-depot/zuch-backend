@@ -699,7 +699,7 @@ func (t *Train) Pause(gs *GameState) {
 			curTile = t.CurrentPath[1]
 		}
 		i := 0
-		for curTile != t.CurrentPathSignals[0] {
+		for curTile != t.CurrentPathSignals[0] && i < len(t.CurrentPath)-1 {
 
 			gs.Tiles[curTile[0]][curTile[1]].IsBlocked = false
 
