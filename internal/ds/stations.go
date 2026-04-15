@@ -3,23 +3,24 @@ package ds
 import (
 	"fmt"
 	"slices"
+
 	"zuch-backend/internal/utils"
 )
 
 type Station struct {
-	Id         int //muss unique sein
+	Id         int // muss unique sein
 	Name       string
-	Storage    map[string]int //von was ist wieviel gelagert: CargoType? Hinzufügen nur mit Methode, rausnehmen direkt. MUSS mit make komplett initiiert werden
-	Capacity   int            //was ist die maximale Kapazität
+	Storage    map[string]int // von was ist wieviel gelagert: CargoType? Hinzufügen nur mit Methode, rausnehmen direkt. MUSS mit make komplett initiiert werden
+	Capacity   int            // was ist die maximale Kapazität
 	Plattforms map[int]*Plattform
 }
 
 // alle Tiles müssen aneinander in der gleichen Richtung sein und dürfen keine Kurven haben
 type Plattform struct {
-	Id    int //neu, muss ggf. implementiert werden
+	Id    int // neu, muss ggf. implementiert werden
 	Name  string
 	Tiles [][2]int // nur x & y, muss in Order sein. KEIN DIREKTER ZUGRIFF?
-	//Station *Station
+	// Station *Station
 }
 
 type Produktionszyklus struct {
@@ -36,7 +37,6 @@ type ActiveTileCategory struct {
 // muss nur noch für demo trains öffentlich sein
 // returnt die Station einer Plattform. Ist notwendig, da die Kommunikation nicht mit Zirkelverweisen klar kommt
 func (p *Plattform) GetStation(gs *GameState) *Station {
-
 	for _, station := range gs.Stations {
 		for _, plattform := range station.Plattforms {
 			if plattform.Id == p.Id {
@@ -56,8 +56,8 @@ func (p *Plattform) getFirstLast(gs *GameState) [2][3]int {
 
 	// wenn die Tracks horizontal sind, dann ist die Plattform auch horizontal
 	if gs.Tiles[p.Tiles[0][0]][p.Tiles[0][1]].Tracks[0] && gs.Tiles[p.Tiles[len(p.Tiles)-1][0]][p.Tiles[len(p.Tiles)-1][1]].Tracks[2] {
-		//wenn erstes Tile weiter links als das zweite ist, dann ist der Äußere Sub-Tile 1, sont 3
-		//fürs letzte Tile entsprechend andersherum
+		// wenn erstes Tile weiter links als das zweite ist, dann ist der Äußere Sub-Tile 1, sont 3
+		// fürs letzte Tile entsprechend andersherum
 		if p.Tiles[0][0] < p.Tiles[len(p.Tiles)-1][0] {
 			r[0][2] = 1
 			r[1][2] = 3
@@ -66,7 +66,7 @@ func (p *Plattform) getFirstLast(gs *GameState) [2][3]int {
 			r[1][2] = 1
 		}
 	} else {
-		//hier das ganze für oben und unten
+		// hier das ganze für oben und unten
 		if p.Tiles[0][1] < p.Tiles[len(p.Tiles)-1][1] {
 			r[0][2] = 2
 			r[1][2] = 4
@@ -82,7 +82,6 @@ func (p *Plattform) getFirstLast(gs *GameState) [2][3]int {
 // Validität wird hier nicht geprüft, nur am richtigen Ende hinzugefügt. (eig. nur für ChangeStationTile)
 // smaller: links oder oben
 func (p *Plattform) addTile(position [2]int, smaller bool, gs *GameState) error {
-
 	if smaller {
 		p.Tiles = append([][2]int{position}, p.Tiles...)
 	} else {
@@ -106,23 +105,21 @@ func (p *Plattform) isPlattfromFromStation(station *Station) bool {
 
 // wenn nicht außen, dann splitting (noch nicht impl). Validität wird nicht geprüft
 func (p *Plattform) removeTile(position [2]int, gs *GameState) error {
-
 	ends := p.getFirstLast(gs)
 	if ends[0][0] == position[0] && ends[0][1] == position[1] {
 		utils.RemoveElementFromSlice(p.Tiles, 0)
 	} else if ends[1][1] == position[1] && ends[1][0] == position[0] {
 		utils.RemoveElementFromSlice(p.Tiles, len(p.Tiles)-1)
 	} else {
-		//splitting TODO, erstmal Fehler
+		// splitting TODO, erstmal Fehler
 		return nil
 	}
 
 	gs.Tiles[position[0]][position[1]].IsPlattform = false
 
 	if len(p.Tiles) == 0 {
-		//Plattform löschen
+		// Plattform löschen
 		p.GetStation(gs).deletePlattform(p.Id, gs)
-
 	}
 
 	return nil
@@ -130,7 +127,6 @@ func (p *Plattform) removeTile(position [2]int, gs *GameState) error {
 
 // prüft utils.Checkname und bennent danach um
 func (p *Plattform) Rename(name string) error {
-
 	err := utils.CheckName(name)
 	if err != nil {
 		return err
@@ -145,10 +141,10 @@ func (p *Plattform) Rename(name string) error {
 func (p *Plattform) getPathToOpposite(initial [3]int) [][3]int {
 	var r [][3]int
 
-	//wenn die bei y gleich sind, dann ist die Plattform horizontal
+	// wenn die bei y gleich sind, dann ist die Plattform horizontal
 	if p.Tiles[0][1] == p.Tiles[len(p.Tiles)-1][1] {
-		//wenn erstes Tile weiter links als das zweite ist, dann ist der Äußere Sub-Tile 1, sont 3
-		//fürs letzte Tile entsprechend andersherum
+		// wenn erstes Tile weiter links als das zweite ist, dann ist der Äußere Sub-Tile 1, sont 3
+		// fürs letzte Tile entsprechend andersherum
 		if p.Tiles[0][0] < p.Tiles[len(p.Tiles)-1][0] {
 			for i := range (p.Tiles[len(p.Tiles)-1][0] - p.Tiles[0][0] + 1) * 2 {
 				if i%2 == 0 {
@@ -186,11 +182,11 @@ func (p *Plattform) getPathToOpposite(initial [3]int) [][3]int {
 		}
 	}
 
-	//reverse if neccececary
+	// reverse if neccececary
 	if r[0] != initial {
 		slices.Reverse(r)
 	}
-	//erste rausnehmen, da das schon im Pfad ist
+	// erste rausnehmen, da das schon im Pfad ist
 	r = r[1:]
 
 	return r
@@ -198,30 +194,30 @@ func (p *Plattform) getPathToOpposite(initial [3]int) [][3]int {
 
 // return Restwert, der keinen Platz gefunden hat
 // beachtet max. Lademenge pro Tick nicht
-func (s *Station) addCargo(cargoType string, quantity int) int {
+func (s *Station) addCargo(cargoType string, quantity int, gs *GameState) int {
 	filled := s.GetFillLevel()
-	//ist noch platz?
+	// ist noch platz?
 	if filled < s.Capacity {
-		//wie viel Platz?
+		// wie viel Platz?
 		emtySpace := s.Capacity - filled
 		overflow := quantity - emtySpace
-		//reicht der Platz?, dann gibt es keinen Overflow
+		// reicht der Platz?, dann gibt es keinen Overflow
 		if overflow < 0 {
 			overflow = 0
 		}
-		//fülle auf
+		// fülle auf
 		s.Storage[cargoType] += quantity - overflow
 		return overflow
 	}
 
-	//TODO JANNIS die Station zum Client schicken
+	gs.BroadcastChannel <- WsEnvelope{Type: "station.update", Msg: s}
 
 	return quantity
 }
 
 // returnt den Füllstand der Station
 func (s *Station) GetFillLevel() int {
-	var filled int //aktueller gefüllter Wert
+	var filled int // aktueller gefüllter Wert
 	for _, i := range s.Storage {
 		filled += i
 	}
@@ -230,7 +226,6 @@ func (s *Station) GetFillLevel() int {
 
 // name kann auch "", Id ist Standardname
 func (s *Station) addPlattform(name string, tiles [][2]int, gs *GameState) error {
-
 	if name == "" {
 		name = fmt.Sprint("Plattform ", gs.CurrentPlattformID.Load())
 	}
@@ -244,7 +239,6 @@ func (s *Station) addPlattform(name string, tiles [][2]int, gs *GameState) error
 // entfernt nur die Plattform auch aus allen stops und wenn die Station leer ist, diese auch. Manipuliert keine Tiles
 // Auch zu benutzen, wenn schon alle Tiles weg sind
 func (s *Station) deletePlattform(Id int, gs *GameState) error {
-
 	var err error
 
 	plattform, ok := s.Plattforms[Id]
@@ -266,7 +260,7 @@ func (s *Station) deletePlattform(Id int, gs *GameState) error {
 		}
 	*/
 
-	//Entfernung der Plattform aus allen Stops
+	// Entfernung der Plattform aus allen Stops
 	for _, schedule := range gs.Schedules {
 		for _, stop := range schedule.Stops {
 			if stop.IsPlattform && stop.Plattform.Id == plattform.Id {
@@ -279,16 +273,16 @@ func (s *Station) deletePlattform(Id int, gs *GameState) error {
 		}
 	}
 
-	//Entfernung der Plattform aus der Station
+	// Entfernung der Plattform aus der Station
 	delete(s.Plattforms, Id)
 	if err != nil {
 		return err
 	}
 
-	//Kontrolle, ob die Station noch Plattformen hat
+	// Kontrolle, ob die Station noch Plattformen hat
 	if len(s.Plattforms) == 0 {
-		//TODO error
-		//Station löschen
+		// TODO error
+		// Station löschen
 		gs.deleteStation(s)
 	}
 
@@ -297,7 +291,6 @@ func (s *Station) deletePlattform(Id int, gs *GameState) error {
 
 // entgfernt alle Tiles der Plattform
 func (s *Station) RemovePlattform(Id int, gs *GameState) error {
-
 	for _, tilePos := range s.Plattforms[Id].Tiles {
 		_, err := gs.RemoveStationTile(tilePos)
 		if err != nil {
@@ -309,7 +302,6 @@ func (s *Station) RemovePlattform(Id int, gs *GameState) error {
 
 // checks the name with utils.checkname und setzt den namen
 func (s *Station) Rename(name string) error {
-
 	err := utils.CheckName(name)
 	if err != nil {
 		return nil

@@ -397,7 +397,7 @@ func (t *Train) loadUnload(gs *GameState) error {
 				}
 				avaliableLoadUnloadSpeed -= removed
 
-				sta.addCargo(cargo, removed)
+				sta.addCargo(cargo, removed, gs)
 
 				if removed > 0 {
 					gs.Logger.Debug("Zug: " + t.Name + " hat " + strconv.Itoa(removed) + " Tonnen " + string(cargo) + " entladen")
@@ -691,7 +691,6 @@ func (t *Train) Pause(gs *GameState) {
 
 			gs.Tiles[curTile[0]][curTile[1]].IsBlocked = false
 
-			// TODO Hier müssen Tiles unblocked werden
 			gs.BroadcastChannel <- WsEnvelope{Type: "tile.update", Msg: gs.Tiles[curTile[0]][curTile[1]]}
 
 			i++

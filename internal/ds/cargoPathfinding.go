@@ -8,32 +8,30 @@ import (
 // uhhh dunno was genau das hier ist
 // offensichtlich nochmal Dijkstra
 func (gs *GameState) CalculateCargoPaths() {
-
 	//
 
 	for _, startActiveTile := range gs.ActiveTiles {
 		prodTypes := startActiveTile.getProductionCategorys()
 
-		//Menge könnte man auch berücksichtigen
+		// Menge könnte man auch berücksichtigen
 		for prodType := range prodTypes {
-			var prodTypePaths [][]*cargoPathElement //Alle Paths, die für einen Produktionstypen gefunden wurden
+			var prodTypePaths [][]*cargoPathElement // Alle Paths, die für einen Produktionstypen gefunden wurden
 
-			//für jeden Produktionstypen alle möglichen Ziele suchen
+			// für jeden Produktionstypen alle möglichen Ziele suchen
 			for _, targetActiveTile := range gs.ActiveTiles {
 
-				consTypes := targetActiveTile.getConsumptionCategorys() //alle Verbrauchstypen des Ziel Tiles
+				consTypes := targetActiveTile.getConsumptionCategorys() // alle Verbrauchstypen des Ziel Tiles
 				for consType := range consTypes {
-
 					if consType == prodType {
 						var paths [][]*cargoPathElement
 
-						//bestimmung aller pfade
+						// bestimmung aller pfade
 						for _, station := range startActiveTile.Stations {
 							temp, _ := gs.cargoPathfinding(station, targetActiveTile, prodType)
 							paths = append(paths, temp)
 						}
 
-						//auswahl des kürzesten
+						// auswahl des kürzesten
 						shortestPath := paths[0]
 						lenShortest := len(paths[0])
 						for _, path := range paths {
@@ -43,7 +41,7 @@ func (gs *GameState) CalculateCargoPaths() {
 							}
 						}
 
-						//print
+						// print
 						// fmt.Println("pathfinding for:", startActiveTile.Name, "Prodtype:", prodType, "to:", targetActiveTile.Name, "ConsType:", consType)
 						// fmt.Println("Länge", len(shortestPath))
 						// for _, element := range shortestPath {
@@ -56,12 +54,12 @@ func (gs *GameState) CalculateCargoPaths() {
 				}
 			}
 
-			//Verteilen auf umliegende Stationen
+			// Verteilen auf umliegende Stationen
 			numberStations := len(prodTypePaths)
 			for _, path := range prodTypePaths {
 				station := path[0].startStation
 				quantityToAdd := startActiveTile.Storage[prodType] / numberStations
-				startActiveTile.Storage[prodType] -= quantityToAdd - station.addCargo(prodType, quantityToAdd)
+				startActiveTile.Storage[prodType] -= quantityToAdd - station.addCargo(prodType, quantityToAdd, gs)
 			}
 
 		}
@@ -70,15 +68,14 @@ func (gs *GameState) CalculateCargoPaths() {
 
 // Weg ist in richtiger Reihenfolge
 func (gs *GameState) cargoPathfinding(start *Station, target *ActiveTile, cargoType string) ([]*cargoPathElement, error) {
-
 	// Item der Merkliste, die die noch abgearbeitet werden müssen
 	type pathfindingElement struct {
 		pathLength       int
 		station          *Station
-		cargoPathElement cargoPathElement //Weg, der zu der Station führt (start ist prevStation, target = station)
+		cargoPathElement cargoPathElement // Weg, der zu der Station führt (start ist prevStation, target = station)
 	}
 
-	//ToDoListe initialisieren ---> funktioniert so nicht
+	// ToDoListe initialisieren ---> funktioniert so nicht
 	var toDoStations []pathfindingElement
 	toDoStations = append(toDoStations, pathfindingElement{pathLength: 0, station: start})
 
@@ -88,7 +85,7 @@ func (gs *GameState) cargoPathfinding(start *Station, target *ActiveTile, cargoT
 	var goal *pathfindingElement
 	for len(toDoStations) > 0 {
 
-		//sortieren der ToDos
+		// sortieren der ToDos
 		slices.SortFunc(toDoStations, func(a, b pathfindingElement) int {
 			if a.pathLength > b.pathLength {
 				return 1
@@ -100,10 +97,10 @@ func (gs *GameState) cargoPathfinding(start *Station, target *ActiveTile, cargoT
 		})
 		currentToDo := toDoStations[0]
 
-		//das aktuell betrachtete Element den Betrachteten hinzufügen. Man war noch ganz sicher nicht da
+		// das aktuell betrachtete Element den Betrachteten hinzufügen. Man war noch ganz sicher nicht da
 		visitedStations[currentToDo.station] = &currentToDo
 
-		//ist man angekommen?
+		// ist man angekommen?
 		for _, targetStation := range target.Stations {
 			if currentToDo.station.Id == targetStation.Id {
 				succesfull = true
@@ -115,20 +112,20 @@ func (gs *GameState) cargoPathfinding(start *Station, target *ActiveTile, cargoT
 			break
 		}
 
-		//Nachbarn bestimmen
+		// Nachbarn bestimmen
 		neighbours := gs.GetAvaliableStation(currentToDo.station, cargoType)
 
 		for _, neighbour := range neighbours {
-			//wenn man den Nachbarn schonmal als Nachbarn hatte, dann kann der neue Weg nichtmehr besser sein, da nur Entfernung betrachtet wird
-			//mir ist egal, dass theoretisch bei der Entfernung die Plattformen betrachtet werden und es daher trotzdem zu kleinen Unterschieden kommen kann
+			// wenn man den Nachbarn schonmal als Nachbarn hatte, dann kann der neue Weg nichtmehr besser sein, da nur Entfernung betrachtet wird
+			// mir ist egal, dass theoretisch bei der Entfernung die Plattformen betrachtet werden und es daher trotzdem zu kleinen Unterschieden kommen kann
 			alreadyVisited := false
-			//hat man schon vor dahin zu gehen
+			// hat man schon vor dahin zu gehen
 			for _, element := range toDoStations {
 				if element.station == neighbour.targetStation {
 					alreadyVisited = true
 				}
 			}
-			//war man vielleicht auch schon da?
+			// war man vielleicht auch schon da?
 			if alreadyVisited && visitedStations[neighbour.targetStation] != nil {
 				continue
 			}
@@ -141,17 +138,17 @@ func (gs *GameState) cargoPathfinding(start *Station, target *ActiveTile, cargoT
 
 		}
 
-		//entfernen des ersten elementes
+		// entfernen des ersten elementes
 		toDoStations = toDoStations[1:]
 	}
 
 	if succesfull {
-		//Weg rekonstruieren
+		// Weg rekonstruieren
 		var cargoPath []*cargoPathElement
 		for current := goal.cargoPathElement; ; current = visitedStations[current.startStation].cargoPathElement {
 
 			cargoPath = append(cargoPath, &current)
-			//am start angekommen?
+			// am start angekommen?
 			if start.Id == current.startStation.Id {
 				slices.Reverse(cargoPath)
 				return cargoPath, nil
@@ -181,10 +178,9 @@ func (c *cargoPathElement) toString() string {
 // suche in den Schedules nach allen verfügbaren erreichbaren Stationen für den Typen
 // bei return: 0 ist start, 1 ist Ziel
 func (gs *GameState) GetAvaliableStation(startStation *Station, cargoType string) []cargoPathElement {
-
-	//gehe alle Stops aller Schedules durch, die entweder keinen LoadCommand haben oder einen haben, der den richtigen Typen hat,
+	// gehe alle Stops aller Schedules durch, die entweder keinen LoadCommand haben oder einen haben, der den richtigen Typen hat,
 	//  und suche nach allen Plattformen der Startstation.
-	//Wenn eine Plattform der Startstation gefunden wurde,
+	// Wenn eine Plattform der Startstation gefunden wurde,
 	// dann nehme alle anderen Stationen, die entweder keinen UnloadCommand haben oder einen haben, der den richtigen Typen hat in dem Schedule in der Liste auf
 
 	var avaliableStations []cargoPathElement
@@ -195,10 +191,10 @@ func (gs *GameState) GetAvaliableStation(startStation *Station, cargoType string
 
 		// Ist die Startstation in dem Schedule als Stop enthalten mit einem passenden LoadCommand?
 		for _, stop := range schedule.Stops {
-			//ist es eine Plattform der Startstation?
+			// ist es eine Plattform der Startstation?
 			if stop.IsPlattform && stop.Plattform.isPlattfromFromStation(startStation) {
 
-				//hat die Plattform bei dem Stop einen LoadCommand für den Typen oder keinen LoadCommand?
+				// hat die Plattform bei dem Stop einen LoadCommand für den Typen oder keinen LoadCommand?
 				loadTypes := stop.LoadUnloadCommand[1].CargoTypes
 
 				if len(loadTypes) == 0 {
@@ -221,12 +217,11 @@ func (gs *GameState) GetAvaliableStation(startStation *Station, cargoType string
 		if startStopFound {
 			var targetStop *Stop
 			var targetStopFound bool
-			//suche alle anderen Stationen in dem Schedule mit passenden UnloadCommands
+			// suche alle anderen Stationen in dem Schedule mit passenden UnloadCommands
 			for _, stop := range schedule.Stops {
-
 				if stop.IsPlattform && !stop.Plattform.isPlattfromFromStation(startStation) {
-					//hat die Plattform bei dem Stop einen UnloadCommand für den Typen oder keinen UnloadCommand?
-					//dann füge die Station der Liste hinzu
+					// hat die Plattform bei dem Stop einen UnloadCommand für den Typen oder keinen UnloadCommand?
+					// dann füge die Station der Liste hinzu
 					unloadTypes := stop.LoadUnloadCommand[0].CargoTypes
 					if len(unloadTypes) == 0 {
 						targetStopFound = true
@@ -244,15 +239,15 @@ func (gs *GameState) GetAvaliableStation(startStation *Station, cargoType string
 				}
 			}
 			if targetStopFound {
-				//finden der Entfernung der Plattformen mit virtuellem Zug, damit das Pathfinding benutzt werden kann
+				// finden der Entfernung der Plattformen mit virtuellem Zug, damit das Pathfinding benutzt werden kann
 				tempTrain := Train{
-					Waggons:  []*Waggon{&Waggon{Position: startStop.Plattform.getFirstLast(gs)[0]}}, //theoretisch sollte mittleres Tile oder einmal beide genommen werden
+					Waggons:  []*Waggon{{Position: startStop.Plattform.getFirstLast(gs)[0]}}, // theoretisch sollte mittleres Tile oder einmal beide genommen werden
 					Schedule: schedule,
 					Id:       -1,
 					NextStop: targetStop,
 				}
 				tempTrain.recalculatePath(gs)
-				//wenn es keinen Weg gibt, dann kann auch nichts transportiert werden
+				// wenn es keinen Weg gibt, dann kann auch nichts transportiert werden
 				if len(tempTrain.CurrentPath) == 0 {
 					continue
 				}
