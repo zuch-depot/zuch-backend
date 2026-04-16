@@ -232,14 +232,14 @@ func (gs *GameState) ProcessActiveTiles() {
 
 			// max Produktionsrate bestimmen anhand der vorhandenen Kapazität für die Produkte
 			// NICHT, wenn die überschüssigen Waren gelöscht werden sollen. Dann nur anpassung bei der Produktion anpassen
-			// for cargoTypeToProduce, maxProducedQuantity := range prodCyle.Produktion {
-			// 	//wenn die zu produzierende Menge größer ist als der vorhandene Platz in der Station, reduziere, dass es passt
-			// 	producingQuantity := int(float64(maxProducedQuantity) * possibleProduction)
-			// 	emptySpaceInTile := activeTile.maxStorage - activeTile.Storage[cargoTypeToProduce]
-			// 	if producingQuantity > emptySpaceInTile {
-			// 		possibleProduction = float64(emptySpaceInTile) / float64(maxProducedQuantity)
-			// 	}
-			// }
+			for cargoTypeToProduce, maxProducedQuantity := range prodCyle.Produktion {
+				//wenn die zu produzierende Menge größer ist als der vorhandene Platz in der Station, reduziere, dass es passt
+				producingQuantity := int(float64(maxProducedQuantity) * possibleProduction)
+				emptySpaceInTile := activeTile.MaxStorage - activeTile.Storage[cargoTypeToProduce]
+				if producingQuantity > emptySpaceInTile {
+					possibleProduction = float64(emptySpaceInTile) / float64(maxProducedQuantity)
+				}
+			}
 
 			//produziere die Waren
 			//alle Zutaten durchiterieren und rausnehmen
