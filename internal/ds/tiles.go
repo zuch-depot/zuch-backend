@@ -22,11 +22,12 @@ type Tile struct {
 
 // Definiert werden muss: Id, Category, Name, MaxStorage?
 type ActiveTile struct {
-	Id         int
-	Category   *ActiveTileCategory
-	Name       string
-	Level      int
-	Stations   []*Station // Stationen, die in der Nähe sind. wird mit changeStationTile verwaltet
+	Id       int
+	Category *ActiveTileCategory
+	Name     string
+	Level    int
+	// Stations   []*Station
+	Stations   []int // Stationen, die in der Nähe sind. wird mit changeStationTile verwaltet
 	Storage    map[string]int
 	MaxStorage int // STANDARD für alle gleich? maximum Lager pro Gut -> sonst kann es zu unwiederruflichen auffüllen kommen. Nur für Verbrauchsgüter der Produktion
 	X          int
@@ -203,7 +204,8 @@ func (gs *GameState) ProcessActiveTiles() {
 				// hole die Ware Cargotype wenn möglich aus umligenden Stationen, wenn das Lager noch nicht voll ist
 				emptySpaceInActiveTile := activeTile.MaxStorage - activeTile.Storage[cargoTypeToConsume]
 				if emptySpaceInActiveTile > 0 {
-					for _, station := range activeTile.Stations {
+					for _, stationId := range activeTile.Stations {
+						station := gs.Stations[stationId]
 						// wenn nichts von dem Typ in der Station gelagert ist
 						if station.Storage[cargoTypeToConsume] == 0 {
 							continue
@@ -258,7 +260,8 @@ func (gs *GameState) ProcessActiveTiles() {
 		for prodCat := range prodKategorien {
 			// Erst angrenzende Stationen bestimmen, bei denen die Ware abgeholt werden kann
 			stations := make([]*Station, 0)
-			for _, station := range activeTile.Stations {
+			for _, stationId := range activeTile.Stations {
+				station := gs.Stations[stationId]
 				for _, schedule := range gs.Schedules {
 					// Ist die Station in dem Schedule als Stop enthalten mit einem passenden LoadCommand?
 					for _, stop := range schedule.Stops {

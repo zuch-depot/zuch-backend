@@ -141,7 +141,6 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 	} else if tile.Tracks[1] && tile.Tracks[3] && !tile.Tracks[0] && !tile.Tracks[2] {
 		horizontal = false
 	} else {
-		//TODO error
 		// ich glaube der fehler hier ist wenn da noch keine gleise liegen?
 		return nil, fmt.Errorf("Keine Gleise vorhanden oder nicht nur horizonale oder vertikale Gleise")
 	}
@@ -304,7 +303,6 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 				//hinzufügen zur Plattform am Ende
 				plattform.addTile(position, false, gs)
 			} else {
-				// TODO neues Gleis
 				err = station.addPlattform("", [][2]int{position}, gs)
 				if err != nil {
 					return nil, nil
@@ -355,7 +353,6 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 				//hinzufügen zur Plattform am Ende
 				plattform.addTile(position, false, gs)
 			} else {
-				// TODO neues Gleis
 				err = station.addPlattform("", [][2]int{position}, gs)
 				if err != nil {
 					return nil, nil
@@ -391,7 +388,7 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 				for i := 0; i < len(tile.ActiveTile.Stations); i++ {
 					//wenn aktuelle Station schon referenziert ist
 					// muss über Id, weil sonst Pointer verglichen werden und die Objekte kann man nciht vergleichen wegen map
-					if tile.ActiveTile.Stations[i].Id == station.Id {
+					if tile.ActiveTile.Stations[i] == station.Id {
 						stationFound = true
 						if remove {
 							tile.ActiveTile.Stations, err = utils.RemoveElementFromSlice(tile.ActiveTile.Stations, i)
@@ -404,7 +401,7 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 				}
 				// wenn die Station nicht gefunden wurde und hinzugefügt werden soll, hinzufügen der Station
 				if !stationFound && !remove {
-					gs.Tiles[x][y].ActiveTile.Stations = append(gs.Tiles[x][y].ActiveTile.Stations, station)
+					gs.Tiles[x][y].ActiveTile.Stations = append(gs.Tiles[x][y].ActiveTile.Stations, station.Id)
 					// continue
 				}
 			}
