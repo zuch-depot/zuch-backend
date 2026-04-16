@@ -1,0 +1,13 @@
+name: Docker Build
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: docker
+
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t forge.yaat.eu/yaat/zuch-backend:v2.0 .
