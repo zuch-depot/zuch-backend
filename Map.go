@@ -176,9 +176,15 @@ func initializeTiles(gs *ds.GameState) {
 				}
 			}
 
-			gs.Tiles[x][y] = &ds.Tile{IsPlattform: false, Tracks: tracks, Signals: signals, ActiveTile: &aktiveTile, IsLocked: aktiveTile.Stations == nil, X: int(x), Y: int(y)}
+			gs.Tiles[x][y] = &ds.Tile{IsPlattform: false, Tracks: tracks, Signals: signals, ActiveTile: &aktiveTile, IsLocked: false, X: int(x), Y: int(y)}
 		}
 	}
+
+	// laden der locked Tiles
+	for _, pos := range gs.ConfigData.LockedTiles {
+		gs.Tiles[pos[0]][pos[1]].IsLocked = true
+	}
+
 	logger.Info("Tiles initialised with a Map size of", slog.Int64("SizeX", int64(gs.ConfigData.SizeX)), slog.Int64("SizeY", int64(gs.ConfigData.SizeY)))
 }
 

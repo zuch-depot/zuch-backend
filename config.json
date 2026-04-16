@@ -10,6 +10,11 @@
     "MinLoadUloadTicks": 30,
     "StationRange": 2,
     "CapacityPerStationTile": 50,
+    "LockedTiles": [
+        [4,3],
+        [8,7],
+        [7,1]
+    ],
     "WaggonTypes": {
         "Diesellok Schnecke": {
             "Power": 100,
