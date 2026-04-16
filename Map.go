@@ -64,7 +64,7 @@ func createDemoTrains(gs *ds.GameState) {
 
 	// Zug eins mit Schedule
 	var schedule *ds.Schedule
-	schedule, _ = gs.AddSchedule("Schdule Nord")
+	schedule, _ = gs.AddSchedule("Nord")
 	var stop *ds.Stop
 	stop, _ = schedule.AddStopStation(gs.Stations[1].Plattforms[1], gs)
 	stop.SetLoadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false, gs)
@@ -82,7 +82,7 @@ func createDemoTrains(gs *ds.GameState) {
 	}
 
 	// Zug zwei mit eigenem Schedule
-	schedule, _ = gs.AddSchedule("Schedule Süd")
+	schedule, _ = gs.AddSchedule("Süd")
 	stop, _ = schedule.AddStopStation(gs.Stations[3].Plattforms[3], gs)
 	stop.SetLoadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false, gs)
 	stop.SetUnloadCommand([]string{"Pommes"}, false, gs)
