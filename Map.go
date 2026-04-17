@@ -41,14 +41,14 @@ func createDemoTrains(gs *ds.GameState) {
 	gs.AddStationTile(pos) // hier wird auch die Station und Plattform erstellt
 	// Bestimmung der Station zum umbenennen
 	plattform, _ := gs.GetPlattform(pos)
-	plattform.GetStation(gs).Name = "Station Nord"
+	plattform.GetStation(gs).Name = "Nord"
 	plattform.Name = "Gleis 1"
 	gs.AddStationTile([2]int{3, 0})
 
 	pos = [2]int{3, 7}
 	gs.AddStationTile(pos)
 	plattform2, _ := gs.GetPlattform(pos)
-	plattform2.GetStation(gs).Name = "Station Süd"
+	plattform2.GetStation(gs).Name = "Süd"
 	plattform2.Name = "Gleis 31"
 	gs.AddStationTile([2]int{4, 7})
 	gs.AddStationTile([2]int{5, 7})
@@ -56,7 +56,7 @@ func createDemoTrains(gs *ds.GameState) {
 	pos = [2]int{9, 4}
 	gs.AddStationTile(pos)
 	plattform, _ = gs.GetPlattform(pos)
-	plattform.GetStation(gs).Name = "Station Ost"
+	plattform.GetStation(gs).Name = "Ost"
 	plattform.Name = "Gleis 2"
 	gs.AddStationTile([2]int{9, 5})
 
