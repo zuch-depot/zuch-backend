@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+
 	"zuch-backend/internal/ds"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -15,7 +16,8 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 		Body struct {
 			Stations map[int]*ds.Station
 		}
-	}, error) {
+	}, error,
+	) {
 		return &struct {
 			Body struct{ Stations map[int]*ds.Station }
 		}{Body: struct{ Stations map[int]*ds.Station }{Stations: gs.Stations}}, nil
@@ -31,7 +33,8 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 		Body struct {
 			Station ds.Station
 		}
-	}, error) {
+	}, error,
+	) {
 		station, ok := gs.Stations[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Station does not exist")
@@ -48,12 +51,13 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 		Body struct {
 			Name string `example:"Fred"`
 		}
-	}) (*ds.GenericResponse, error) {
+	},
+	) (*ds.GenericResponse, error) {
 		station, ok := gs.Stations[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Station does not exist")
 		}
-		err := station.Rename(i.Body.Name)
+		err := station.Rename(i.Body.Name, gs)
 		if err != nil {
 			return nil, fmt.Errorf("could not rename Station; %s", err.Error())
 		}
@@ -66,7 +70,8 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 	// hier kann man die ganze Station löschen
 	huma.Delete(*api, "/station/{id}", func(ctx context.Context, i *struct {
 		Id int `path:"id" example:"1"`
-	}) (*ds.GenericResponse, error) {
+	},
+	) (*ds.GenericResponse, error) {
 		station, ok := gs.Stations[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Station does not exist")
@@ -90,7 +95,8 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 		Body struct {
 			Plattform ds.Plattform
 		}
-	}, error) {
+	}, error,
+	) {
 		station, ok := gs.Stations[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Station does not exist")
@@ -115,7 +121,8 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 		Body   struct {
 			Name string `example:"Fred"`
 		}
-	}) (*ds.GenericResponse, error) {
+	},
+	) (*ds.GenericResponse, error) {
 		station, ok := gs.Stations[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Station does not exist")
@@ -139,7 +146,8 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 	huma.Post(*api, "/station/{id}/plattform/{idPlat}/delete", func(ctx context.Context, i *struct {
 		Id     int `path:"id" example:"1"`
 		IdPlat int `path:"idPlat" example:"1"`
-	}) (*ds.GenericResponse, error) {
+	},
+	) (*ds.GenericResponse, error) {
 		station, ok := gs.Stations[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Station does not exist")
@@ -165,7 +173,8 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 			Position    *[2]int `example:"[1,1]" minLength:"2" maxLength:"2"`
 			Position_to *[2]int `example:"[1,2]" required:"false" minLength:"2" maxLength:"2" nullable:"true"`
 		}
-	}) (*ds.GenericResponse, error) {
+	},
+	) (*ds.GenericResponse, error) {
 		var err error
 		if i.Body.Position_to != nil {
 			// mehrere bauen
@@ -190,7 +199,8 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 			Position    *[2]int `example:"[1,1]" minLength:"2" maxLength:"2"`
 			Position_to *[2]int `example:"[1,2]" required:"false" minLength:"2" maxLength:"2" nullable:"true"`
 		}
-	}) (*ds.GenericResponse, error) {
+	},
+	) (*ds.GenericResponse, error) {
 		var err error
 		if i.Body.Position_to != nil {
 			// mehrere bauen

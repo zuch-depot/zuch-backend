@@ -7,10 +7,11 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+
 	"zuch-backend/internal/utils"
 )
 
-//Außer Cargopathfinding
+// Außer Cargopathfinding
 
 // region Stations
 // ------------------------------------- stations -------------------------------------------
@@ -18,7 +19,6 @@ import (
 // nur intern
 // nur Erstellung einer Station, hinzufügen der Tiles muss extra gemacht werden. Id ist Standardname
 func (gs *GameState) addStation(name string) (*Station, error) {
-
 	if name == "" {
 		name = fmt.Sprint(gs.CurrentStationID.Load())
 	}
@@ -42,7 +42,7 @@ func (gs *GameState) deleteStation(s *Station) error {
 
 // löscht alle Tiles der Station und damit auch alle Plattformen und die Station selber
 func (gs *GameState) RemoveStation(s *Station) error {
-	//Enfernung des Plattform Tags aller Tiles der Station, Löschung der Plattformen findet beim Löschen des jeweils letzten Tiles statt
+	// Enfernung des Plattform Tags aller Tiles der Station, Löschung der Plattformen findet beim Löschen des jeweils letzten Tiles statt
 	for _, plattform := range s.Plattforms {
 		err := s.RemovePlattform(plattform.Id, gs)
 		if err != nil {
@@ -93,7 +93,7 @@ func (gs *GameState) changeStationTiles(remove bool, positionStart [2]int, posit
 			}
 		}
 	} else if positionStart[0] == positionEnd[0] {
-		//vertikal
+		// vertikal
 
 		countUp := positionStart[1] <= positionEnd[1]
 
@@ -125,16 +125,16 @@ func (gs *GameState) changeStationTiles(remove bool, positionStart [2]int, posit
 func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, error) {
 	var err error
 
-	//sind die y dann in range?
+	// sind die y dann in range?
 	_, error := gs.GetTile(position[0], position[1])
 	if error != nil {
 		return nil, fmt.Errorf("%s", " The koordinate has the problem: "+error.Error())
 	}
 
 	tile := gs.Tiles[position[0]][position[1]]
-	var station *Station //die Station des Tiles, wird bestimmt
+	var station *Station // die Station des Tiles, wird bestimmt
 
-	//überprüft, ob das Tile gerade ist
+	// überprüft, ob das Tile gerade ist
 	var horizontal bool
 	if tile.Tracks[0] && tile.Tracks[2] && !tile.Tracks[1] && !tile.Tracks[3] {
 		horizontal = true
@@ -149,11 +149,11 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 	// Ich habe das mal für dich ausformuliert - Wilken
 	if remove {
 		if !tile.IsPlattform {
-			//TODO Error, kann nicht von nichts entfernen
+			// TODO Error, kann nicht von nichts entfernen
 			return nil, nil
 		}
 
-		//Bestimmung der Plattform
+		// Bestimmung der Plattform
 		var plattform *Plattform
 		plattform, err = gs.GetPlattform(position)
 		if err != nil {
@@ -162,24 +162,24 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 
 		station = plattform.GetStation(gs)
 
-		//verkleinerung der max. Kapazität
+		// verkleinerung der max. Kapazität
 		station.Capacity -= gs.ConfigData.CapacityPerStationTile
 
-		//Entfernung des Tags und weitere Berechnungen
+		// Entfernung des Tags und weitere Berechnungen
 		err = plattform.removeTile(position, gs)
 		if err != nil {
 			return nil, err
 		}
 
-		//gucken
+		// gucken
 		if len(plattform.Tiles) == 0 {
-			//Plattform löschen
+			// Plattform löschen
 			station.deletePlattform(plattform.Id, gs)
 		}
 
 	} else {
 
-		//berührt das Tile eine Station? Wenn nein, dann Id = 0
+		// berührt das Tile eine Station? Wenn nein, dann Id = 0
 		var stationBordering *Station
 		var above, under, left, right *Tile
 		if position[0] > 0 {
@@ -202,9 +202,9 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 				if err != nil {
 					return nil, err
 				}
-				//wenn eine andere Station schon angegrenzt, dann Fehler
+				// wenn eine andere Station schon angegrenzt, dann Fehler
 				if stationBordering != nil && stationBordering.Id != temp.GetStation(gs).Id {
-					//TODO Error, grenzt an 2 Stationen an
+					// TODO Error, grenzt an 2 Stationen an
 					return nil, nil
 				}
 				stationBordering = temp.GetStation(gs)
@@ -218,9 +218,9 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 				if err != nil {
 					return nil, err
 				}
-				//wenn eine andere Station schon angegrenzt, dann Fehler
+				// wenn eine andere Station schon angegrenzt, dann Fehler
 				if stationBordering != nil && stationBordering.Id != temp.GetStation(gs).Id {
-					//TODO Error, grenzt an 2 Stationen an
+					// TODO Error, grenzt an 2 Stationen an
 					return nil, nil
 				}
 				stationBordering = temp.GetStation(gs)
@@ -234,9 +234,9 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 				if err != nil {
 					return nil, err
 				}
-				//wenn eine andere Station schon angegrenzt, dann Fehler
+				// wenn eine andere Station schon angegrenzt, dann Fehler
 				if stationBordering != nil && stationBordering.Id != temp.GetStation(gs).Id {
-					//TODO Error, grenzt an 2 Stationen an
+					// TODO Error, grenzt an 2 Stationen an
 					return nil, nil
 				}
 				stationBordering = temp.GetStation(gs)
@@ -244,7 +244,7 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 		}
 
 		if stationBordering == nil {
-			//neue Station mit Standartwerten
+			// neue Station mit Standartwerten
 			station, err = gs.addStation("")
 			if err != nil {
 				return nil, err
@@ -253,32 +253,31 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 		} else {
 			station = stationBordering
 		}
-		//es gibt eine Station. Da ?sicher ein Tile hinzugefügt wird, vergrößere den Platz
+		// es gibt eine Station. Da ?sicher ein Tile hinzugefügt wird, vergrößere den Platz
 		station.Capacity += gs.ConfigData.CapacityPerStationTile
 
 		// Nun wird das Gleis bestimmt
 		gs.Tiles[position[0]][position[1]].IsPlattform = true
 
-		//Gleis bestimmen und hinzufügen
+		// Gleis bestimmen und hinzufügen
 		if horizontal {
-			var first bool //ist linker eine Station? -> wenn beide Seiten, dann Fehler
+			var first bool // ist linker eine Station? -> wenn beide Seiten, dann Fehler
 			var last bool
 
 			if position[0] > 0 {
-				//wenn es Plattform ist, muss ausschließlich bei 0,2 Treacks sein
+				// wenn es Plattform ist, muss ausschließlich bei 0,2 Treacks sein
 				if left.Tracks[0] && left.IsPlattform {
 					first = true
 				}
 			}
-			var plattform *Plattform //die Plattform, wenn eine angrenzt
+			var plattform *Plattform // die Plattform, wenn eine angrenzt
 
-			//nach rechts gucken
+			// nach rechts gucken
 			if position[0] < gs.ConfigData.SizeX-1 {
-
-				//ist rechter eine Plattfrom und richtig ausgerichtet?
+				// ist rechter eine Plattfrom und richtig ausgerichtet?
 				if right.Tracks[0] && right.IsPlattform {
 					if first {
-						//TODO Error, grenzt an 2 Gleise an
+						// TODO Error, grenzt an 2 Gleise an
 						return nil, nil
 					}
 					last = true
@@ -286,21 +285,21 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 			}
 
 			if first {
-				//grenzt nur links an
+				// grenzt nur links an
 				plattform, err = gs.GetPlattform([2]int{position[0] - 1, position[1]})
 				if err != nil {
 					return nil, err
 				}
-				//hinzufügen zur Plattform am Anfang
+				// hinzufügen zur Plattform am Anfang
 				plattform.addTile(position, true, gs)
 
 			} else if last {
-				//grenzt nur rechts an
+				// grenzt nur rechts an
 				plattform, err = gs.GetPlattform([2]int{position[0] + 1, position[1]})
 				if err != nil {
 					return nil, err
 				}
-				//hinzufügen zur Plattform am Ende
+				// hinzufügen zur Plattform am Ende
 				plattform.addTile(position, false, gs)
 			} else {
 				err = station.addPlattform("", [][2]int{position}, gs)
@@ -311,46 +310,45 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 			}
 
 		} else {
-			//vertikal
+			// vertikal
 
-			var first bool //ist oben eine Station? -> wenn beide Seiten, dann Fehler
+			var first bool // ist oben eine Station? -> wenn beide Seiten, dann Fehler
 			var last bool
 
 			if position[1] > 0 {
-				//wenn es Plattform ist, muss ausschließlich bei 1,3 Treacks sein
+				// wenn es Plattform ist, muss ausschließlich bei 1,3 Treacks sein
 				if above.Tracks[1] && above.IsPlattform {
 					first = true
 				}
 			}
-			var plattform *Plattform //die Plattform, wenn eine angrenzt
+			var plattform *Plattform // die Plattform, wenn eine angrenzt
 
-			//nach unten gucken
+			// nach unten gucken
 			if position[1] < gs.ConfigData.SizeY-1 {
-
-				//ist unten eine Plattfrom und richtig ausgerichtet?
+				// ist unten eine Plattfrom und richtig ausgerichtet?
 				if under.Tracks[1] && under.IsPlattform {
 					if first {
-						//TODO Error, grenzt an 2 Gleise an
+						// TODO Error, grenzt an 2 Gleise an
 						return nil, nil
 					}
 					last = true
 				}
 			}
 			if first {
-				//grenzt nur links an
+				// grenzt nur links an
 				plattform, err = gs.GetPlattform([2]int{position[0], position[1] - 1})
 				if err != nil {
 					return nil, err
 				}
-				//hinzufügen zur Plattform am Anfang
+				// hinzufügen zur Plattform am Anfang
 				plattform.addTile(position, true, gs)
 			} else if last {
-				//grenzt nur rechts an
+				// grenzt nur rechts an
 				plattform, err = gs.GetPlattform([2]int{position[0], position[1] + 1})
 				if err != nil {
 					return nil, err
 				}
-				//hinzufügen zur Plattform am Ende
+				// hinzufügen zur Plattform am Ende
 				plattform.addTile(position, false, gs)
 			} else {
 				err = station.addPlattform("", [][2]int{position}, gs)
@@ -363,9 +361,9 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 
 	}
 
-	//Referenzen zu activeTiles aktualisieren
+	// Referenzen zu activeTiles aktualisieren
 
-	//minimum bestimmen, maximum wird in schleife geprüft, dass nicht out of bounds
+	// minimum bestimmen, maximum wird in schleife geprüft, dass nicht out of bounds
 	xMin := position[0] - gs.ConfigData.StationRange
 	if xMin < 0 {
 		xMin = 0
@@ -375,18 +373,18 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 		yMin = 0
 	}
 
-	//durchiteriren durch alle Tiles in Reichweite und innerhalb der Bounds
+	// durchiteriren durch alle Tiles in Reichweite und innerhalb der Bounds
 	for y := yMin; y <= yMin+(gs.ConfigData.StationRange*2) && y < len(gs.Tiles); y++ {
 		for x := xMin; x <= xMin+(gs.ConfigData.StationRange*2) && x < len(gs.Tiles[0]); x++ {
-			//jedes Aktive Tile braucht eine Category, muss also nicht existent sein, wenn keine Referenz darauf auf eine gibt
-			//daran erkenne ich jetzt, dass in dem Tile ein aktives Tile ist
+			// jedes Aktive Tile braucht eine Category, muss also nicht existent sein, wenn keine Referenz darauf auf eine gibt
+			// daran erkenne ich jetzt, dass in dem Tile ein aktives Tile ist
 			if gs.Tiles[x][y].ActiveTile.Category != nil {
 				tile := gs.Tiles[x][y]
 
-				//gucken, ob die Station schon hinterlegt ist
+				// gucken, ob die Station schon hinterlegt ist
 				stationFound := false
 				for i := 0; i < len(tile.ActiveTile.Stations); i++ {
-					//wenn aktuelle Station schon referenziert ist
+					// wenn aktuelle Station schon referenziert ist
 					// muss über Id, weil sonst Pointer verglichen werden und die Objekte kann man nciht vergleichen wegen map
 					if tile.ActiveTile.Stations[i] == station.Id {
 						stationFound = true
@@ -408,6 +406,7 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 		}
 	}
 
+	gs.BroadcastChannel <- WsEnvelope{Type: "station.update", Msg: station}
 	gs.BroadcastChannel <- WsEnvelope{Type: "tile.update", Msg: gs.Tiles[position[0]][position[1]]}
 	return station, nil
 }
@@ -415,7 +414,6 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 // nur für changeStationTile (und demo)
 // gibt die Plattform zurück, zu der ein Tile gehört
 func (gs *GameState) GetPlattform(position [2]int) (*Plattform, error) {
-
 	for _, station := range gs.Stations {
 		for _, plattform := range station.Plattforms {
 			for _, tile := range plattform.Tiles {
@@ -432,16 +430,16 @@ func (gs *GameState) GetPlattform(position [2]int) (*Plattform, error) {
 // region Züge
 // -------------------------------------- ZÜGE ---------------------------------------------
 
-//vielleicht noch woanders hin
+// vielleicht noch woanders hin
 
 // nur für Beladen von Zügen
 // finde die CargoCategory des CargoTypes
 func (gs *GameState) getCargoCategory(cargoType string) string {
-	//iteriere die CargoCategorys
+	// iteriere die CargoCategorys
 	for key, value := range gs.ConfigData.TrainCategories {
-		//suche in der aktuellen Category nach dem Type
+		// suche in der aktuellen Category nach dem Type
 		for _, value2 := range value {
-			//wenn gefunden, kann der zurückgegeben werden
+			// wenn gefunden, kann der zurückgegeben werden
 			if value2 == cargoType {
 				return key
 			}
@@ -452,7 +450,6 @@ func (gs *GameState) getCargoCategory(cargoType string) string {
 
 // fügt Zug hinzu, wenn name leer ist, wird Id genommen.
 func (gs *GameState) AddTrain(name string, position [3]int, lokmotive string, level int) (*Train, error) {
-
 	if name == "" {
 		name = fmt.Sprint(gs.CurrentTrainID.Load())
 	}
@@ -504,7 +501,6 @@ func (gs *GameState) CalculateTrains() {
 // Funktion, damit die Züge den Belade und Entladeprozess machen.
 // ist einzeln, damit es unabhängig von den Fahrtgeschwindigkeiten ist
 func (gs *GameState) LoadUndloadTrains() error {
-
 	for _, t := range gs.Trains {
 		err := t.loadUnload(gs)
 		if err != nil {
@@ -518,14 +514,13 @@ func (gs *GameState) LoadUndloadTrains() error {
 // entfernt diesen zug, dazu wird er aus dem array genommen und sein currentPath wird auf nicht blockiert gesetzt, hoffe das passt so
 // hoffentlich reicht das so, mal gucken
 func (gs *GameState) RemoveTrain(t *Train) error {
-
 	var blockedTilesPositions [][2]int
 	for _, v := range t.CurrentPath {
 		gs.Tiles[v[0]][v[1]].IsBlocked = false // ich hab keine ahnung ob das so geht
 		blockedTilesPositions = append(blockedTilesPositions, [2]int{v[0], v[1]})
 	}
 
-	//auch die Tiles des Zuges entblocken
+	// auch die Tiles des Zuges entblocken
 	for _, w := range t.Waggons {
 		gs.Tiles[w.Position[0]][w.Position[1]].IsBlocked = false
 		blockedTilesPositions = append(blockedTilesPositions, [2]int{w.Position[0], w.Position[1]})
@@ -633,7 +628,6 @@ func (gs *GameState) RemoveSchedule(Id int) error {
 // gibt die train categories zurück, die aus der Liste korrekt sind. Im Fehler stehen alle, die invalide sind, doppelte werden einfach mitgenommen
 // keine Validierung, ob richtige Caracter oder so verwendet wurden, nur ob es die gibt
 func (gs *GameState) validateTrainCategories(categories []string) ([]string, error) {
-
 	validCategories := make(map[string]bool)
 	error := "The following Train Categories are invalid: "
 
@@ -655,7 +649,7 @@ func (gs *GameState) validateTrainCategories(categories []string) ([]string, err
 		r = append(r, key)
 	}
 
-	//remove last ", " and return error if there are invalid categories
+	// remove last ", " and return error if there are invalid categories
 	if strings.Contains(error, ", ") {
 		error = strings.TrimSuffix(error, ", ")
 		return r, fmt.Errorf("%s", error)
@@ -668,7 +662,6 @@ func (gs *GameState) validateTrainCategories(categories []string) ([]string, err
 
 // fügt bei allen SubTiles zwischen den beiden SubTiles, die inklusive, wenn möglich eine Schiene ein
 func (gs *GameState) AddTracks(startSubTile [3]int, endSubTile [3]int) error {
-
 	return gs.iterateSubTiles(startSubTile, endSubTile, "Error while building tracks.", func(gs *GameState, coordinate [3]int) error {
 		tile, error := gs.GetTile(coordinate[0], coordinate[1])
 		if error != nil {
@@ -677,22 +670,19 @@ func (gs *GameState) AddTracks(startSubTile [3]int, endSubTile [3]int) error {
 		}
 		return tile.AddTrack(coordinate[2], gs)
 	})
-
 }
 
 // entfernt bei allen Sub-Tiles die Schienen
 func (gs *GameState) RemoveTracks(startSubTile [3]int, endSubTile [3]int) error {
-
 	return gs.iterateSubTiles(startSubTile, endSubTile, "Error while removing tracks.", func(gs *GameState, coordinate [3]int) error {
 		tile, error := gs.GetTile(coordinate[0], coordinate[1])
 		if error != nil {
 			gs.Logger.Error("Out of Bound, voll Scheiße, sollte nicht gehen.")
 			return fmt.Errorf("Scheiße, läuft gar nicht gut")
 		}
-		//return tile.AddTrack(coordinate[2], gs)
+		// return tile.AddTrack(coordinate[2], gs)
 		return tile.RemoveTrack(coordinate[2], gs)
 	})
-
 }
 
 // region allgemein
@@ -702,11 +692,10 @@ func (gs *GameState) RemoveTracks(startSubTile [3]int, endSubTile [3]int) error 
 // Kontrolliert, ob die in einer Reihe sind und ob die in Bonds sind. Kann hoffentlich für Verifizierung einzelner SubTiles verwendet werden.
 // ob die Aktion durchgeführt werden kann sollte in der Methode überprüft werden, die in der übergebenen Methode aufgerufen wird.
 func (gs *GameState) iterateSubTiles(startSubTile [3]int, endSubTile [3]int, defaultError string, methodForEach func(gs *GameState, coordinate [3]int) error) error {
-
 	sst := startSubTile
 	est := endSubTile
 
-	//sind die y und x in range?
+	// sind die y und x in range?
 	_, error := gs.GetTile(sst[0], sst[1])
 	if error != nil {
 		return fmt.Errorf("%s", defaultError+" The start koordinate have the problem: "+error.Error())
@@ -716,38 +705,38 @@ func (gs *GameState) iterateSubTiles(startSubTile [3]int, endSubTile [3]int, def
 		return fmt.Errorf("%s", defaultError+" The end koordinate have the problem: "+error.Error())
 	}
 
-	//liste der, die nicht hinzugefügt werden konnten
+	// liste der, die nicht hinzugefügt werden konnten
 	notEdit := []string{"Could not edit the following subtiles because of the following reasons: "}
 
-	//sind sie in einer linie (ggf. als einzelne Methode)
+	// sind sie in einer linie (ggf. als einzelne Methode)
 	// sind die Subtiles beide horizontal?
 
 	// wenn gleich ist, muss die Methode aus der Schleife trotzdem einmal laufen
 	if sst == est {
-		//Methode auf Tile anwenden
+		// Methode auf Tile anwenden
 		error := methodForEach(gs, sst)
 		if error != nil {
 			notEdit = append(notEdit, "("+strconv.Itoa(sst[0])+", "+strconv.Itoa(sst[1])+", "+strconv.Itoa(sst[2])+") "+error.Error())
 		}
 	} else if (sst[2] == 1 || sst[2] == 3) && (est[2] == 1 || est[2] == 3) {
-		//sind sie auf einer y?
+		// sind sie auf einer y?
 		if sst[1] != est[1] {
 			return fmt.Errorf("%s", defaultError+" The Subtiles are horizontal, but the y koordinates differs.")
 		}
 
-		//edititeren der Tiles
+		// edititeren der Tiles
 		curTile := sst
 		countUp := (sst[0] == est[0] && sst[2] < est[2]) || sst[0] < est[0] // ob sst links von est ist
 		for {
 
-			//Methode auf Tile anwenden, signal,
+			// Methode auf Tile anwenden, signal,
 			error := methodForEach(gs, curTile)
 
 			if error != nil {
 				notEdit = append(notEdit, "("+strconv.Itoa(curTile[0])+", "+strconv.Itoa(curTile[1])+", "+strconv.Itoa(curTile[2])+") "+error.Error())
 			}
 
-			//abbruchbedingung, wenn das betrachtete Subtile das letzte war
+			// abbruchbedingung, wenn das betrachtete Subtile das letzte war
 			if curTile[0] == est[0] && curTile[2] == est[2] {
 				break
 			}
@@ -769,14 +758,14 @@ func (gs *GameState) iterateSubTiles(startSubTile [3]int, endSubTile [3]int, def
 			}
 		}
 
-		//sind sie vertikal?
+		// sind sie vertikal?
 	} else if (sst[2] == 2 || sst[2] == 4) && (est[2] == 2 || est[2] == 4) {
-		//sind sie auf einer x?
+		// sind sie auf einer x?
 		if sst[0] != est[0] {
 			return fmt.Errorf("%s", defaultError+" The Subtiles are vertikal, but the x koordinates differ")
 		}
 
-		//jedes Sub-tile durchiterieren
+		// jedes Sub-tile durchiterieren
 		curTile := sst
 		countUp := (sst[1] == est[1] && sst[2] < est[2]) || sst[1] < est[1] // ob sst unter est ist
 		for true {
@@ -787,7 +776,7 @@ func (gs *GameState) iterateSubTiles(startSubTile [3]int, endSubTile [3]int, def
 				notEdit = append(notEdit, "("+strconv.Itoa(curTile[0])+", "+strconv.Itoa(curTile[1])+", "+strconv.Itoa(curTile[2])+") "+error.Error())
 			}
 
-			//abbruchbedingung, wenn das betrachtete Subtile das letzt war
+			// abbruchbedingung, wenn das betrachtete Subtile das letzt war
 			if curTile[1] == est[1] && curTile[2] == est[2] {
 				break
 			}
@@ -810,10 +799,8 @@ func (gs *GameState) iterateSubTiles(startSubTile [3]int, endSubTile [3]int, def
 		}
 
 	} else {
-
-		//sind beides nicht
+		// sind beides nicht
 		return fmt.Errorf("%s", defaultError+" Sub-Tiles don't allign. They both have to be horizntal or vertikal")
-
 	}
 
 	if len(notEdit) > 1 {
@@ -830,7 +817,6 @@ func (gs *GameState) AddMoney(moneyToAdd int) {
 
 // Überprüft, ob genug Geld da ist und zieht das in dem Fall ab
 func (gs *GameState) SubtractMoney(moneyToSubtract int) error {
-
 	err := gs.EnoughMoney(moneyToSubtract)
 	if err != nil {
 		return err
@@ -843,7 +829,6 @@ func (gs *GameState) SubtractMoney(moneyToSubtract int) error {
 
 // Überprüft, ob genug Geld da ists
 func (gs *GameState) EnoughMoney(moneyToSubtract int) error {
-
 	if gs.Money-moneyToSubtract >= 0 {
 		return nil
 	}
@@ -860,7 +845,6 @@ func (gs *GameState) PauseGame() {
 func (gs *GameState) UnPauseGame() {
 	gs.UnPause <- true
 	gs.Logger.Info("Unpaused Game")
-
 }
 
 func (gs *GameState) LoadConfig() {
@@ -878,8 +862,7 @@ func (gs *GameState) LoadConfig() {
 
 // kann auch Rechteck und nicht nur Linie, löscht alles, wenn was gelöscht werden kann
 func (gs *GameState) ClearTiles(positionStart [2]int, positionEnd [2]int) error {
-
-	//sind die y und x in range?
+	// sind die y und x in range?
 	_, error := gs.GetTile(positionStart[0], positionStart[1])
 	if error != nil {
 		return fmt.Errorf("%s", "The start koordinate has the problem: "+error.Error())
@@ -930,8 +913,7 @@ func (gs *GameState) ClearTiles(positionStart [2]int, positionEnd [2]int) error 
 
 // macht fast alles selber, löscht alles, wenn was gelöscht werden kann
 func (gs *GameState) ClearTile(position [2]int) error {
-
-	//sind die y und x in range?
+	// sind die y und x in range?
 	tile, error := gs.GetTile(position[0], position[1])
 	if error != nil {
 		return fmt.Errorf("%s", "The koordinate has the problem: "+error.Error())

@@ -301,12 +301,14 @@ func (s *Station) RemovePlattform(Id int, gs *GameState) error {
 }
 
 // checks the name with utils.checkname und setzt den namen
-func (s *Station) Rename(name string) error {
+func (s *Station) Rename(name string, gs *GameState) error {
 	err := utils.CheckName(name)
 	if err != nil {
 		return nil
 	}
 
 	s.Name = name
+
+	gs.BroadcastChannel <- WsEnvelope{Type: "station.update", Msg: s}
 	return nil
 }
