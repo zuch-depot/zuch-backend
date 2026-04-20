@@ -94,6 +94,9 @@ func (t *Tile) AddTrack(subtile int, gs *GameState) error {
 	if t.IsPlattform {
 		return fmt.Errorf("The Tile is a Plattform, no Track can be build there.")
 	}
+	if t.IsLocked {
+		return fmt.Errorf("The Tile ist locked and nothing can be build there.")
+	}
 
 	if !t.Tracks[subtile-1] {
 		t.Tracks[subtile-1] = true
@@ -159,6 +162,10 @@ func (t *Tile) AddSignal(subtile int, gs *GameState) error {
 
 	if t.IsBlocked {
 		return fmt.Errorf("The Tile is currently blocked, the signal could not be build.")
+	}
+
+	if t.IsLocked {
+		return fmt.Errorf("The Tile is locked, no signal can be build there.")
 	}
 
 	// hinzugügen des Signals
