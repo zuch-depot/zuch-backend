@@ -51,6 +51,8 @@ func (gs *GameState) RemoveStation(s *Station) error {
 
 	}
 
+	gs.BroadcastChannel <- WsEnvelope{Type: "station.remove", Msg: s.Id}
+	// ich probiere das einfach mal
 	return nil
 }
 
@@ -604,6 +606,7 @@ func (gs *GameState) AddSchedule(name string) (*Schedule, error) {
 	s := Schedule{Name: name, Id: id}
 	gs.Schedules[int(gs.CurrentScheduleID.Load())] = &s
 	gs.CurrentScheduleID.Add(1)
+	gs.BroadcastChannel <- WsEnvelope{Type: "schedule.update", Msg: s}
 	return &s, nil
 }
 
@@ -621,6 +624,7 @@ func (gs *GameState) RemoveSchedule(Id int) error {
 
 	delete(gs.Schedules, Id)
 
+	gs.BroadcastChannel <- WsEnvelope{Type: "schedule.delete", Msg: Id}
 	return nil
 }
 

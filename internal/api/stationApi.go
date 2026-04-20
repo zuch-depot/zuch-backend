@@ -184,7 +184,7 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 			_, err = gs.AddStationTile(*i.Body.Position)
 		}
 		if err != nil {
-			return nil, fmt.Errorf("could not create statino; %s", err.Error())
+			return nil, fmt.Errorf("could not create station; %s", err.Error())
 		}
 
 		return ds.CreateGenericResponse("build station"), nil
@@ -210,7 +210,7 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 			_, err = gs.RemoveStationTile(*i.Body.Position)
 		}
 		if err != nil {
-			return nil, fmt.Errorf("could not remobe statino; %s", err.Error())
+			return nil, fmt.Errorf("could not remobe station; %s", err.Error())
 		}
 
 		return ds.CreateGenericResponse("remobe station"), nil
