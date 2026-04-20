@@ -103,15 +103,17 @@ func (p *Plattform) isPlattfromFromStation(station *Station) bool {
 	return false
 }
 
+// TODO Splitting
 // wenn nicht außen, dann splitting (noch nicht impl). Validität wird nicht geprüft
 func (p *Plattform) removeTile(position [2]int, gs *GameState) error {
 	ends := p.getFirstLast(gs)
 	if ends[0][0] == position[0] && ends[0][1] == position[1] {
-		utils.RemoveElementFromSlice(p.Tiles, 0)
+		p.Tiles, _ = utils.RemoveElementFromSlice(p.Tiles, 0)
 	} else if ends[1][1] == position[1] && ends[1][0] == position[0] {
-		utils.RemoveElementFromSlice(p.Tiles, len(p.Tiles)-1)
+		p.Tiles, _ = utils.RemoveElementFromSlice(p.Tiles, len(p.Tiles)-1)
 	} else {
 		// splitting TODO, erstmal Fehler
+		fmt.Println("Splitting, TODO!!")
 		return nil
 	}
 

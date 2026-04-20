@@ -339,18 +339,12 @@ func (t *Train) loadUnload(gs *GameState) error {
 		return nil
 	}
 
-	fmt.Println("Ladevorgang")
-
 	t.LoadingTime++
 
 	var r bool
 
 	// station, in die der Zug steht
 	sta := t.NextStop.Plattform.GetStation(gs)
-
-	fmt.Println("Station:", sta.Name)
-
-	fmt.Println("Station:", sta.Name)
 
 	// es wird durch die Reihenfolge der Commands zuerst geladen, dann entladen.
 	// Dabei wird nur beladen, wenn entladen fertig ist, bzw. noch kapazität von Gütern bewegt pro Tick über gelassen hat
@@ -377,7 +371,7 @@ func (t *Train) loadUnload(gs *GameState) error {
 
 				if loaded > 0 {
 					gs.Logger.Debug("Zug: " + t.Name + " hat " + strconv.Itoa(loaded) + " Tonnen " + string(cargo) + " geladen")
-					fmt.Println("Zug: " + t.Name + " hat " + strconv.Itoa(loaded) + " Tonnen " + string(cargo) + " geladen")
+					// fmt.Println("Zug: " + t.Name + " hat " + strconv.Itoa(loaded) + " Tonnen " + string(cargo) + " geladen")
 				}
 
 				// wenn man nicht bis Voll wartet und nicht max. aufgeladen wurde, ist man fertig
@@ -430,8 +424,6 @@ func (t *Train) loadUnload(gs *GameState) error {
 	if avaliableLoadUnloadSpeed > 0 && t.LoadingTime >= gs.ConfigData.MinLoadUloadTicks {
 		r = true
 	}
-
-	fmt.Println(avaliableLoadUnloadSpeed, r)
 
 	// der user kriegt einfach den neuen zuch
 	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
