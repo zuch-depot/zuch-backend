@@ -624,7 +624,7 @@ func (gs *GameState) RemoveSchedule(Id int) error {
 
 	delete(gs.Schedules, Id)
 
-	gs.BroadcastChannel <- WsEnvelope{Type: "schedule.delete", Msg: Id}
+	gs.BroadcastChannel <- WsEnvelope{Type: "schedule.remove", Msg: Id}
 	return nil
 }
 
