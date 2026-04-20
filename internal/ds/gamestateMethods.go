@@ -817,6 +817,7 @@ func (gs *GameState) iterateSubTiles(startSubTile [3]int, endSubTile [3]int, def
 // Fügt Geld hinzu
 func (gs *GameState) AddMoney(moneyToAdd int) {
 	gs.Money += moneyToAdd
+	gs.BroadcastChannel <- WsEnvelope{Type: "money.update", Msg: gs.Money}
 }
 
 // Überprüft, ob genug Geld da ist und zieht das in dem Fall ab
@@ -828,6 +829,7 @@ func (gs *GameState) SubtractMoney(moneyToSubtract int) error {
 
 	gs.Money -= moneyToSubtract
 
+	gs.BroadcastChannel <- WsEnvelope{Type: "money.update", Msg: gs.Money}
 	return nil
 }
 
@@ -842,11 +844,14 @@ func (gs *GameState) EnoughMoney(moneyToSubtract int) error {
 
 func (gs *GameState) PauseGame() {
 	gs.IsPaused = true
+
+	gs.BroadcastChannel <- WsEnvelope{Type: "game.pause", Msg: true}
 	<-gs.ConfirmPause
 	gs.Logger.Info("Paused Game")
 }
 
 func (gs *GameState) UnPauseGame() {
+	gs.BroadcastChannel <- WsEnvelope{Type: "game.unpause", Msg: false}
 	gs.UnPause <- true
 	gs.Logger.Info("Unpaused Game")
 }
@@ -935,5 +940,6 @@ func (gs *GameState) ClearTile(position [2]int) error {
 	tile.Tracks = [4]bool{false, false, false, false}
 	tile.Signals = [4]bool{false, false, false, false}
 
+	gs.BroadcastChannel <- WsEnvelope{Type: "tile.update", Msg: tile}
 	return nil
 }
