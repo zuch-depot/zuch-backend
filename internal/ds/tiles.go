@@ -86,6 +86,7 @@ func (a *ActiveTile) Rename(name string, gs *GameState) error {
 	}
 
 	a.Name = name
+	gs.BroadcastChannel <- WsEnvelope{Type: "activeTile.update", Msg: a}
 	return nil
 }
 
@@ -247,7 +248,7 @@ func (gs *GameState) ProcessActiveTiles() {
 			// max Produktionsrate bestimmen anhand der vorhandenen Kapazität für die Produkte
 			// NICHT, wenn die überschüssigen Waren gelöscht werden sollen. Dann nur anpassung bei der Produktion anpassen
 			for cargoTypeToProduce, maxProducedQuantity := range prodCyle.Produktion {
-				//wenn die zu produzierende Menge größer ist als der vorhandene Platz in der Station, reduziere, dass es passt
+				// wenn die zu produzierende Menge größer ist als der vorhandene Platz in der Station, reduziere, dass es passt
 				producingQuantity := int(float64(maxProducedQuantity) * possibleProduction)
 				emptySpaceInTile := activeTile.MaxStorage - activeTile.Storage[cargoTypeToProduce]
 				if producingQuantity > emptySpaceInTile {

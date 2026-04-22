@@ -43,7 +43,7 @@ func registerActiveTileRoutes(api *huma.API, gs *ds.GameState) {
 		}
 		err := atile.Rename(i.Body.Name, gs)
 		if err != nil {
-			return nil, fmt.Errorf("Could not rename Tile ; %s", err.Error())
+			return nil, fmt.Errorf("could not rename Tile ; %s", err.Error())
 		}
 		return ds.CreateGenericResponse("renamed Tile"), nil
 	}, func(o *huma.Operation) {

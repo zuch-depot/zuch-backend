@@ -6,6 +6,7 @@ import (
 	"math"
 	"slices"
 	"strconv"
+
 	"zuch-backend/internal/utils"
 )
 
@@ -724,5 +725,6 @@ func (t *Train) Rename(name string, gs *GameState) error {
 	}
 
 	t.Name = name
+	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
 	return nil
 }
