@@ -130,7 +130,6 @@ func (gs *GameState) LoadGame(saveName string) error {
 				saveFileName = entry.Name()
 				break
 			} else {
-				//TODO konnte das FIle nicht finden
 				gs.Logger.Error("That Savefile not found")
 				return fmt.Errorf("Savefile not found")
 			}
