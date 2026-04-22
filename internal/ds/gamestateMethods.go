@@ -179,6 +179,10 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 
 	} else {
 
+		if gs.Tiles[position[0]][position[1]].IsPlattform {
+			return nil, fmt.Errorf("Could not build a station there since there is one already.")
+		}
+
 		// berührt das Tile eine Station? Wenn nein, dann Id = 0
 		var stationBordering *Station
 		var above, under, left, right *Tile
