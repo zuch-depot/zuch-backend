@@ -123,7 +123,6 @@ func (gs *GameState) changeStationTiles(remove bool, positionStart [2]int, posit
 // findet alle Aktiven Tiles im validen Radius um das neue Tile der Station und verknüpft/entfernt entsprechend die Station, falls noch nicht geschehen
 // egal ob neue Station oder nicht
 // baut nur neue Staion, baut keine Schienen
-// TODO dynamische Zuweisung zu Gleisen anhand Ausrichtung und nachbarn
 func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, error) {
 	var err error
 
@@ -622,7 +621,6 @@ func (gs *GameState) RemoveSchedule(Id int) error {
 	return nil
 }
 
-// TODO auf neue Train Categories anpassen
 // gibt die train categories zurück, die aus der Liste korrekt sind. Im Fehler stehen alle, die invalide sind, doppelte werden einfach mitgenommen
 // keine Validierung, ob richtige Caracter oder so verwendet wurden, nur ob es die gibt
 func (gs *GameState) validateTrainCategories(categories []string) ([]string, error) {

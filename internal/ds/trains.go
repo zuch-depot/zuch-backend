@@ -256,12 +256,6 @@ func (t *Train) move(gs *GameState) [2]int {
 			if gs.Tiles[path[i][0]][path[i][1]].IsBlocked {
 				gs.Logger.Debug("Zug " + t.Name + ": Blocked Tile found: []" + strconv.Itoa(path[i][0]) + ", " + strconv.Itoa(path[i][1]) + ", " + strconv.Itoa(path[i][2]) + ". Waiting")
 
-				// if !t.Waiting {
-				// 	//TODO
-				// 	gs.Logger.Debug("Hallo Jannis, hier Nachricht an client, dass das Signal an Stelle " +
-				// 		fmt.Sprint(t.Waggons[0].Position) + " auf rot geschaltet werden soll")
-				// }
-
 				// t.Waiting = true
 				return [2]int{-1, -1}
 			}

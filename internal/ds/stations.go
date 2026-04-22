@@ -279,9 +279,11 @@ func (s *Station) deletePlattform(Id int, gs *GameState) error {
 
 	// Kontrolle, ob die Station noch Plattformen hat
 	if len(s.Plattforms) == 0 {
-		// TODO error
 		// Station löschen
-		gs.deleteStation(s)
+		err := gs.deleteStation(s)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

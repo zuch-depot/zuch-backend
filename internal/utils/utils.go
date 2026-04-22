@@ -10,13 +10,14 @@ import (
 var Logger *slog.Logger
 
 // entfernt ntes Element aus slice
-// ToDo error
 func RemoveElementFromSlice[T any](slice []T, n int) ([]T, error) {
 	if n >= len(slice) {
 		Logger.Debug("Index out of Bounds. Tried to remove the not existing Element " + string(rune(n)))
+		return nil, fmt.Errorf("%s", "Index out of Bounds. Tried to remove the not existing Element "+string(rune(n)))
 	}
 	if n < 0 {
 		Logger.Debug("Index out of Bounds. Tried to remove a negative Element" + string(rune(n)))
+		return nil, fmt.Errorf("%s", "Index out of Bounds. Tried to remove a negative Element"+string(rune(n)))
 	}
 	tempSlice := slice
 	first := tempSlice[:n]

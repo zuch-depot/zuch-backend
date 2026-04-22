@@ -190,6 +190,8 @@ func (t *Train) recalculatePath(gs *GameState) {
 	//Start der go routinen
 	for i := range goals {
 		//go TODO: multithreading wieder implementieren, wirft einen Fehler manchmal, wenn der ZUg sich umdrehen muss
+		// geht auch ohne
+
 		sub(i, goals[i], channelPath[i], channelPathSignals[i])
 	}
 	//auslesen aus dem Buffer
