@@ -25,7 +25,7 @@ type ConfigData struct {
 	CapacityPerStationTile int
 	Ids                    ids
 	WaggonTypes            map[string]*WaggonType
-	LockedTiles            [][2]int //nur beim auslesen von config relevant, wird in die Tiles geschrieben
+	LockedTiles            [][2]int // nur beim auslesen von config relevant, wird in die Tiles geschrieben
 }
 
 // WICHTIG: NUR fürs speichern und laden, sonst die atmic nehmen!!
@@ -86,4 +86,5 @@ type SendAbleGamestate struct {
 	Tiles       [][]*Tile
 	Trains      map[int]*Train
 	ActiveTiles map[int]*ActiveTile
+	ConfigData  ConfigData
 }
