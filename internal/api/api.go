@@ -1,11 +1,13 @@
 package api
 
 import (
+	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
-	"zuch-backend/internal/ds"
-
 	"strconv"
+
+	"zuch-backend/internal/ds"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humachi"
@@ -15,7 +17,6 @@ import (
 )
 
 func StartServer(gs *ds.GameState) {
-
 	router := chi.NewMux()
 	router.Use(middleware.Logger)    // schreibt nett mit
 	router.Use(middleware.Recoverer) // sollte machen das der server nicht crasht, sondern das abgefangen und geloggt wird
@@ -44,14 +45,14 @@ func StartServer(gs *ds.GameState) {
 	registerTileRoutes(&api, gs)
 	registerScheduleRoutes(&api, gs)
 	registerStationRoutes(&api, gs)
-
+	registerActiveTileRoutes(&api, gs)
 	gs.Logger.Error("error running Webserver", slog.String("Error", http.ListenAndServe("0.0.0.0:"+strconv.Itoa(gs.ConfigData.Port), router).Error()))
-
 }
 
-func StartListiningToBroadcast(broadcastChannel <-chan ds.WsEnvelope, gs *ds.GameState) {
+// sorgt dafür das Nachrichten in broadcastChannel an alle User gesendet werden
+func StartListiningToBroadcast(gs *ds.GameState) {
 	for {
-		envelope, ok := <-broadcastChannel
+		envelope, ok := <-gs.BroadcastChannel
 		if ok {
 			for _, user := range gs.Users {
 				if user.IsConnected {
@@ -59,6 +60,43 @@ func StartListiningToBroadcast(broadcastChannel <-chan ds.WsEnvelope, gs *ds.Gam
 					user.WebSocketQueue <- envelope
 				}
 			}
+		}
+	}
+}
+
+func unpackEnvelope[T any](envelope ds.RecieveWSEnvelope, typ T, gs *ds.GameState) (T, error) {
+	var dest T
+	err := json.Unmarshal(envelope.Msg, &dest)
+	if err != nil {
+		gs.Logger.Error("error", slog.String("error", err.Error()))
+		return dest, fmt.Errorf("%s", err.Error())
+	}
+	return dest, nil
+}
+
+type ChatMsgIn struct {
+	Text string
+}
+
+type ChatMsgOut struct {
+	Text string
+	User string
+}
+
+// die hier hört eigentlich nur noch auf Chat Nachrichten, solte mit go gestartet werden
+// nachrichten der Form {"type":"message","content":{"text":"hihihi"}}
+func StartListeningToUserInputs(gs *ds.GameState) {
+	for {
+		envelope, ok := <-gs.UserInputs
+		if ok {
+			msgin, err := unpackEnvelope(envelope, &ChatMsgIn{}, gs)
+			if err != nil {
+				// Fehler sind nicht schlimm, ist es schwachsinn passiert halt nichts
+				return
+			}
+
+			x := &ChatMsgOut{Text: msgin.Text, User: envelope.User.Username}
+			gs.BroadcastChannel <- ds.WsEnvelope{Type: "chat.message", Msg: x}
 		}
 	}
 }

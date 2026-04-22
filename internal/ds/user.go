@@ -13,6 +13,12 @@ type User struct {
 	WebSocketQueue chan WsEnvelope `json:"-"`
 }
 
+// bildet chatnahrichten ab
+type ChatMessage struct {
+	Nachricht string
+	Sender    string
+}
+
 func (user *User) StartNotifiyingSingleClient(gs *GameState) {
 	// Kombiniert den Broadcast und den einzelnen Channel, damit der client über die gleiche verbindung beides erhält
 	for {
@@ -28,6 +34,5 @@ func (user *User) StartNotifiyingSingleClient(gs *GameState) {
 		} else {
 			break
 		}
-
 	}
 }

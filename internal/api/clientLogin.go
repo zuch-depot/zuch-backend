@@ -87,7 +87,7 @@ func initializeClient(user *ds.User, gs *ds.GameState) {
 		stationMap[v.Id] = v
 	}
 
-	envelope := ds.WsEnvelope{Type: "game.initialLoad", Msg: ds.SendAbleGamestate{Users: gs.Users, Schedules: gs.Schedules, Stations: stationMap, Tiles: gs.Tiles, Trains: gs.Trains, ActiveTiles: gs.ActiveTiles, ConfigData: gs.ConfigData}}
+	envelope := ds.WsEnvelope{Type: "game.initialLoad", Msg: ds.SendAbleGamestate{Users: gs.Users, Schedules: gs.Schedules, Stations: stationMap, Tiles: gs.Tiles, Trains: gs.Trains}}
 	err := user.Connection.WriteJSON(envelope)
 	if err != nil {
 		gs.Logger.Error("Failed parsing state to JSON", slog.String("Error", err.Error()))
@@ -100,6 +100,7 @@ func initializeClient(user *ds.User, gs *ds.GameState) {
 	}
 }
 
+// das hier ist momentan nichtmehr wirklich genutzt, incomming ist momentan nur per REST API, hier kommt noch der Chat mit rein
 func checkForClientInput(user *ds.User, gs *ds.GameState) {
 	// Für jeden User der Connected ist läuft die funktion hier die ganze Zeit in einer Goroutine
 	// Wird in einput Empfangen wird er als recieveWSEnvelope in den userInputs Channel / Queue gelegt
@@ -117,6 +118,7 @@ func checkForClientInput(user *ds.User, gs *ds.GameState) {
 		}
 		// Manche werte kommen nicht direkt aus dem WS sondern werden hier ergänzt
 		// User um nachher zugriff auf den Username und auf die connection zu haben, damit man rückmeldung geben kann
+		// Das hier ist momentan nicht mehr wirk
 		v.User = user
 		gs.UserInputs <- v
 	}
