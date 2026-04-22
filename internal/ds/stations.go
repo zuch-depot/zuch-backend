@@ -114,6 +114,7 @@ func (p *Plattform) removeTile(position [2]int, gs *GameState) error {
 	} else {
 		// splitting TODO, erstmal Fehler
 		fmt.Println("Splitting, TODO!!")
+
 		return nil
 	}
 
@@ -247,20 +248,6 @@ func (s *Station) deletePlattform(Id int, gs *GameState) error {
 	if !ok {
 		return fmt.Errorf("could not find plattform")
 	}
-
-	/*
-		//Entfernt alle Tiles mit der Plattform
-		//(wichtig, damit die ActiveTiles der Station aktualisiert werden)
-		if len(plattform.Tiles) == 0 {
-			for _, pos := range plattform.Tiles {
-				_, err = ChangeStationTile(true, pos, gs)
-				if err != nil {
-					return err
-				}
-			}
-			return nil
-		}
-	*/
 
 	// Entfernung der Plattform aus allen Stops
 	for _, schedule := range gs.Schedules {

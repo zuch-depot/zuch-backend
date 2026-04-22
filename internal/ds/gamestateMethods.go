@@ -151,8 +151,7 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 	// Ich habe das mal für dich ausformuliert - Wilken
 	if remove {
 		if !tile.IsPlattform {
-			// TODO Error, kann nicht von nichts entfernen
-			return nil, nil
+			return nil, fmt.Errorf("Tile gehört nicht zu einer Station, kann nicht entfernt werden.")
 		}
 
 		// Bestimmung der Plattform
@@ -206,8 +205,7 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 				}
 				// wenn eine andere Station schon angegrenzt, dann Fehler
 				if stationBordering != nil && stationBordering.Id != temp.GetStation(gs).Id {
-					// TODO Error, grenzt an 2 Stationen an
-					return nil, nil
+					return nil, fmt.Errorf("Could not build a Station there, the tile is bordering two stations.")
 				}
 				stationBordering = temp.GetStation(gs)
 			}
@@ -222,8 +220,7 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 				}
 				// wenn eine andere Station schon angegrenzt, dann Fehler
 				if stationBordering != nil && stationBordering.Id != temp.GetStation(gs).Id {
-					// TODO Error, grenzt an 2 Stationen an
-					return nil, nil
+					return nil, fmt.Errorf("Could not build a Station there, the tile is bordering two stations.")
 				}
 				stationBordering = temp.GetStation(gs)
 			}
@@ -238,8 +235,7 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 				}
 				// wenn eine andere Station schon angegrenzt, dann Fehler
 				if stationBordering != nil && stationBordering.Id != temp.GetStation(gs).Id {
-					// TODO Error, grenzt an 2 Stationen an
-					return nil, nil
+					return nil, fmt.Errorf("Could not build a Station there, the tile is bordering two stations.")
 				}
 				stationBordering = temp.GetStation(gs)
 			}
@@ -279,8 +275,7 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 				// ist rechter eine Plattfrom und richtig ausgerichtet?
 				if right.Tracks[0] && right.IsPlattform {
 					if first {
-						// TODO Error, grenzt an 2 Gleise an
-						return nil, nil
+						return nil, fmt.Errorf("Could not build a Station there, the tile is bordering two stations.")
 					}
 					last = true
 				}
@@ -330,8 +325,7 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 				// ist unten eine Plattfrom und richtig ausgerichtet?
 				if under.Tracks[1] && under.IsPlattform {
 					if first {
-						// TODO Error, grenzt an 2 Gleise an
-						return nil, nil
+						return nil, fmt.Errorf("Could not build a Station there, the tile is bordering two stations.")
 					}
 					last = true
 				}
