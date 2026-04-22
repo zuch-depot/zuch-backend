@@ -55,7 +55,9 @@ func main() {
 	// hier den Server starten
 	go api.StartServer(&gs)
 	// Anfangen aus events an clients zu schicken
-	go api.StartListiningToBroadcast(gs.BroadcastChannel, &gs)
+	go api.StartListiningToBroadcast(&gs)
+	// für den chat
+	go api.StartListeningToUserInputs(&gs)
 
 	gs.Ticker = time.NewTicker(time.Duration(gs.ConfigData.TicksMilisec) * time.Millisecond)
 

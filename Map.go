@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -244,16 +243,6 @@ func isSignalAt(x int, y int, gs *ds.GameState) (bool, int) {
 		}
 	}
 	return false, 0
-}
-
-func unpackEnvelope[T any](envelope ds.RecieveWSEnvelope, typ T) (T, error) {
-	var dest T
-	err := json.Unmarshal(envelope.Msg, &dest)
-	if err != nil {
-		logger.Error("error", slog.String("error", err.Error()))
-		return dest, fmt.Errorf("%s", err.Error())
-	}
-	return dest, nil
 }
 
 func checkIfCoordinatesAreValid(position [3]int, gs *ds.GameState) error {
