@@ -3,9 +3,9 @@ package api
 import (
 	"log/slog"
 	"net/http"
-	"zuch-backend/internal/ds"
-
 	"strconv"
+
+	"zuch-backend/internal/ds"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humachi"
@@ -15,7 +15,6 @@ import (
 )
 
 func StartServer(gs *ds.GameState) {
-
 	router := chi.NewMux()
 	router.Use(middleware.Logger)    // schreibt nett mit
 	router.Use(middleware.Recoverer) // sollte machen das der server nicht crasht, sondern das abgefangen und geloggt wird
@@ -44,9 +43,8 @@ func StartServer(gs *ds.GameState) {
 	registerTileRoutes(&api, gs)
 	registerScheduleRoutes(&api, gs)
 	registerStationRoutes(&api, gs)
-
+	registerActiveTileRoutes(&api, gs)
 	gs.Logger.Error("error running Webserver", slog.String("Error", http.ListenAndServe("0.0.0.0:"+strconv.Itoa(gs.ConfigData.Port), router).Error()))
-
 }
 
 func StartListiningToBroadcast(broadcastChannel <-chan ds.WsEnvelope, gs *ds.GameState) {
