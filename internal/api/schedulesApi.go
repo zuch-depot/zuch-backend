@@ -185,7 +185,7 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 		if !ok {
 			return nil, fmt.Errorf("Schedule does not exist")
 		}
-		err := schedule.Rename(i.Body.Name)
+		err := schedule.Rename(i.Body.Name, gs)
 		if err != nil {
 			return nil, fmt.Errorf("could not rename Schedule; %s", err.Error())
 		}

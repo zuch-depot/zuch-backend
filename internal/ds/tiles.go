@@ -72,10 +72,17 @@ func (a *ActiveTile) getConsumptionCategorys() map[string]int {
 }
 
 // Überprüft utils.CheckName() und setzt namen
-func (a *ActiveTile) Rename(name string) error {
+func (a *ActiveTile) Rename(name string, gs *GameState) error {
 	err := utils.CheckName(name)
 	if err != nil {
 		return err
+	}
+
+	// ist der Name einzigartig
+	for _, activeTile := range gs.ActiveTiles {
+		if name == activeTile.Name {
+			return fmt.Errorf("Plase provide a name that has not been used already.")
+		}
 	}
 
 	a.Name = name

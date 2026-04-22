@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"log/slog"
+	"strconv"
 	"time"
 )
 
@@ -47,6 +48,11 @@ func Timer(name string) func() {
 func CheckName(name string) error {
 	if name == "" {
 		return fmt.Errorf("Please provide a valid name.")
+	}
+	// ist es nur eine Nummer?
+	_, err := strconv.Atoi(name)
+	if err == nil {
+		return fmt.Errorf("Please provide a name that is not only a number.")
 	}
 	return nil
 }

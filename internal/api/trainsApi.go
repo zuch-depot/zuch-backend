@@ -171,7 +171,7 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 		if !ok {
 			return nil, fmt.Errorf("Train does not exist")
 		}
-		err := train.Rename(i.Body.Name)
+		err := train.Rename(i.Body.Name, gs)
 		if err != nil {
 			return nil, fmt.Errorf("could not rename Train; %s", err.Error())
 		}

@@ -131,7 +131,7 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 		if !ok {
 			return nil, fmt.Errorf("could not find Plattform")
 		}
-		err := platform.Rename(i.Body.Name)
+		err := platform.Rename(i.Body.Name, gs)
 		if err != nil {
 			return nil, fmt.Errorf("could not rename Plattform; %s", err.Error())
 		}

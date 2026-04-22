@@ -161,11 +161,18 @@ func (s *Schedule) AddStopWaypoint(position [3]int, name string, gs *GameState) 
 }
 
 // überprüft utils.CeckName und setzt name
-func (s *Schedule) Rename(name string) error {
+func (s *Schedule) Rename(name string, gs *GameState) error {
 
 	err := utils.CheckName(name)
 	if err != nil {
 		return err
+	}
+
+	// ist der Name einzigartig
+	for _, schedule := range gs.Schedules {
+		if name == schedule.Name {
+			return fmt.Errorf("Plase provide a name that has not been used already.")
+		}
 	}
 
 	s.Name = name

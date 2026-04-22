@@ -17,10 +17,10 @@ type Station struct {
 
 // alle Tiles müssen aneinander in der gleichen Richtung sein und dürfen keine Kurven haben
 type Plattform struct {
-	Id    int // neu, muss ggf. implementiert werden
-	Name  string
-	Tiles [][2]int // nur x & y, muss in Order sein. KEIN DIREKTER ZUGRIFF?
-	// Station *Station
+	Id        int // neu, muss ggf. implementiert werden
+	Name      string
+	Tiles     [][2]int // nur x & y, muss in Order sein. KEIN DIREKTER ZUGRIFF?
+	StationId int
 }
 
 type Produktionszyklus struct {
@@ -129,13 +129,22 @@ func (p *Plattform) removeTile(position [2]int, gs *GameState) error {
 }
 
 // prüft utils.Checkname und bennent danach um
-func (p *Plattform) Rename(name string) error {
+func (p *Plattform) Rename(name string, gs *GameState) error {
 	err := utils.CheckName(name)
 	if err != nil {
 		return err
 	}
-	p.Name = name
 
+	// innerhalb der Station einzigartig
+	station := p.GetStation(gs)
+	// ist der Name einzigartig
+	for _, plattform := range station.Plattforms {
+		if name == plattform.Name {
+			return fmt.Errorf("Plase provide a name that has not been used already.")
+		}
+	}
+
+	p.Name = name
 	return nil
 }
 
@@ -294,6 +303,13 @@ func (s *Station) Rename(name string, gs *GameState) error {
 	err := utils.CheckName(name)
 	if err != nil {
 		return nil
+	}
+
+	// ist der Name einzigartig
+	for _, schedule := range gs.Schedules {
+		if name == schedule.Name {
+			return fmt.Errorf("Plase provide a name that has not been used already.")
+		}
 	}
 
 	s.Name = name

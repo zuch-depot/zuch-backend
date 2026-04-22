@@ -6,6 +6,7 @@ import (
 	"math"
 	"slices"
 	"strconv"
+	"zuch-backend/internal/utils"
 )
 
 // gesetzt werden müssen: Name, Waggons, Id
@@ -716,10 +717,18 @@ func (t *Train) UnPause(gs *GameState) {
 }
 
 // auch sonderzeigen erlaubt, ggf. anpassen
-func (t *Train) Rename(name string) error {
-	if name == "" {
-		return fmt.Errorf("Please provide a name.")
+func (t *Train) Rename(name string, gs *GameState) error {
+	err := utils.CheckName(name)
+	if err != nil {
+		return err
 	}
+	// ist der Name einzigartig
+	for _, train := range gs.Trains {
+		if name == train.Name {
+			return fmt.Errorf("Plase provide a name, that has not been used.")
+		}
+	}
+
 	t.Name = name
 	return nil
 }
