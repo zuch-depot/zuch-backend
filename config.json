@@ -11,12 +11,21 @@
     "StationRange": 2,
     "CapacityPerStationTile": 50,
     "LockedTiles": [
-        [4,3],
-        [8,7],
-        [7,1]
+        [
+            4,
+            3
+        ],
+        [
+            8,
+            7
+        ],
+        [
+            7,
+            1
+        ]
     ],
     "WaggonTypes": {
-        "Diesellok Schnecke": {
+        "Diesellok": {
             "Power": 100,
             "PowerIncreasePercent": 50,
             "EmptyWeight": 12,
@@ -31,7 +40,7 @@
             "OngoingCosts": 200,
             "OngoingCostsIncreasePercent": 50
         },
-        "Dampflock Wind": {
+        "Dampflock": {
             "Power": 130,
             "PowerIncreasePercent": 50,
             "EmptyWeight": 20,
