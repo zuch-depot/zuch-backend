@@ -13,6 +13,7 @@ import (
 )
 
 //DAS ALLES braucht support für mehrere Instanzen auf einem Server
+// vielleicht auch erstmal nicht
 
 // Im Tick Loop NUR MIT GO aufrufen
 // Speichert den Spielstand

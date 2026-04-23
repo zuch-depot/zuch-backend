@@ -46,6 +46,7 @@ func main() {
 	// Map erstellen
 	initializeTiles(&gs)
 	createDemoTrains(&gs)
+	Reset(&gs)
 	// sich merken wer wer ist
 	// wenn wer rausfliegt sollten die sachen noch da sein
 
@@ -104,4 +105,24 @@ func main() {
 		// das wartet hier bis ein tick ausgelöst wird,
 		<-gs.Ticker.C
 	}
+}
+
+// TODO: Testen, wenn in API
+// neu laden der Map
+func Reset(gs *ds.GameState) {
+
+	// TODO: verwendung einer richtigen Map als Quelle
+
+	// nullen der wichtigsten Sachen. Manche Sachen werden auch in den folgenden Methoden resettet
+	gs.ActiveTiles = map[int]*ds.ActiveTile{}
+	gs.Trains = map[int]*ds.Train{}
+	gs.ActiveTiles = map[int]*ds.ActiveTile{}
+	gs.Schedules = map[int]*ds.Schedule{}
+	gs.Stations = map[int]*ds.Station{}
+
+	// TODO ggf. Geld resetten
+
+	initializeTiles(gs)
+	createDemoTrains(gs)
+
 }
