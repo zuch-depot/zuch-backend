@@ -3,6 +3,7 @@ package ds
 import (
 	"fmt"
 	"slices"
+
 	"zuch-backend/internal/utils"
 )
 
@@ -15,21 +16,21 @@ type Schedule struct {
 // einzigartig pro Schedule, egal ob gleiche Plattform oder so
 // Einzige Referenz in Schedule, deshalb werden alle mit gelöscht?
 type Stop struct {
-	Id                int //NOTWENDIG, muss > 1 sein, == 0 ist null
+	Id                int // NOTWENDIG, muss > 1 sein, == 0 ist null
 	Plattform         *Plattform
 	Goal              [3]int //(?Signal als) Wegpunkt
 	IsPlattform       bool
-	Name              string               //Name Wegpunkt
-	LoadUnloadCommand [2]LoadUnloadCommand //einmal zum Laden, einmal zum entladen (0 entladen, 1 beladen). Können auch jeweils leer sein, dann wird alles geladen/entladen
+	Name              string               // Name Wegpunkt
+	LoadUnloadCommand [2]LoadUnloadCommand // einmal zum Laden, einmal zum entladen (0 entladen, 1 beladen). Können auch jeweils leer sein, dann wird alles geladen/entladen
 }
 
 // braucht keine Id, weil nur an einer Stelle gespeichert mit statischer Positionierung
 type LoadUnloadCommand struct {
-	//wenn Loading, wenn false, dann kurz warten und auch wenn nicht voll trotzdem fahren
-	//wenn Unloading, wenn false, dann "WaitTillEmpty", also warten, bis alles entladen werden kann, oder einfach weiterfahren
+	// wenn Loading, wenn false, dann kurz warten und auch wenn nicht voll trotzdem fahren
+	// wenn Unloading, wenn false, dann "WaitTillEmpty", also warten, bis alles entladen werden kann, oder einfach weiterfahren
 	WaitTillFull bool
-	Loading      bool     //wenn false, dann unloading
-	CargoTypes   []string //welche Güter abgeladen/aufgeladen werden dürfen
+	Loading      bool     // wenn false, dann unloading
+	CargoTypes   []string // welche Güter abgeladen/aufgeladen werden dürfen
 }
 
 // returnt beide Enden der Plattform, wenn es eine ist, und sonst nur den Wegpunkt
@@ -88,7 +89,7 @@ func (s *Schedule) RemoveStop(index int, gs *GameState) error {
 		return fmt.Errorf("Please provide a valid index.")
 	}
 
-	//Bei allen Zügen, die den Stop als nächsten Stop gerade haben, wird der nächste Stop ausgewählt und der Weg neu berechenet
+	// Bei allen Zügen, die den Stop als nächsten Stop gerade haben, wird der nächste Stop ausgewählt und der Weg neu berechenet
 	for _, train := range gs.Trains {
 		if train.NextStop.Id == s.Stops[index].Id {
 			train.NextStop = gs.Schedules[train.Schedule].nextStop(train.NextStop)
@@ -106,14 +107,13 @@ func (s *Schedule) RemoveStop(index int, gs *GameState) error {
 
 // entfernt alle Stops innerhalb des Intervalls
 func (s *Schedule) RemoveStops(indexStart int, indexEnde int, gs *GameState) error {
-
 	if indexStart >= indexEnde {
 		return fmt.Errorf("Please provide valid indices. The first one can not be grater than the second.")
 	}
 
 	for i := indexStart; i <= indexEnde; i++ {
 
-		//immer den ersten idex, da beim löschen die nachfolgenden nachrücken
+		// immer den ersten idex, da beim löschen die nachfolgenden nachrücken
 		err := s.RemoveStop(indexStart, gs)
 		if err != nil {
 			return err
@@ -125,7 +125,6 @@ func (s *Schedule) RemoveStops(indexStart int, indexEnde int, gs *GameState) err
 
 // fügt eine Station zu. Damit Waren geladen oder entladen werden sollen müssen dem Stop ein Load, bzw. Unload Befehle mit entsprechender Methode hinzugefügt werden.
 func (s *Schedule) AddStopStation(plattform *Plattform, gs *GameState) (*Stop, error) {
-
 	if plattform == nil || plattform.Id == 0 {
 		return &Stop{}, fmt.Errorf("Error while adding a Stop to a schedule. Either Plattform is nil or the id is 0.")
 	}
@@ -133,18 +132,18 @@ func (s *Schedule) AddStopStation(plattform *Plattform, gs *GameState) (*Stop, e
 	s.Stops = append(s.Stops, &Stop{Id: int(gs.CurrentStopID.Load()), Plattform: plattform, IsPlattform: true})
 	gs.CurrentStopID.Add(1)
 
+	gs.BroadcastChannel <- WsEnvelope{Type: "schedule.update", Msg: s}
 	return s.Stops[len(s.Stops)-1], nil
 }
 
 // fügt einen Wegpunkt hinzu. Wird angefahren, es werden aber keine Load oder Unload Befehle benötigt. Id ist Standardname
 func (s *Schedule) AddStopWaypoint(position [3]int, name string, gs *GameState) (*Stop, error) {
-
 	err := utils.CheckName(name)
 	if err != nil {
 		return nil, err
 	}
 
-	//überprüfen koordinaten
+	// überprüfen koordinaten
 	_, err = gs.GetTile(position[0], position[1])
 	if err != nil || position[2] < 1 || position[2] > 4 {
 		return &Stop{}, fmt.Errorf("Error while adding a Waypoint to a schedule. The coordinates are invalid.")
@@ -162,7 +161,6 @@ func (s *Schedule) AddStopWaypoint(position [3]int, name string, gs *GameState) 
 
 // überprüft utils.CeckName und setzt name
 func (s *Schedule) Rename(name string, gs *GameState) error {
-
 	err := utils.CheckName(name)
 	if err != nil {
 		return err
@@ -182,7 +180,6 @@ func (s *Schedule) Rename(name string, gs *GameState) error {
 
 // nimmt das element vom start index und macht, dass dieses den Zielindex hat
 func (s *Schedule) ChangeSquence(indexStart int, indexGoal int) error {
-
 	if indexStart < 0 || indexStart >= len(s.Stops) || indexGoal < 0 || indexGoal >= len(s.Stops) {
 		return fmt.Errorf("Please provide valid indices.")
 	}

@@ -50,14 +50,14 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 	huma.Post(*api, "/train", func(ctx context.Context, i *struct {
 		CostsQuery
 		Body ds.TrainCreateMSG
-	}) (*ds.GenericResponse, error) {
+	},
+	) (*ds.GenericResponse, error) {
 		// TODO: level und lokomotive kann man angeben, auch beim anhängen. Habe erstmal default werte genommen
 		cost, _, err := gs.AddTrain(i.Body.Name, i.Body.LocomotivePosition, "Dampflock", 1, true) // TODO: Waggontype und ggf. level mit in die API nehmen, ersetzt Dampflock
-		gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", cost)                              // TODO: cost handeln und bool richtig setzten
 		if err != nil {
 			return nil, fmt.Errorf("Could not create Train; %s", err.Error())
 		}
-		return ds.CreateGenericResponse("created Train"), nil
+		return ds.CreateGenericResponse("created Train", cost), nil
 	}, func(o *huma.Operation) {
 		o.Tags = []string{"train"}
 		o.Summary = "Zug hinzufügen"
