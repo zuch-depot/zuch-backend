@@ -6,7 +6,7 @@
     "SaveLocation": "./saves",
     "SaveCompressed": false,
     "LOADCOMPRESSED": true,
-    "LoadUnloadSpeed": 25,
+    "LoadUnloadSpeed": 1,
     "MinLoadUloadTicks": 30,
     "StationRange": 2,
     "CapacityPerStationTile": 50,
