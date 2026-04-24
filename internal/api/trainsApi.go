@@ -48,7 +48,7 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 	// Hier kann man einen Zug bauen
 	huma.Post(*api, "/train", func(ctx context.Context, i *struct{ Body ds.TrainCreateMSG }) (*ds.GenericResponse, error) {
 		// TODO: level und lokomotive kann man angeben, auch beim anhängen. Habe erstmal default werte genommen
-		_, err := gs.AddTrain(i.Body.Name, i.Body.LocomotivePosition, "Dampflock Wind", 1) // kein Plan was du so gemacht hast, habe das mal angepasst. Musst mal gucken, ob das so passt. Siehe Funktionsbeschreibung
+		_, err := gs.AddTrain(i.Body.Name, i.Body.LocomotivePosition, "Dampflock", 1) // kein Plan was du so gemacht hast, habe das mal angepasst. Musst mal gucken, ob das so passt. Siehe Funktionsbeschreibung
 		if err != nil {
 			return nil, fmt.Errorf("Could not create Train; %s", err.Error())
 		}
