@@ -12,7 +12,7 @@ import (
 // region station
 func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 	// hier kriegt man alle Stationen
-	huma.Get(*api, "/stations", func(ctx context.Context, i *struct{}) (*struct {
+	huma.Get(*api, "/stations", func(ctx context.Context, i *struct{ CostsQuery }) (*struct {
 		Body struct {
 			Stations map[int]*ds.Station
 		}
@@ -28,6 +28,7 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man Inofs zu einer Station bekommen
 	huma.Get(*api, "/station/{id}", func(ctx context.Context, i *struct {
+		CostsQuery
 		Id int `path:"id" example:"1"`
 	}) (*struct {
 		Body struct {
@@ -47,6 +48,7 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man eine Station umbenennen
 	huma.Post(*api, "/station/{id}/rename", func(ctx context.Context, i *struct {
+		CostsQuery
 		Id   int `path:"id" example:"1"`
 		Body struct {
 			Name string `example:"Fred"`
@@ -69,6 +71,7 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man die ganze Station löschen
 	huma.Delete(*api, "/station/{id}", func(ctx context.Context, i *struct {
+		CostsQuery
 		Id int `path:"id" example:"1"`
 	},
 	) (*ds.GenericResponse, error) {
@@ -89,6 +92,7 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kriegt man einfos über eine Plattform
 	huma.Get(*api, "/station/{id}/plattform/{idPlat}", func(ctx context.Context, i *struct {
+		CostsQuery
 		Id     int `path:"id" example:"1"`
 		IdPlat int `path:"idPlat" example:"1"`
 	}) (*struct {
@@ -116,6 +120,7 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier nennt man eine Plattform um
 	huma.Post(*api, "/station/{id}/plattform/{idPlat}/rename", func(ctx context.Context, i *struct {
+		CostsQuery
 		Id     int `path:"id" example:"1"`
 		IdPlat int `path:"idPlat" example:"1"`
 		Body   struct {
@@ -144,6 +149,7 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier löscht man eine Plattform
 	huma.Post(*api, "/station/{id}/plattform/{idPlat}/delete", func(ctx context.Context, i *struct {
+		CostsQuery
 		Id     int `path:"id" example:"1"`
 		IdPlat int `path:"idPlat" example:"1"`
 	},
@@ -169,6 +175,7 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man eine station bauen bauen
 	huma.Post(*api, "/station", func(ctx context.Context, i *struct {
+		CostsQuery
 		Body struct {
 			Position    *[2]int `example:"[1,1]" minLength:"2" maxLength:"2"`
 			Position_to *[2]int `example:"[1,2]" required:"false" minLength:"2" maxLength:"2" nullable:"true"`
@@ -195,6 +202,7 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man eine Station entfernen
 	huma.Delete(*api, "/station", func(ctx context.Context, i *struct {
+		CostsQuery
 		Body struct {
 			Position    *[2]int `example:"[1,1]" minLength:"2" maxLength:"2"`
 			Position_to *[2]int `example:"[1,2]" required:"false" minLength:"2" maxLength:"2" nullable:"true"`

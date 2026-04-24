@@ -11,7 +11,10 @@ import (
 // region tracks
 func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 	// used to add tracks, if position_to is specified, the tracks are build in a straight line
-	huma.Post(*api, "/track", func(ctx context.Context, i *struct{ Body ds.MultitileUpdateMSG }) (*ds.GenericResponse, error) {
+	huma.Post(*api, "/track", func(ctx context.Context, i *struct {
+		CostsQuery
+		Body ds.MultitileUpdateMSG
+	}) (*ds.GenericResponse, error) {
 		var err error
 		// wenn das gestetzt ist, mehrere gleise bauen
 		if i.Body.Position_to != nil {
@@ -37,7 +40,10 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 	})
 
 	// hier um Gleise zu entfernen, zum entfernen von mehreren Gleisen warte ich noch auf wilken
-	huma.Delete(*api, "/track", func(ctx context.Context, i *struct{ Body ds.MultitileUpdateMSG }) (*ds.GenericResponse, error) {
+	huma.Delete(*api, "/track", func(ctx context.Context, i *struct {
+		CostsQuery
+		Body ds.MultitileUpdateMSG
+	}) (*ds.GenericResponse, error) {
 		var err error
 		// für mehrere
 		if i.Body.Position_to != nil {

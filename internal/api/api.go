@@ -16,6 +16,10 @@ import (
 	"github.com/go-chi/cors"
 )
 
+type CostsQuery struct {
+	Costs bool `query:"costs" default:"false"`
+}
+
 func StartServer(gs *ds.GameState) {
 	router := chi.NewMux()
 	router.Use(middleware.Logger)    // schreibt nett mit

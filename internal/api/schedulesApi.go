@@ -11,7 +11,7 @@ import (
 // region schedules
 func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 	// hier kriegt man alle schedules
-	huma.Get(*api, "/schedules", func(ctx context.Context, i *struct{}) (*struct {
+	huma.Get(*api, "/schedules", func(ctx context.Context, i *struct{ CostsQuery }) (*struct {
 		Body struct {
 			Schedules map[int]*ds.Schedule
 		}
@@ -26,6 +26,7 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 
 	// Schedule erstellen
 	huma.Post(*api, "/schedule", func(ctx context.Context, i *struct {
+		CostsQuery
 		Body struct {
 			Name string `example:"fred"`
 		}
@@ -42,6 +43,7 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kriegt man infos zu einer schedule
 	huma.Get(*api, "/schedule/{id}", func(ctx context.Context, i *struct {
+		CostsQuery
 		Id int `path:"id" example:"1"`
 	}) (*struct {
 		Body struct {
@@ -62,6 +64,7 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man eine Plattform anhängen
 	huma.Post(*api, "/schedule/{id}/append", func(ctx context.Context, i *struct {
+		CostsQuery
 		Id   int `path:"id" example:"1"`
 		Body struct {
 			PlattformPos    [2]int    `example:"[2,0]"`
@@ -110,6 +113,7 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man waypoints hinzufügen
 	huma.Post(*api, "/schedule/{id}/append-waypoint", func(ctx context.Context, i *struct {
+		CostsQuery
 		Id   int `path:"id" example:"1"`
 		Body struct {
 			Pos  [3]int `example:"[1,2,3]"`
@@ -132,6 +136,7 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man Stops aus einer  schedule löschen, die arme
 	huma.Post(*api, "/schedule/{id}/remove-stop", func(ctx context.Context, i *struct {
+		CostsQuery
 		Id   int `path:"id" example:"1"`
 		Body struct {
 			Index    *int `example:"1"`
@@ -162,6 +167,7 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man die ganze schedule löschen
 	huma.Delete(*api, "/schedule/{id}", func(ctx context.Context, i *struct {
+		CostsQuery
 		Id int `path:"id" example:"1"`
 	}) (*ds.GenericResponse, error) {
 		err := gs.RemoveSchedule(i.Id)
@@ -176,6 +182,7 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man eine schedule umbenennen
 	huma.Post(*api, "/schedule/{id}/rename", func(ctx context.Context, i *struct {
+		CostsQuery
 		Id   int `path:"id" example:"1"`
 		Body struct {
 			Name string `example:"Fred"`
@@ -197,6 +204,7 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 
 	// Hier kann man die reihenfolge ändern
 	huma.Post(*api, "/schedule/{id}/sequence", func(ctx context.Context, i *struct {
+		CostsQuery
 		Id   int `path:"id" example:"1"`
 		Body struct {
 			Index     int
@@ -219,6 +227,7 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 
 	// Hier kann man eine Schedule updaten
 	huma.Post(*api, "/schedule/{id}/change", func(ctx context.Context, i *struct {
+		CostsQuery
 		Id   int `path:"id" example:"1"`
 		Body struct {
 			Stop_Index      int

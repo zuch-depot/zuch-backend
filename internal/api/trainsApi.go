@@ -12,7 +12,7 @@ import (
 // region trains
 func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 	// hier kriegt man alle Züge
-	huma.Get(*api, "/trains", func(ctx context.Context, i *struct{}) (*struct {
+	huma.Get(*api, "/trains", func(ctx context.Context, i *struct{ CostsQuery }) (*struct {
 		Body struct {
 			Trains map[int]*ds.Train
 		}
@@ -28,6 +28,7 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 
 	// Hier kriegt man infos zu einem Zug
 	huma.Get(*api, "/train/{id}", func(ctx context.Context, i *struct {
+		CostsQuery
 		Id int `path:"id"`
 	}) (*struct {
 		Body struct {
@@ -46,7 +47,10 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 	})
 
 	// Hier kann man einen Zug bauen
-	huma.Post(*api, "/train", func(ctx context.Context, i *struct{ Body ds.TrainCreateMSG }) (*ds.GenericResponse, error) {
+	huma.Post(*api, "/train", func(ctx context.Context, i *struct {
+		CostsQuery
+		Body ds.TrainCreateMSG
+	}) (*ds.GenericResponse, error) {
 		// TODO: level und lokomotive kann man angeben, auch beim anhängen. Habe erstmal default werte genommen
 		_, err := gs.AddTrain(i.Body.Name, i.Body.LocomotivePosition, "Dampflock", 1) // kein Plan was du so gemacht hast, habe das mal angepasst. Musst mal gucken, ob das so passt. Siehe Funktionsbeschreibung
 		if err != nil {
@@ -60,6 +64,7 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 
 	// Hier kann man einen Zug pausieren
 	huma.Post(*api, "/train/{id}/pause", func(ctx context.Context, i *struct {
+		CostsQuery
 		Id int `path:"id"`
 	},
 	) (*ds.GenericResponse, error) {
@@ -76,6 +81,7 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 
 	// Hier kann man einen Zug fortsetzen
 	huma.Post(*api, "/train/{id}/unpause", func(ctx context.Context, i *struct {
+		CostsQuery
 		Id int `path:"id"`
 	},
 	) (*ds.GenericResponse, error) {
@@ -92,6 +98,7 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man Waggons anhängen
 	huma.Post(*api, "/train/{id}/append", func(ctx context.Context, i *struct {
+		CostsQuery
 		Id   int `path:"id"`
 		Body struct {
 			Pos        ds.MultitileUpdateMSG
@@ -121,6 +128,7 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man züge entfernen
 	huma.Delete(*api, "/train/{id}/remove", func(ctx context.Context, i *struct {
+		CostsQuery
 		Id   int `path:"id"`
 		Body struct {
 			From int
@@ -149,6 +157,7 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man einen zug brutalst umbringen
 	huma.Delete(*api, "/train/{id}", func(ctx context.Context, i *struct {
+		CostsQuery
 		Id int `path:"id"`
 	},
 	) (*ds.GenericResponse, error) {
@@ -168,6 +177,7 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier könnte man einen zug umbennen
 	huma.Post(*api, "/train/{id}/rename", func(ctx context.Context, i *struct {
+		CostsQuery
 		Id   int `path:"id"`
 		Body struct {
 			Name string
@@ -191,6 +201,7 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man schedules zuweisen
 	huma.Post(*api, "/train/{id}/schedule", func(ctx context.Context, i *struct {
+		CostsQuery
 		Id   int `path:"id"`
 		Body struct {
 			ScheduleId int
@@ -215,6 +226,7 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man schedules von zügen entfernen
 	huma.Post(*api, "/train/{id}/schedule_unassign", func(ctx context.Context, i *struct {
+		CostsQuery
 		Id int `path:"id"`
 	},
 	) (*ds.GenericResponse, error) {

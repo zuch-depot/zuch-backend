@@ -11,7 +11,7 @@ import (
 
 func registerActiveTileRoutes(api *huma.API, gs *ds.GameState) {
 	// hier kann man alle auflisten
-	huma.Get(*api, "/activetiles", func(ctx context.Context, i *struct{}) (*struct {
+	huma.Get(*api, "/activetiles", func(ctx context.Context, i *struct{CostsQuery }) (*struct {
 		Body struct {
 			ActiveTiles map[int]*ds.ActiveTile
 		}
@@ -31,6 +31,7 @@ func registerActiveTileRoutes(api *huma.API, gs *ds.GameState) {
 
 	// hier kann man eine active Tile umbennen
 	huma.Post(*api, "/activetiles/{id}", func(ctx context.Context, i *struct {
+		CostsQuery
 		Id   int `path:"id" example:"1"`
 		Body struct {
 			Name string `example:"fred"`

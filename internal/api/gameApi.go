@@ -10,7 +10,7 @@ import (
 
 // region game
 func registerGameRoutes(api *huma.API, gs *ds.GameState) {
-	huma.Get(*api, "/game/pause", func(ctx context.Context, i *struct{}) (*ds.GenericResponse, error) {
+	huma.Get(*api, "/game/pause", func(ctx context.Context, i *struct{ CostsQuery }) (*ds.GenericResponse, error) {
 		gs.PauseGame()
 		return ds.CreateGenericResponse("game paused"), nil
 	}, func(o *huma.Operation) {
@@ -18,7 +18,7 @@ func registerGameRoutes(api *huma.API, gs *ds.GameState) {
 		o.Summary = "Spiel pausieren"
 	})
 
-	huma.Get(*api, "/game/unpause", func(ctx context.Context, i *struct{}) (*ds.GenericResponse, error) {
+	huma.Get(*api, "/game/unpause", func(ctx context.Context, i *struct{ CostsQuery }) (*ds.GenericResponse, error) {
 		gs.UnPauseGame()
 		return ds.CreateGenericResponse("game unpaused"), nil
 	}, func(o *huma.Operation) {
@@ -26,7 +26,7 @@ func registerGameRoutes(api *huma.API, gs *ds.GameState) {
 		o.Summary = "Spiel fortsetzen"
 	})
 
-	huma.Get(*api, "/game/save", func(ctx context.Context, i *struct{}) (*ds.SaveGameResponse, error) {
+	huma.Get(*api, "/game/save", func(ctx context.Context, i *struct{CostsQuery  }) (*ds.SaveGameResponse, error) {
 		filename, err := gs.SaveGame("")
 		if err != nil {
 			return nil, fmt.Errorf("Error while Saving game; %s", err.Error())
@@ -41,7 +41,10 @@ func registerGameRoutes(api *huma.API, gs *ds.GameState) {
 		o.Summary = "Spielstand speichern"
 	})
 
-	huma.Put(*api, "/game/load", func(ctx context.Context, i *ds.SaveGameResponse) (*ds.GenericResponse, error) {
+	huma.Put(*api, "/game/load", func(ctx context.Context, i *struct {
+		CostsQuery
+		Body ds.SaveGameResponse
+	}) (*ds.GenericResponse, error) {
 		err := gs.LoadGame("") // hier könnte man später noch den dateinamen mitgeben
 		if err != nil {
 			return nil, err

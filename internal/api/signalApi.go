@@ -13,7 +13,10 @@ import (
 // Heißt hier werden auch die eigentlichen methoden aufgerufen und fehler abgefangen
 func registerSignalRoutes(api *huma.API, gs *ds.GameState) {
 	// hier kann man ein oder mehr signale bauen
-	huma.Post(*api, "/signal", func(ctx context.Context, i *struct{ Body ds.TileUpdateMSG }) (*ds.GenericResponse, error) {
+	huma.Post(*api, "/signal", func(ctx context.Context, i *struct {
+		CostsQuery
+		Body ds.TileUpdateMSG
+	}) (*ds.GenericResponse, error) {
 		tile, err := gs.GetTile(i.Body.Position[0], i.Body.Position[1])
 		if err != nil {
 			return nil, fmt.Errorf("Could not find Tile; %s", err.Error())
@@ -28,7 +31,10 @@ func registerSignalRoutes(api *huma.API, gs *ds.GameState) {
 		o.Summary = "Signal bauen"
 	})
 
-	huma.Delete(*api, "/signal", func(ctx context.Context, i *struct{ Body ds.TileUpdateMSG }) (*ds.GenericResponse, error) {
+	huma.Delete(*api, "/signal", func(ctx context.Context, i *struct {
+		CostsQuery
+		Body ds.TileUpdateMSG
+	}) (*ds.GenericResponse, error) {
 		tile, err := gs.GetTile(i.Body.Position[0], i.Body.Position[1])
 		if err != nil {
 			return nil, fmt.Errorf("Tile not found; %s", err.Error())

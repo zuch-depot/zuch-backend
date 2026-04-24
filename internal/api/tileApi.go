@@ -9,7 +9,7 @@ import (
 
 // region tiles
 func registerTileRoutes(api *huma.API, gs *ds.GameState) {
-	huma.Get(*api, "/tiles", func(ctx context.Context, i *struct{}) (*ds.TileMessage, error) {
+	huma.Get(*api, "/tiles", func(ctx context.Context, i *struct{ CostsQuery }) (*ds.TileMessage, error) {
 		mes := &ds.TileMessage{}
 		mes.Body.Tiles = gs.Tiles
 		return mes, nil
