@@ -17,7 +17,7 @@ import (
 )
 
 type CostsQuery struct {
-	Costs bool `query:"costs" default:"false"`
+	CostsOnly bool `query:"costs" default:"false"`
 }
 
 func StartServer(gs *ds.GameState) {

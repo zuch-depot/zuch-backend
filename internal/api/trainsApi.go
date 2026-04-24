@@ -53,7 +53,7 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 	},
 	) (*ds.GenericResponse, error) {
 		// TODO: level und lokomotive kann man angeben, auch beim anhängen. Habe erstmal default werte genommen
-		cost, _, err := gs.AddTrain(i.Body.Name, i.Body.LocomotivePosition, "Dampflock", 1, true) // TODO: Waggontype und ggf. level mit in die API nehmen, ersetzt Dampflock
+		cost, _, err := gs.AddTrain(i.Body.Name, i.Body.LocomotivePosition, i.Body.WaggonType, i.Body.Level, !i.CostsQuery.CostsOnly)
 		if err != nil {
 			return nil, fmt.Errorf("Could not create Train; %s", err.Error())
 		}

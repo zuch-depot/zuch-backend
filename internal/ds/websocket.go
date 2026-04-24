@@ -153,6 +153,8 @@ type TrainMoveMSG struct {
 type TrainCreateMSG struct {
 	Name               string `example:"fred"`
 	LocomotivePosition [3]int `example:"[1,1,4]" required:"true"`
+	WaggonType         string `example:"Dampflock" required:"true"`
+	Level              int    `example:"1" required:"false" default:"1"`
 	Id                 int    `hidden:"true"`
 }
 
