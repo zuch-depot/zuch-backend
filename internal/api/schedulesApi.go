@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+
 	"zuch-backend/internal/ds"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -15,7 +16,8 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 		Body struct {
 			Schedules map[int]*ds.Schedule
 		}
-	}, error) {
+	}, error,
+	) {
 		return &struct {
 			Body struct{ Schedules map[int]*ds.Schedule }
 		}{Body: struct{ Schedules map[int]*ds.Schedule }{Schedules: gs.Schedules}}, nil
@@ -30,7 +32,8 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 		Body struct {
 			Name string `example:"fred"`
 		}
-	}) (*ds.GenericResponse, error) {
+	},
+	) (*ds.GenericResponse, error) {
 		_, err := gs.AddSchedule(i.Body.Name)
 		if err != nil {
 			return nil, fmt.Errorf("Could not create Schedule; %s", err.Error())
@@ -49,7 +52,8 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 		Body struct {
 			Schedule ds.Schedule
 		}
-	}, error) {
+	}, error,
+	) {
 		schedule, ok := gs.Schedules[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Schedule does not exist")
@@ -67,24 +71,25 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 		CostsQuery
 		Id   int `path:"id" example:"1"`
 		Body struct {
-			PlattformPos    [2]int    `example:"[2,0]"`
+			PlattformID     *int      `example:"1" required:"true"`
 			LoadList        *[]string `example:"Sonnenblumenöl" required:"false" doc:"both LoadList and LoadTillFull both have to be either used or omitted"`
 			LoadTillFull    *bool     `example:"false" required:"false" doc:"both LoadList and LoadTillFull both have to be either used or omitted"`
 			UnloadList      *[]string `example:"Sonnenblumenöl" required:"false" doc:"both UnloadList and UnloadTillFull both have to be either used or omitted"`
 			UnloadTillEmpty *bool     `example:"false" required:"false" doc:"both UnloadList and UnloadTillFull both have to be either used or omitted"`
 		}
-	}) (*ds.GenericResponse, error) {
-
+	},
+	) (*ds.GenericResponse, error) {
 		// erstmal muss ich den Stop erstellen
 		schedule, ok := gs.Schedules[i.Id]
 		if !ok {
-			return nil, fmt.Errorf("Schedule does not exist")
+			return nil, fmt.Errorf("schedule does not exist")
 		}
 
-		plattform, err := gs.GetPlattform(i.Body.PlattformPos)
+		plattform, err := gs.GetPlattformByID(*i.Body.PlattformID)
 		if err != nil {
-			return nil, fmt.Errorf("Plattform does not exist")
+			return nil, fmt.Errorf("could not find Plattform; %s", err.Error())
 		}
+
 		stop, err := schedule.AddStopStation(plattform, gs)
 		if err != nil {
 			return nil, fmt.Errorf("could not add Plattform; %s", err.Error())
@@ -119,7 +124,8 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 			Pos  [3]int `example:"[1,2,3]"`
 			Name string `example:"Fred"`
 		}
-	}) (*ds.GenericResponse, error) {
+	},
+	) (*ds.GenericResponse, error) {
 		schedule, ok := gs.Schedules[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Schedule does not exist")
@@ -142,7 +148,8 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 			Index    *int `example:"1"`
 			Index_to *int `required:"false" example:"2"`
 		}
-	}) (*ds.GenericResponse, error) {
+	},
+	) (*ds.GenericResponse, error) {
 		schedule, ok := gs.Schedules[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Schedule does not exist")
@@ -169,7 +176,8 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 	huma.Delete(*api, "/schedule/{id}", func(ctx context.Context, i *struct {
 		CostsQuery
 		Id int `path:"id" example:"1"`
-	}) (*ds.GenericResponse, error) {
+	},
+	) (*ds.GenericResponse, error) {
 		err := gs.RemoveSchedule(i.Id)
 		if err != nil {
 			return nil, fmt.Errorf("could not remove schedule; %s", err.Error())
@@ -187,7 +195,8 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 		Body struct {
 			Name string `example:"Fred"`
 		}
-	}) (*ds.GenericResponse, error) {
+	},
+	) (*ds.GenericResponse, error) {
 		schedule, ok := gs.Schedules[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Schedule does not exist")
@@ -210,7 +219,8 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 			Index     int
 			Index_Two int
 		}
-	}) (*ds.GenericResponse, error) {
+	},
+	) (*ds.GenericResponse, error) {
 		schedule, ok := gs.Schedules[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Schedule does not exist")
@@ -236,7 +246,8 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 			UnloadList      *[]string `example:"Sonnenblumenöl" required:"false" doc:"both UnloadList and UnloadTillFull both have to be either used or omitted"`
 			UnloadTillEmpty *bool     `example:"false" required:"false" doc:"both UnloadList and UnloadTillFull both have to be either used or omitted"`
 		}
-	}) (*ds.GenericResponse, error) {
+	},
+	) (*ds.GenericResponse, error) {
 		schedule, ok := gs.Schedules[i.Id]
 		if !ok {
 			return nil, fmt.Errorf("Schedule does not exist")
