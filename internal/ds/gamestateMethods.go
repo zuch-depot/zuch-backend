@@ -179,8 +179,16 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 
 	} else {
 
-		if gs.Tiles[position[0]][position[1]].IsPlattform {
+		tile := gs.Tiles[position[0]][position[1]]
+
+		if tile.IsPlattform {
 			return nil, fmt.Errorf("Could not build a station there since there is one already.")
+		}
+
+		for _, signal := range tile.Signals {
+			if signal {
+				return nil, fmt.Errorf("Could not build a station there because there is a signal on that tile already.")
+			}
 		}
 
 		// berührt das Tile eine Station? Wenn nein, dann Id = 0
@@ -208,7 +216,7 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int) (*Station, 
 				}
 				// wenn eine andere Station schon angegrenzt, dann Fehler
 				if stationBordering != nil && stationBordering.Id != temp.GetStation(gs).Id {
-					return nil, fmt.Errorf("Could not build a Station there, the tile is bordering two stations.")
+					return nil, fmt.Errorf("Could not build a Station there, the tile is bordering at least two stations.")
 				}
 				stationBordering = temp.GetStation(gs)
 			}
