@@ -20,7 +20,9 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 		var err error
 		// wenn das gestetzt ist, mehrere gleise bauen
 		if i.Body.Position_to != nil {
-			err = gs.AddTracks(*i.Body.Position, *i.Body.Position_to)
+			var cost int
+			cost, err = gs.AddTracks(*i.Body.Position, *i.Body.Position_to, true) // TODO: cost handeln und bool richtig setzten
+			gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", cost)
 			if err != nil {
 				return nil, fmt.Errorf("could not create track(s); %s", err.Error())
 			}
@@ -30,7 +32,9 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 			if err != nil {
 				return nil, fmt.Errorf("Could not find Tile; %s", err.Error())
 			}
-			err = tile.AddTrack(i.Body.Position[2], gs)
+			cost, err := tile.AddTrack(i.Body.Position[2], gs, true) // TODO: cost handeln und bool richtig setzten
+			gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", cost)
+
 			if err != nil {
 				return nil, fmt.Errorf("Tile was found but could not create track(s); %s", err.Error())
 			}
@@ -47,10 +51,10 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 		Body ds.MultitileUpdateMSG
 	},
 	) (*ds.GenericResponse, error) {
-		var err error
 		// für mehrere
 		if i.Body.Position_to != nil {
-			err = gs.RemoveTracks(*i.Body.Position, *i.Body.Position_to)
+			refund, err := gs.RemoveTracks(*i.Body.Position, *i.Body.Position_to, true) // TODO: cost handeln und bool richtig setzten
+			gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", refund)
 			if err != nil {
 				return nil, fmt.Errorf("could not remove track(s); %s", err.Error())
 			}
@@ -62,7 +66,8 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 				return nil, fmt.Errorf("Tile not found; %s", err.Error())
 			}
 			// dann entfernen
-			err = tile.RemoveTrack(i.Body.Position[2], gs)
+			refund, err := tile.RemoveTrack(i.Body.Position[2], gs, true) // TODO: cost handeln und bool richtig setzten
+			gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", refund)
 			if err != nil {
 				return nil, fmt.Errorf("Tile was found but could not remove track; %s", err.Error())
 			}

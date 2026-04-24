@@ -80,7 +80,8 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("Station does not exist")
 		}
 		// das ding lässt einen auch zeugs löschen das es nicht gibt
-		err := gs.RemoveStation(station)
+		cost, err := gs.RemoveStation(station, true) // TODO: cost handeln und bool richtig setzten
+		gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", cost)
 		if err != nil {
 			return nil, fmt.Errorf("could not remove Station; %s", err.Error())
 		}
@@ -162,7 +163,8 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 		if !ok {
 			return nil, fmt.Errorf("could not find Plattform")
 		}
-		err := station.RemovePlattform(platform.Id, gs)
+		cost, err := station.RemovePlattform(platform.Id, gs, true) // TODO: cost handeln und bool richtig setzten
+		gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", cost)
 		if err != nil {
 			return nil, fmt.Errorf("could not remove Plattform; %s", err.Error())
 		}
@@ -185,10 +187,14 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 		var err error
 		if i.Body.Position_to != nil {
 			// mehrere bauen
-			err = gs.AddStationTiles(*i.Body.Position, *i.Body.Position_to)
+			cost := 0
+			cost, err = gs.AddStationTiles(*i.Body.Position, *i.Body.Position_to, true) // TODO: cost handeln und bool richtig setzten
+			gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", cost)
 		} else {
 			// Der hier gibt eigenlich noch die station mit
-			_, err = gs.AddStationTile(*i.Body.Position)
+			cost := 0
+			cost, _, err = gs.AddStationTile(*i.Body.Position, true) // TODO: cost handeln und bool richtig setzten
+			gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", cost)
 		}
 		if err != nil {
 			return nil, fmt.Errorf("could not create station; %s", err.Error())
@@ -212,10 +218,14 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 		var err error
 		if i.Body.Position_to != nil {
 			// mehrere bauen
-			err = gs.RemoveStationTiles(*i.Body.Position, *i.Body.Position_to)
+			cost := 0
+			cost, err = gs.RemoveStationTiles(*i.Body.Position, *i.Body.Position_to, true) // TODO: cost handeln und bool richtig setzten
+			gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", cost)
 		} else {
 			// Der hier gibt eigenlich noch die station mit
-			_, err = gs.RemoveStationTile(*i.Body.Position)
+			cost := 0
+			cost, _, err = gs.RemoveStationTile(*i.Body.Position, true) // TODO: cost handeln und bool richtig setzten
+			gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", cost)
 		}
 		if err != nil {
 			return nil, fmt.Errorf("could not remobe station; %s", err.Error())

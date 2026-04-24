@@ -52,7 +52,8 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 		Body ds.TrainCreateMSG
 	}) (*ds.GenericResponse, error) {
 		// TODO: level und lokomotive kann man angeben, auch beim anhängen. Habe erstmal default werte genommen
-		_, err := gs.AddTrain(i.Body.Name, i.Body.LocomotivePosition, "Dampflock", 1) // kein Plan was du so gemacht hast, habe das mal angepasst. Musst mal gucken, ob das so passt. Siehe Funktionsbeschreibung
+		cost, _, err := gs.AddTrain(i.Body.Name, i.Body.LocomotivePosition, "Dampflock", 1, true) // TODO: Waggontype und ggf. level mit in die API nehmen, ersetzt Dampflock
+		gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", cost)                              // TODO: cost handeln und bool richtig setzten
 		if err != nil {
 			return nil, fmt.Errorf("Could not create Train; %s", err.Error())
 		}
@@ -113,9 +114,13 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 		}
 		var err error
 		if i.Body.Pos.Position_to == nil {
-			err = train.AddWaggon(*i.Body.Pos.Position, i.Body.Waggontype, 1, gs)
+			var cost int
+			cost, err = train.AddWaggon(*i.Body.Pos.Position, i.Body.Waggontype, 1, gs, true) // TODO: cost handeln und bool richtig setzten
+			gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", cost)
 		} else {
-			err = train.AddWaggons(*i.Body.Pos.Position, *i.Body.Pos.Position_to, i.Body.Waggontype, 1, gs)
+			var cost int
+			cost, err = train.AddWaggons(*i.Body.Pos.Position, *i.Body.Pos.Position_to, i.Body.Waggontype, 1, gs, true) // TODO: cost handeln und bool richtig setzten
+			gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", cost)
 		}
 		if err != nil {
 			return nil, fmt.Errorf("Could not add waggon(s); %s", err.Error())

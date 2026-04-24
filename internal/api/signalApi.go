@@ -21,7 +21,8 @@ func registerSignalRoutes(api *huma.API, gs *ds.GameState) {
 		if err != nil {
 			return nil, fmt.Errorf("Could not find Tile; %s", err.Error())
 		}
-		err = tile.AddSignal(i.Body.Position[2], gs)
+		cost, err := tile.AddSignal(i.Body.Position[2], gs, true) // TODO: cost handeln und bool richtig setzten
+		gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", cost)
 		if err != nil {
 			return nil, fmt.Errorf("Tile was found but could not create signal; %s", err.Error())
 		}
@@ -39,7 +40,8 @@ func registerSignalRoutes(api *huma.API, gs *ds.GameState) {
 		if err != nil {
 			return nil, fmt.Errorf("Tile not found; %s", err.Error())
 		}
-		err = tile.RemoveSignal(i.Body.Position[2], gs)
+		refund, err := tile.RemoveSignal(i.Body.Position[2], gs, true) // TODO: cost handeln und bool richtig setzten
+		gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", refund)
 		if err != nil {
 			return nil, fmt.Errorf("Tile was found but could not remove signal; %s", err.Error())
 		}

@@ -10,6 +10,12 @@
     "MinLoadUloadTicks": 30,
     "StationRange": 2,
     "CapacityPerStationTile": 100,
+    "PriceTrack": 20,
+    "PriceTrackRemoveRefund": 10,
+    "PriceSignal": 50,
+    "PriceSignalRemoveRefund": 20,
+    "PriceStation": 500,
+    "PriceStationRemoveRefund": 200,
     "LockedTiles": [
         [
             4,

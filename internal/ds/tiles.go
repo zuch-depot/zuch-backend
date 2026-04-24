@@ -92,109 +92,144 @@ func (a *ActiveTile) Rename(name string, gs *GameState) error {
 
 // Fügt bei i ein gleis hinzu, wenn da keins ist, da keine Plattform ist und das Tile nicht locked ist
 // returnt true bei erfolg und false bei error
-func (t *Tile) AddTrack(subtile int, gs *GameState) error {
+func (t *Tile) AddTrack(subtile int, gs *GameState, actuallyBuild bool) (int, error) {
 	if t.ActiveTile.Category != nil {
-		return fmt.Errorf("There is a Active Tile there, no Tracks can be build on this tile.")
+		return 0, fmt.Errorf("There is a Active Tile there, no Tracks can be build on this tile.")
 	}
 	if t.IsBlocked {
-		return fmt.Errorf("This Tile is blocked, the track could not be build")
+		return 0, fmt.Errorf("This Tile is blocked, the track could not be build")
 	}
 	if t.IsPlattform {
-		return fmt.Errorf("The Tile is a Plattform, no Track can be build there.")
+		return 0, fmt.Errorf("The Tile is a Plattform, no Track can be build there.")
 	}
 	if t.IsLocked {
-		return fmt.Errorf("The Tile ist locked and nothing can be build there.")
+		return 0, fmt.Errorf("The Tile ist locked and nothing can be build there.")
+	}
+	if t.Tracks[subtile-1] {
+		return 0, fmt.Errorf("There is already a Track at that Position.")
 	}
 
-	if !t.Tracks[subtile-1] {
-		t.Tracks[subtile-1] = true
-		gs.BroadcastChannel <- WsEnvelope{Type: "tile.update", Msg: *t}
-		return nil
+	// Ab hier geht davon aus, dass richtig ist
+
+	if !actuallyBuild {
+		return gs.ConfigData.PriceTrack, nil
 	}
-	return fmt.Errorf("There is already a Track at that Position.")
+
+	// Geld abziehen
+	err := gs.SubtractMoney(gs.ConfigData.PriceTrack)
+	if err != nil {
+		return gs.ConfigData.PriceTrack, err
+	}
+
+	t.Tracks[subtile-1] = true
+	gs.BroadcastChannel <- WsEnvelope{Type: "tile.update", Msg: *t}
+	return 0, nil
 }
 
 // Entfernt bei i ein gleis und Signal, wenn da eins ist und das Tile nicht locked ist
 // wenn ein Signal an der Stelle ist, wird kein Fehler geworfen und dieses entfernt
-func (t *Tile) RemoveTrack(subtile int, gs *GameState) error {
+func (t *Tile) RemoveTrack(subtile int, gs *GameState, actuallyBuild bool) (int, error) {
 	if t.IsBlocked {
-		return fmt.Errorf("The Tile is blocked, try again later.")
+		return 0, fmt.Errorf("The Tile is blocked, try again later.")
 	}
 
 	if !t.Tracks[subtile-1] {
-		return fmt.Errorf("There is no Track to Remove.")
+		return 0, fmt.Errorf("There is no track to Remove.")
 	}
 
-	// ggf. aktivTiles?
-
-	// ggf. entfernen des Signals
-	if t.Signals[subtile-1] {
-		t.RemoveSignal(subtile, gs)
-	}
-
-	// entfernt Station, wenn das Tile eine ist
 	if t.IsPlattform {
-		gs.RemoveStationTile([2]int{t.X, t.Y})
+		return 0, fmt.Errorf("There is a station there, the track could not be removed.")
+	}
+
+	// ggf. aktivTiles? // TODO: was ist damit gemeint
+
+	// ggf. entfernen des Signals, Fehler kann nur sein, dass es nicht gibt und dann ist auch egal
+	refund, _ := t.RemoveSignal(subtile, gs, actuallyBuild) // TODO mit retruns umgehen
+
+	if !actuallyBuild {
+		return refund, nil
 	}
 
 	// entfernen des Tracks
 	t.Tracks[subtile-1] = false
 
+	gs.AddMoney(gs.ConfigData.PriceTrackRemoveRefund)
+
 	gs.BroadcastChannel <- WsEnvelope{Type: "tile.update", Msg: *t}
-	return nil
+	return refund + gs.ConfigData.PriceTrackRemoveRefund, nil
 }
 
 // Fügt bei i ein Signal hinzu, wenn da keins ist und ein entsprechendes Gleis vorhanden ist,
 // um bei i ein signal zu bauen muss gleis i da sein, und das Tile nicht locked ist;
-func (t *Tile) AddSignal(subtile int, gs *GameState) error {
+// return cost
+func (t *Tile) AddSignal(subtile int, gs *GameState, actuallyBuild bool) (int, error) {
 	// ist subTile valid?
 	if 1 > subtile || subtile > 4 {
-		return fmt.Errorf("An error accured while adding a signal. Please provide valid subtile coordinates between 1 and 4.")
+		return 0, fmt.Errorf("An error accured while adding a signal. Please provide valid subtile coordinates between 1 and 4.")
 	}
 
 	if t.ActiveTile.Category != nil {
-		return fmt.Errorf("There is a Active Tile there, no Signal can be build on this tile.")
+		return 0, fmt.Errorf("There is a Active Tile there, no Signal can be build on this tile.")
 	}
 
 	if t.IsPlattform {
-		return fmt.Errorf("The Tile is a Plattform, no Signal can be build there.")
+		return 0, fmt.Errorf("The Tile is a Plattform, no Signal can be build there.")
 	}
 
 	if !t.Tracks[subtile-1] {
-		return fmt.Errorf("There are no Track to place the signal.")
+		return 0, fmt.Errorf("There are no Track to place the signal.")
 	}
 
 	if t.Signals[subtile-1] {
-		return fmt.Errorf("There is already a signal at that location.")
+		return 0, fmt.Errorf("There is already a signal at that location.")
 	}
 
 	if t.IsBlocked {
-		return fmt.Errorf("The Tile is currently blocked, the signal could not be build.")
+		return 0, fmt.Errorf("The Tile is currently blocked, the signal could not be build.")
 	}
 
 	if t.IsLocked {
-		return fmt.Errorf("The Tile is locked, no signal can be build there.")
+		return 0, fmt.Errorf("The Tile is locked, no signal can be build there.")
+	}
+
+	if !actuallyBuild {
+		return gs.ConfigData.PriceSignal, nil
+	}
+
+	err := gs.SubtractMoney(gs.ConfigData.PriceSignal)
+	if err != nil {
+		return gs.ConfigData.PriceSignal, err
 	}
 
 	// hinzugügen des Signals
 	t.Signals[subtile-1] = true
 	gs.BroadcastChannel <- WsEnvelope{Type: "tile.update", Msg: *t}
-	return nil
+	return gs.ConfigData.PriceSignal, nil
 }
 
 // Entfernt bei i das Signal, wenn da eins ist und das Tile nicht locked ist
-func (t *Tile) RemoveSignal(subtile int, gs *GameState) error {
+// return, wie viel Geld erstattet wurde. Logik siehe subtractMoney
+func (t *Tile) RemoveSignal(subtile int, gs *GameState, actuallyBuild bool) (int, error) {
 	if !t.Signals[subtile-1] {
-		return fmt.Errorf("There is no Signal to remove.")
+		return 0, fmt.Errorf("There is no Signal to remove.")
 	}
 
 	if t.IsBlocked {
-		return fmt.Errorf("The Tile is currently blocked, the signal could not be demolished.")
+		return 0, fmt.Errorf("The Tile is currently blocked, the signal could not be demolished.")
 	}
+
+	// ab hier ist valid
+
+	if !actuallyBuild {
+		return gs.ConfigData.PriceSignalRemoveRefund, nil
+	}
+
+	// refund
+	gs.AddMoney(gs.ConfigData.PriceSignalRemoveRefund)
 
 	t.Signals[subtile-1] = false
 	gs.BroadcastChannel <- WsEnvelope{Type: "tile.update", Msg: *t}
-	return nil
+	return gs.ConfigData.PriceSignalRemoveRefund, nil
 }
 
 // bis jetzt noch keine Level implementiert

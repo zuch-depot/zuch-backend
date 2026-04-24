@@ -497,51 +497,45 @@ func (t *Train) unloadCargo(cargoType string, maxCargoRemoved int) int {
 
 // Fügt einen Wagon zu einem Zug, typ gibt die art des wagongs an, daraus basierend wird capacity und maxSpeed bestimmt, bspw "Lebensmittel"
 // TODO waggonType umstellen <----------------------------------------------
-func (t *Train) AddWaggon(position [3]int, typ string, level int, gs *GameState) error {
-	// var capacity, maxSpeed, emptyWeight, power int
-
-	// Typ gibt kurz als string an was für einen Waggon man will
-	// hier werden die passenden Attribute rausgesucht
-	// switch typ {
-	// case "Lebensmittel":
-	// 	capacity = 30
-	// 	maxSpeed = 77
-	// 	emptyWeight = 10
-	// case "":
-	// 	capacity = 30
-	// 	maxSpeed = 180
-	// 	power = 100
-	// 	emptyWeight = 20
-	// default:
-
-	// }
+func (t *Train) AddWaggon(position [3]int, typ string, level int, gs *GameState, actuallyBuild bool) (int, error) {
 
 	waggonType := gs.ConfigData.WaggonTypes[typ]
 	if waggonType == nil {
 		gs.Logger.Error("Invalider Typ", slog.String("Typ", typ))
-		return fmt.Errorf("invalider Typ")
+		return 0, fmt.Errorf("invalider Typ")
 	}
 
 	// kontrollieren, dass das SubTile valide ist
-	err := gs.iterateSubTiles(position, position, "An error accured while adding a waggon.", func(gs *GameState, coordinate [3]int) error { return nil })
+	_, err := gs.iterateSubTiles(position, position, "An error accured while adding a waggon.", func(gs *GameState, coordinate [3]int) (int, error) { return 0, nil })
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	// prüft, ob der waggon anhängt, wenn es schon welche gibt
 	if len(t.Waggons) > 0 {
 		err = t.isWaggonValid(position, gs)
 		if err != nil {
-			return err
+			return 0, err
 		}
 	} else {
 		// wenn das die Lokomotive ist, muss man manuell überprüfen, ob da ein Track ist und ob das blockiert ist, sonst in isWaggonValid
 		if !gs.Tiles[position[0]][position[1]].Tracks[position[2]-1] {
-			return fmt.Errorf("Could not build a waggon there, there is no track on that position.")
+			return 0, fmt.Errorf("Could not build a waggon there, there is no track on that position.")
 		}
 		if gs.Tiles[position[0]][position[1]].IsBlocked {
-			return fmt.Errorf("Could not build a waggon there, the tile is blocked.")
+			return 0, fmt.Errorf("Could not build a waggon there, the tile is blocked.")
 		}
+	}
+
+	price := waggonType.Price + waggonType.PriceIncreasePercent*(level-1)
+
+	if !actuallyBuild {
+		return price, nil
+	}
+
+	err = gs.SubtractMoney(price)
+	if err != nil {
+		return price, err
 	}
 
 	// Waggons zu zug hinzufügen und entsprechende tiles blockieren
@@ -558,7 +552,7 @@ func (t *Train) AddWaggon(position [3]int, typ string, level int, gs *GameState)
 	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
 
 	gs.Logger.Debug("Blockiertes", slog.Int("Pos 0", position[0]), slog.Int("Pos 1", position[1]), slog.Bool("Blocked", gs.Tiles[position[0]][position[1]].IsBlocked))
-	return nil
+	return price, nil
 }
 
 // Überprüft ob die position valide wäre für einen waggon
@@ -594,15 +588,15 @@ func (t *Train) isWaggonValid(position [3]int, gs *GameState) error {
 }
 
 // Fügt Waggons im Bereich zu
-func (t *Train) AddWaggons(startSubTile [3]int, endSubTile [3]int, waggonType string, level int, gs *GameState) error {
+func (t *Train) AddWaggons(startSubTile [3]int, endSubTile [3]int, waggonType string, level int, gs *GameState, actuallyBuild bool) (int, error) {
 	// zum verwenden in Methode
 	gs.currentWaggonType = waggonType
 	gs.currentTrain = t
 
 	// prüfen der Parameter und hinzufügen der Waggons
-	return gs.iterateSubTiles(startSubTile, endSubTile, "An error accured while adding waggons.", func(gs *GameState, coordinate [3]int) error {
+	return gs.iterateSubTiles(startSubTile, endSubTile, "An error accured while adding waggons.", func(gs *GameState, coordinate [3]int) (int, error) {
 		// hinzufügen des Waggons
-		return gs.currentTrain.AddWaggon(coordinate, gs.currentWaggonType, level, gs)
+		return gs.currentTrain.AddWaggon(coordinate, gs.currentWaggonType, level, gs, actuallyBuild)
 	})
 }
 

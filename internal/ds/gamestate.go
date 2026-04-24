@@ -10,22 +10,28 @@ import (
 
 // Root-Struktur für config.json
 type ConfigData struct {
-	TrainCategories        map[string][]string           `json:"Train Categories"`
-	ActiveTileCategories   map[string]ActiveTileCategory `json:"Aktive Tiles"`
-	Port                   int
-	TicksMilisec           int
-	SizeX                  int
-	SizeY                  int
-	SaveLocation           string
-	SaveCompressed         bool
-	LOADCOMPRESSED         bool // wird das überhaupt benutzt?
-	LoadUnloadSpeed        int
-	MinLoadUloadTicks      int
-	StationRange           int
-	CapacityPerStationTile int
-	Ids                    ids
-	WaggonTypes            map[string]*WaggonType
-	LockedTiles            [][2]int // nur beim auslesen von config relevant, wird in die Tiles geschrieben
+	TrainCategories          map[string][]string           `json:"Train Categories"`
+	ActiveTileCategories     map[string]ActiveTileCategory `json:"Aktive Tiles"`
+	Port                     int
+	TicksMilisec             int
+	SizeX                    int
+	SizeY                    int
+	SaveLocation             string
+	SaveCompressed           bool
+	LOADCOMPRESSED           bool // wird das überhaupt benutzt?
+	LoadUnloadSpeed          int
+	MinLoadUloadTicks        int
+	StationRange             int
+	CapacityPerStationTile   int
+	Ids                      ids
+	WaggonTypes              map[string]*WaggonType
+	LockedTiles              [][2]int // nur beim auslesen von config relevant, wird in die Tiles geschrieben
+	PriceTrack               int
+	PriceTrackRemoveRefund   int
+	PriceSignal              int
+	PriceSignalRemoveRefund  int
+	PriceStation             int
+	PriceStationRemoveRefund int
 }
 
 // WICHTIG: NUR fürs speichern und laden, sonst die atmic nehmen!!

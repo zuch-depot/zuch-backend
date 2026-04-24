@@ -35,29 +35,32 @@ var (
 
 // nur fürs Testen, inkl. Schedule
 func createDemoTrains(gs *ds.GameState) {
+
+	gs.Money = 100000
+
 	// stations inkl. Initialisieren
 	pos := [2]int{2, 0}
-	gs.AddStationTile(pos) // hier wird auch die Station und Plattform erstellt
+	gs.AddStationTile(pos, true) // hier wird auch die Station und Plattform erstellt
 	// Bestimmung der Station zum umbenennen
 	plattform, _ := gs.GetPlattform(pos)
 	plattform.GetStation(gs).Name = "Nord"
 	plattform.Name = "Gleis1"
-	gs.AddStationTile([2]int{3, 0})
+	gs.AddStationTile([2]int{3, 0}, true)
 
 	pos = [2]int{3, 7}
-	gs.AddStationTile(pos)
+	gs.AddStationTile(pos, true)
 	plattform2, _ := gs.GetPlattform(pos)
 	plattform2.GetStation(gs).Name = "Süd"
 	plattform2.Name = "Gleis31"
-	gs.AddStationTile([2]int{4, 7})
-	gs.AddStationTile([2]int{5, 7})
+	gs.AddStationTile([2]int{4, 7}, true)
+	gs.AddStationTile([2]int{5, 7}, true)
 
 	pos = [2]int{9, 4}
-	gs.AddStationTile(pos)
+	gs.AddStationTile(pos, true)
 	plattform, _ = gs.GetPlattform(pos)
 	plattform.GetStation(gs).Name = "Ost"
 	plattform.Name = "Gleis2"
-	gs.AddStationTile([2]int{9, 5})
+	gs.AddStationTile([2]int{9, 5}, true)
 
 	// fmt.Println(gs.Stations)
 
@@ -73,8 +76,8 @@ func createDemoTrains(gs *ds.GameState) {
 	stop.SetLoadCommand([]string{"Pommes"}, false, gs)
 	stop.SetUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false, gs)
 
-	train, err := gs.AddTrain("RE1", [3]int{3, 4, 3}, "Dampflock", 3)
-	train.AddWaggons([3]int{3, 4, 1}, [3]int{2, 4, 1}, "Planwagen", 2, gs)
+	_, train, err := gs.AddTrain("RE1", [3]int{3, 4, 3}, "Dampflock", 3, true)
+	train.AddWaggons([3]int{3, 4, 1}, [3]int{2, 4, 1}, "Planwagen", 2, gs, true)
 	train.AssignSchedule(schedule, gs)
 	if err != nil {
 		gs.Logger.Error("Fehler, aber ist im demo ding egal")
@@ -90,16 +93,15 @@ func createDemoTrains(gs *ds.GameState) {
 	stop.SetLoadCommand([]string{"Pommes"}, false, gs)
 	stop.SetUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false, gs)
 
-	train, err = gs.AddTrain("RE2", [3]int{6, 6, 2}, "Diesellok", 2)
-	train.AddWaggons([3]int{6, 5, 4}, [3]int{6, 4, 4}, "Planwagen", 1, gs)
-	train.AddWaggon([3]int{6, 4, 2}, "Kühlwagen", 1, gs)
+	_, train, err = gs.AddTrain("RE2", [3]int{6, 6, 2}, "Diesellok", 2, true)
+	train.AddWaggons([3]int{6, 5, 4}, [3]int{6, 4, 4}, "Planwagen", 1, gs, true)
+	train.AddWaggon([3]int{6, 4, 2}, "Kühlwagen", 1, gs, true)
 	train.AssignSchedule(schedule, gs)
 	if err != nil {
 		gs.Logger.Error("Fehler, aber ist im demo ding egal")
 		fmt.Println("Fehler beim erstellen der Demo sachen")
 	}
 
-	gs.Money = 100000000
 }
 
 func initializeTiles(gs *ds.GameState) {

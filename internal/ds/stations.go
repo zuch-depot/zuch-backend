@@ -103,31 +103,6 @@ func (p *Plattform) isPlattfromFromStation(station *Station) bool {
 	return false
 }
 
-// TODO Splitting
-// wenn nicht außen, dann splitting (noch nicht impl). Validität wird nicht geprüft
-func (p *Plattform) removeTile(position [2]int, gs *GameState) error {
-	ends := p.getFirstLast(gs)
-	if ends[0][0] == position[0] && ends[0][1] == position[1] {
-		p.Tiles, _ = utils.RemoveElementFromSlice(p.Tiles, 0)
-	} else if ends[1][1] == position[1] && ends[1][0] == position[0] {
-		p.Tiles, _ = utils.RemoveElementFromSlice(p.Tiles, len(p.Tiles)-1)
-	} else {
-		// splitting TODO, erstmal Fehler
-		fmt.Println("Splitting, TODO!!")
-
-		return nil
-	}
-
-	gs.Tiles[position[0]][position[1]].IsPlattform = false
-
-	if len(p.Tiles) == 0 {
-		// Plattform löschen
-		p.GetStation(gs).deletePlattform(p.Id, gs)
-	}
-
-	return nil
-}
-
 // prüft utils.Checkname und bennent danach um
 func (p *Plattform) Rename(name string, gs *GameState) error {
 	err := utils.CheckName(name)
@@ -237,15 +212,13 @@ func (s *Station) GetFillLevel() int {
 }
 
 // name kann auch "", Id ist Standardname
-func (s *Station) addPlattform(name string, tiles [][2]int, gs *GameState) error {
+func (s *Station) addPlattform(name string, tiles [][2]int, gs *GameState) {
 	if name == "" {
 		name = fmt.Sprint("Plattform ", gs.CurrentPlattformID.Load())
 	}
 
 	s.Plattforms[int(gs.CurrentPlattformID.Load())] = &Plattform{Id: int(gs.CurrentPlattformID.Load()), Name: name, Tiles: tiles /*, Station: s*/}
 	gs.CurrentPlattformID.Add(1)
-
-	return nil
 }
 
 // entfernt nur die Plattform auch aus allen stops und wenn die Station leer ist, diese auch. Manipuliert keine Tiles
@@ -280,9 +253,10 @@ func (s *Station) deletePlattform(Id int, gs *GameState) error {
 	// Kontrolle, ob die Station noch Plattformen hat
 	if len(s.Plattforms) == 0 {
 		// Station löschen
-		err := gs.deleteStation(s)
-		if err != nil {
-			return err
+		before := len(gs.Stations)
+		delete(gs.Stations, s.Id)
+		if !(before > len(gs.Stations)) {
+			return fmt.Errorf("couldn't find station in map")
 		}
 	}
 
@@ -290,14 +264,16 @@ func (s *Station) deletePlattform(Id int, gs *GameState) error {
 }
 
 // entgfernt alle Tiles der Plattform
-func (s *Station) RemovePlattform(Id int, gs *GameState) error {
+func (s *Station) RemovePlattform(Id int, gs *GameState, actuallyBuild bool) (int, error) {
+	refund := 0
 	for _, tilePos := range s.Plattforms[Id].Tiles {
-		_, err := gs.RemoveStationTile(tilePos)
+		temp, _, err := gs.RemoveStationTile(tilePos, actuallyBuild)
+		refund += temp
 		if err != nil {
-			return err
+			return 0, err
 		}
 	}
-	return nil
+	return refund, nil
 }
 
 // checks the name with utils.checkname und setzt den namen
