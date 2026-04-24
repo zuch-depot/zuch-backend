@@ -424,6 +424,7 @@ func (t *Train) loadUnload(gs *GameState) error {
 
 	// der user kriegt einfach den neuen zuch
 	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
+	gs.BroadcastChannel <- WsEnvelope{Type: "station.update", Msg: sta}
 
 	//
 	t.FinishedLoading = r
