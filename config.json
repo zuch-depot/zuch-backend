@@ -9,7 +9,7 @@
     "LoadUnloadSpeed": 1,
     "MinLoadUloadTicks": 30,
     "StationRange": 2,
-    "CapacityPerStationTile": 50,
+    "CapacityPerStationTile": 100,
     "LockedTiles": [
         [
             4,
@@ -84,6 +84,21 @@
             "PriceIncreasePercent": 60,
             "OngoingCosts": 250,
             "OngoingCostsIncreasePercent": 50
+        },
+        "Kühlwagen": {
+            "Power": 0,
+            "PowerIncreasePercent": 0,
+            "EmptyWeight": 5,
+            "EmptyWeightIncreasePercent": 30,
+            "MaxSpeed": 120,
+            "MaxSpeedIncreasePercent": 30,
+            "Capacity": 15,
+            "CapacityIncreasePercent": 40,
+            "CargoCategory": "Kühlware",
+            "Price": 600,
+            "PriceIncreasePercent": 60,
+            "OngoingCosts": 250,
+            "OngoingCostsIncreasePercent": 50
         }
     },
     "Train Categories": {
@@ -99,7 +114,7 @@
             "Erdöl",
             "Treibstoff"
         ],
-        "gekülte Lebensmittel": [
+        "Kühlware": [
             "Pommes"
         ]
     },

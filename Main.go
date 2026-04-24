@@ -92,7 +92,7 @@ func main() {
 		}
 
 		// process factorys
-		if gs.Tick%20 == 1 {
+		if gs.Tick%50 == 0 {
 			gs.ProcessActiveTiles()
 		}
 

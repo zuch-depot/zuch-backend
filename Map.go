@@ -91,12 +91,8 @@ func createDemoTrains(gs *ds.GameState) {
 	stop.SetUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false, gs)
 
 	train, err = gs.AddTrain("RE2", [3]int{6, 6, 2}, "Diesellok", 2)
-	// []ds.TrainCreateWaggons{
-	// 	{Position: [3]int{6, 6, 2}, Typ: "Lebensmittel"},
-	// 	{Position: [3]int{6, 5, 4}, Typ: "Lebensmittel"},
-	// 	{Position: [3]int{6, 5, 2}, Typ: "Lebensmittel"},
-	// 	{Position: [3]int{6, 4, 4}, Typ: "Lebensmittel"}})
 	train.AddWaggons([3]int{6, 5, 4}, [3]int{6, 4, 4}, "Planwagen", 1, gs)
+	train.AddWaggon([3]int{6, 4, 2}, "Kühlwagen", 1, gs)
 	train.AssignSchedule(schedule, gs)
 	if err != nil {
 		gs.Logger.Error("Fehler, aber ist im demo ding egal")
