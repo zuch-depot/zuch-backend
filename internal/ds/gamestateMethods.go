@@ -434,6 +434,23 @@ func (gs *GameState) GetPlattform(position [2]int) (*Plattform, error) {
 	return nil, nil
 }
 
+// GetPlattformByID Gibt einem die Plattform mit der jeweiligen ID dA ich zu faul bin die in eine map zu wandeln
+func (gs *GameState) GetPlattformByID(id int) (*Plattform, error) {
+	var res *Plattform = nil
+	for _, station := range gs.Stations {
+		for _, plattform := range station.Plattforms {
+			if plattform.Id == id {
+				res = plattform
+			}
+		}
+	}
+	if res != nil {
+		return res, nil
+	} else {
+		return nil, fmt.Errorf("could not find Plattform")
+	}
+}
+
 // region Züge
 // -------------------------------------- ZÜGE ---------------------------------------------
 
