@@ -81,14 +81,26 @@ func (envelope *RecieveWSEnvelope) Reply(success bool, message string, gs *GameS
 	reply := WsEnvelope{Type: "game.reply", Msg: replyInnerMSG}
 	gs.Logger.Debug("Replying to Client event", slog.String("user", envelope.User.Username), slog.String("Event Type", reply.Type))
 	envelope.User.WebSocketQueue <- reply
-
 }
 
 // beschreibung siehe typdefinition
-func CreateGenericResponse(message string) *GenericResponse {
-	return &GenericResponse{Body: struct {
-		Message string
-	}{Message: message}}
+// Nimmt optional noch Kosten an, stehen hier als array drinne damit sie optional sind
+// wird keine angegben sind die immer 0
+func CreateGenericResponse(message string, costs ...int) *GenericResponse {
+	if len(costs) > 0 {
+		return &GenericResponse{Body: struct {
+			Message string
+			Costs   int
+		}{Message: message, Costs: costs[0]}}
+	} else {
+		return &GenericResponse{Body: struct {
+			Message string
+			Costs   int
+		}{
+			Message: message,
+			Costs:   0,
+		}}
+	}
 }
 
 // ich wollte mir hier die optionen offen halten, vielleicht wird das ding nachher noch mit mehr infos angereichert aber das machen wa halt bisher noch nicht
@@ -96,6 +108,7 @@ func CreateGenericResponse(message string) *GenericResponse {
 type GenericResponse struct {
 	Body struct {
 		Message string
+		Costs   int
 	}
 }
 

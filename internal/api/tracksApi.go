@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"fmt"
+
 	"zuch-backend/internal/ds"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -14,7 +15,8 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 	huma.Post(*api, "/track", func(ctx context.Context, i *struct {
 		CostsQuery
 		Body ds.MultitileUpdateMSG
-	}) (*ds.GenericResponse, error) {
+	},
+	) (*ds.GenericResponse, error) {
 		var err error
 		// wenn das gestetzt ist, mehrere gleise bauen
 		if i.Body.Position_to != nil {
@@ -43,7 +45,8 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 	huma.Delete(*api, "/track", func(ctx context.Context, i *struct {
 		CostsQuery
 		Body ds.MultitileUpdateMSG
-	}) (*ds.GenericResponse, error) {
+	},
+	) (*ds.GenericResponse, error) {
 		var err error
 		// für mehrere
 		if i.Body.Position_to != nil {
@@ -66,7 +69,6 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 		}
 		// dann rückmelden
 		return ds.CreateGenericResponse("removed track(s)"), nil
-
 	}, func(o *huma.Operation) {
 		o.Tags = []string{"track"}
 		o.Summary = "Gleis(e) zerstören"
