@@ -12,11 +12,13 @@ import (
 
 // gesetzt werden müssen: Name, Waggons, Id
 type Train struct {
-	Id                 int
-	Name               string    // Nicht eindeutig, dafür siehe ID
-	Waggons            []*Waggon // Alle müssen nebeneinander spawnen
-	Schedule           *Schedule
-	NextStop           *Stop    // der Stop, in dem der Zug gerade hinfährt oder plant hinzufahren. Wenn 0, dann nächster Stop aus Schedule
+	Id       int
+	Name     string    // Nicht eindeutig, dafür siehe ID
+	Waggons  []*Waggon // Alle müssen nebeneinander spawnen
+	Schedule int
+	NextStop *Stop // der Stop, in dem der Zug gerade hinfährt oder plant hinzufahren. Wenn 0, dann nächster Stop aus Schedule
+	// TODO, maybe schlecht, dass der Stop als Pointer drin ist, muss vielleicht per Id
+
 	CurrentPath        [][3]int // ggf. nur bis zum nächsten Signal notwendig -> dann andere Bedingung finden, wann man angekommen ist
 	CurrentPathSignals [][3]int // dementsprechend ggf. unnötig -> auch unabhängig davon ggf. unnötig
 
@@ -150,7 +152,6 @@ func (t *Train) checkUnblockOnMove(gs *GameState) [2]int {
 	return entblocken
 }
 
-// WARENLOGIK UND NEU BERECHNEN NEU machen, da auch doppelungen mit Recalculate Path bestehen -------------------------------------------------------------------------
 // testet selber, ob es einen Weg gibt und berechnet bei Bedarf neu
 // für 2 Wege Signale muss geprüft werden, ob nicht schon ein Zug zum Signal auf der anderen Seite fährt
 // fährt nur, wenn nicht beim laden. Wenn fertig laden, geht selber aus Lademodus raus
@@ -175,7 +176,7 @@ func (t *Train) move(gs *GameState) [2]int {
 	if len(t.CurrentPath) == 0 || gs.Tiles[pos[0]][pos[1]].Signals[pos[2]-1] {
 		// wenn am Ziel angekommen, nächstes Ziel auswählen, anosten bleibt das Ziel gleich
 		if len(t.CurrentPath) == 0 {
-			t.NextStop = t.Schedule.nextStop(t.NextStop)
+			t.NextStop = gs.Schedules[t.Schedule].nextStop(t.NextStop)
 			if t.NextStop.Id == 0 {
 				return entblocken
 			}
@@ -189,8 +190,8 @@ func (t *Train) move(gs *GameState) [2]int {
 
 			gs.Logger.Debug(fmt.Sprintln("Zug", t.Name, "konnte das Ziel", t.NextStop.getName(gs), "nicht finden."))
 			foundValidStop := false
-			for i := 0; i < len(t.Schedule.Stops)-1; i++ {
-				t.NextStop = t.Schedule.nextStop(t.NextStop)
+			for i := 0; i < len(gs.Schedules[t.Schedule].Stops)-1; i++ {
+				t.NextStop = gs.Schedules[t.Schedule].nextStop(t.NextStop)
 				t.recalculatePath(gs) // Hoffentlich kein Fehler
 				if len(t.CurrentPath) > 0 {
 					foundValidStop = true
@@ -307,7 +308,7 @@ func (t *Train) calculateTrain(gs *GameState) [2]int {
 		return [2]int{-1, -1}
 	}
 
-	if t.Schedule == nil {
+	if t.Schedule == 0 {
 		return [2]int{-1, -1}
 	}
 
@@ -650,16 +651,16 @@ func (t *Train) RemoveWaggons(indexStart int, indexEnd int, gs *GameState) error
 
 // weist dem Zug einen Fahrplan zu, noch kein Fehler wird geworfen
 func (t *Train) AssignSchedule(schedule *Schedule, gs *GameState) {
-	t.Schedule = schedule
+	t.Schedule = schedule.Id
 	t.NextStop = schedule.nextStop(&Stop{Id: 0})
-	t.CurrentPath = [][3]int{}
-	t.CurrentPathSignals = [][3]int{}
 	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
 }
 
 // entfernt den Fahrplan von dem Zug, noch kein Fehler wird geworfen
 func (t *Train) UnassignSchedule(gs *GameState) {
-	t.Schedule = nil
+	// TODO: Tiles auch entblockieren
+	t.pathEntblocken(gs)
+	t.Schedule = 0
 	t.NextStop = nil
 	t.CurrentPath = [][3]int{}
 	t.CurrentPathSignals = [][3]int{}
@@ -671,16 +672,26 @@ func (t *Train) Pause(gs *GameState) {
 	t.Paused = true
 
 	// Bestimmung des vorherigen Stops und setzten von diesem, damit beim neu berechnen der aktuelle Stop wieder genommen wird
-	curStopIndex := slices.Index(t.Schedule.Stops, t.NextStop)
+	curStopIndex := slices.Index(gs.Schedules[t.Schedule].Stops, t.NextStop)
 	if curStopIndex == 0 {
-		curStopIndex = len(t.Schedule.Stops) - 1
+		curStopIndex = len(gs.Schedules[t.Schedule].Stops) - 1
 	} else {
 		curStopIndex--
 	}
-	prevStop := t.Schedule.Stops[curStopIndex]
+	prevStop := gs.Schedules[t.Schedule].Stops[curStopIndex]
 	t.NextStop = prevStop
 
 	// alle entblockierten
+	t.pathEntblocken(gs)
+
+	t.CurrentPath = [][3]int{}
+	t.CurrentPathSignals = [][3]int{}
+
+	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
+}
+
+// Entblockt alle Tiles des aktuellen Pfades. Hauptsächlich für pause und unsassign
+func (t *Train) pathEntblocken(gs *GameState) {
 	if len(t.CurrentPath) > 0 {
 		curTile := t.CurrentPath[0]
 		if curTile[0] == t.Waggons[0].Position[0] && curTile[1] == t.Waggons[0].Position[1] && len(t.CurrentPath) > 1 {
@@ -698,11 +709,6 @@ func (t *Train) Pause(gs *GameState) {
 		}
 
 	}
-
-	t.CurrentPath = [][3]int{}
-	t.CurrentPathSignals = [][3]int{}
-
-	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
 }
 
 // keine Überprüfung

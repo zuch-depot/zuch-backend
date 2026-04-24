@@ -91,7 +91,7 @@ func (s *Schedule) RemoveStop(index int, gs *GameState) error {
 	//Bei allen Zügen, die den Stop als nächsten Stop gerade haben, wird der nächste Stop ausgewählt und der Weg neu berechenet
 	for _, train := range gs.Trains {
 		if train.NextStop.Id == s.Stops[index].Id {
-			train.NextStop = train.Schedule.nextStop(train.NextStop)
+			train.NextStop = gs.Schedules[train.Schedule].nextStop(train.NextStop)
 			train.recalculatePath(gs)
 		}
 	}

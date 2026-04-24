@@ -612,11 +612,11 @@ func (gs *GameState) RemoveSchedule(Id int) error {
 	schedule := gs.Schedules[Id]
 
 	if schedule == nil {
-		return fmt.Errorf("couldn't find schedule in map")
+		return fmt.Errorf("couldn't find schedule")
 	}
 
-	for _, stop := range schedule.Stops {
-		schedule.RemoveStop(stop.Id, gs)
+	for index := range schedule.Stops {
+		schedule.RemoveStop(index+1, gs)
 	}
 
 	delete(gs.Schedules, Id)

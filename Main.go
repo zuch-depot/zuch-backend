@@ -46,7 +46,7 @@ func main() {
 	// Map erstellen
 	initializeTiles(&gs)
 	createDemoTrains(&gs)
-	Reset(&gs)
+	// Reset(&gs)
 	// sich merken wer wer ist
 	// wenn wer rausfliegt sollten die sachen noch da sein
 

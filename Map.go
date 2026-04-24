@@ -41,14 +41,14 @@ func createDemoTrains(gs *ds.GameState) {
 	// Bestimmung der Station zum umbenennen
 	plattform, _ := gs.GetPlattform(pos)
 	plattform.GetStation(gs).Name = "Nord"
-	plattform.Name = "Gleis 1"
+	plattform.Name = "Gleis1"
 	gs.AddStationTile([2]int{3, 0})
 
 	pos = [2]int{3, 7}
 	gs.AddStationTile(pos)
 	plattform2, _ := gs.GetPlattform(pos)
 	plattform2.GetStation(gs).Name = "Süd"
-	plattform2.Name = "Gleis 31"
+	plattform2.Name = "Gleis31"
 	gs.AddStationTile([2]int{4, 7})
 	gs.AddStationTile([2]int{5, 7})
 
@@ -56,7 +56,7 @@ func createDemoTrains(gs *ds.GameState) {
 	gs.AddStationTile(pos)
 	plattform, _ = gs.GetPlattform(pos)
 	plattform.GetStation(gs).Name = "Ost"
-	plattform.Name = "Gleis 2"
+	plattform.Name = "Gleis2"
 	gs.AddStationTile([2]int{9, 5})
 
 	// fmt.Println(gs.Stations)
@@ -73,7 +73,7 @@ func createDemoTrains(gs *ds.GameState) {
 	stop.SetLoadCommand([]string{"Pommes"}, false, gs)
 	stop.SetUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false, gs)
 
-	train, err := gs.AddTrain("RE1", [3]int{3, 4, 3}, "Dampflock Wind", 3)
+	train, err := gs.AddTrain("RE1", [3]int{3, 4, 3}, "Dampflock", 3)
 	train.AddWaggons([3]int{3, 4, 1}, [3]int{2, 4, 1}, "Planwagen", 2, gs)
 	train.AssignSchedule(schedule, gs)
 	if err != nil {
@@ -90,7 +90,7 @@ func createDemoTrains(gs *ds.GameState) {
 	stop.SetLoadCommand([]string{"Pommes"}, false, gs)
 	stop.SetUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false, gs)
 
-	train, err = gs.AddTrain("RE2", [3]int{6, 6, 2}, "Diesellok Schnecke", 2)
+	train, err = gs.AddTrain("RE2", [3]int{6, 6, 2}, "Diesellok", 2)
 	// []ds.TrainCreateWaggons{
 	// 	{Position: [3]int{6, 6, 2}, Typ: "Lebensmittel"},
 	// 	{Position: [3]int{6, 5, 4}, Typ: "Lebensmittel"},
