@@ -600,27 +600,43 @@ func (t *Train) AddWaggons(startSubTile [3]int, endSubTile [3]int, waggonType st
 	})
 }
 
-// kontrolliert nur, dass der index in range ist. Entblockt auch. Löscht den Zug, wenn dieser Leer ist
+// kontrolliert nur, dass der index in range ist. Entblockt auch. Löscht den Zug, wenn dieser Leer ist. Index von 1 aus
 func (t *Train) RemoveWaggon(index int, gs *GameState) error {
 	// validieren des Indexes
-	if index > len(t.Waggons)-1 || index < 0 {
+	if index > len(t.Waggons) || index < 1 {
 		return fmt.Errorf("%s", "Waggon out of bounds. "+strconv.Itoa(index)+" not a valid index for "+strconv.Itoa(len(t.Waggons))+" Waggons from train "+t.Name)
 	}
+
+	// index 0 basiert machen
+	index--
 
 	// ggf. enblocken des Tiles, da die Waggons aufrücken
 	entblocken := t.checkUnblockOnMove(gs)
 
-	// entblocken durchführen. Muss nicht in Queue, da nicht ausgeführt wird, während Bewegungen stattfinden
-	gs.Tiles[entblocken[0]][entblocken[1]].IsBlocked = false
-	gs.BroadcastChannel <- WsEnvelope{Type: "tiles.unblock", Msg: BlockedTilesMSG{Tiles: []([2]int){entblocken}}}
+	if entblocken != [2]int{-1, -1} {
+		// entblocken durchführen. Muss nicht in Queue, da nicht ausgeführt wird, während Bewegungen stattfinden
+		gs.Tiles[entblocken[0]][entblocken[1]].IsBlocked = false
+		gs.BroadcastChannel <- WsEnvelope{Type: "tiles.unblock", Msg: BlockedTilesMSG{Tiles: []([2]int){entblocken}}}
+	}
+
+	// nachrücken, wenn es nicht der letzte ist. Funktioniert noch nicht
+	// if index != len(t.Waggons) {
+	// 	prevWaggon := t.Waggons[index] // Waggon, der entfernt wird
+	// 	for _, waggon := range t.Waggons[index+1:] {
+	// 		temp := waggon
+	// 		waggon.Position = prevWaggon.Position
+	// 		prevWaggon = temp
+	// 	}
+	// }
+
+	// entfernen des Waggons
+	t.Waggons, _ = utils.RemoveElementFromSlice(t.Waggons, index)
 
 	// entfernt den Zug, wenn des keine Waggons mehr gibt
 	if len(t.Waggons) == 0 {
 		gs.RemoveTrain(t)
 	}
 
-	// entfernen des Waggons
-	t.Waggons = append(t.Waggons[:index], t.Waggons[index:]...)
 	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
 
 	return nil
