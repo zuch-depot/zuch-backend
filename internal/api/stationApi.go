@@ -80,12 +80,11 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("Station does not exist")
 		}
 		// das ding lässt einen auch zeugs löschen das es nicht gibt
-		cost, err := gs.RemoveStation(station, true) // TODO: cost handeln und bool richtig setzten
-		gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", cost)
+		cost, err := gs.RemoveStation(station, !i.CostsOnly)
 		if err != nil {
 			return nil, fmt.Errorf("could not remove Station; %s", err.Error())
 		}
-		return ds.CreateGenericResponse("removed station"), nil
+		return ds.CreateGenericResponse("removed station", cost), nil
 	}, func(o *huma.Operation) {
 		o.Tags = []string{"station"}
 		o.Summary = "Station zerstören"
@@ -163,13 +162,12 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 		if !ok {
 			return nil, fmt.Errorf("could not find Plattform")
 		}
-		cost, err := station.RemovePlattform(platform.Id, gs, true) // TODO: cost handeln und bool richtig setzten
-		gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", cost)
+		cost, err := station.RemovePlattform(platform.Id, gs, i.CostsOnly)
 		if err != nil {
 			return nil, fmt.Errorf("could not remove Plattform; %s", err.Error())
 		}
 
-		return ds.CreateGenericResponse("removed Plattform"), nil
+		return ds.CreateGenericResponse("removed Plattform", cost), nil
 	}, func(o *huma.Operation) {
 		o.Tags = []string{"station"}
 		o.Summary = "Plattform entfernen"
@@ -185,22 +183,19 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 	},
 	) (*ds.GenericResponse, error) {
 		var err error
+		var cost int
 		if i.Body.Position_to != nil {
 			// mehrere bauen
-			cost := 0
-			cost, err = gs.AddStationTiles(*i.Body.Position, *i.Body.Position_to, true) // TODO: cost handeln und bool richtig setzten
-			gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", cost)
+			cost, err = gs.AddStationTiles(*i.Body.Position, *i.Body.Position_to, !i.CostsOnly)
 		} else {
 			// Der hier gibt eigenlich noch die station mit
-			cost := 0
-			cost, _, err = gs.AddStationTile(*i.Body.Position, true) // TODO: cost handeln und bool richtig setzten
-			gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", cost)
+			cost, _, err = gs.AddStationTile(*i.Body.Position, !i.CostsOnly)
 		}
 		if err != nil {
 			return nil, fmt.Errorf("could not create station; %s", err.Error())
 		}
 
-		return ds.CreateGenericResponse("build station"), nil
+		return ds.CreateGenericResponse("build station", cost), nil
 	}, func(o *huma.Operation) {
 		o.Tags = []string{"station"}
 		o.Summary = "Station bauen"
@@ -216,22 +211,19 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 	},
 	) (*ds.GenericResponse, error) {
 		var err error
+		var cost int
 		if i.Body.Position_to != nil {
 			// mehrere bauen
-			cost := 0
-			cost, err = gs.RemoveStationTiles(*i.Body.Position, *i.Body.Position_to, true) // TODO: cost handeln und bool richtig setzten
-			gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", cost)
+			cost, err = gs.RemoveStationTiles(*i.Body.Position, *i.Body.Position_to, !i.CostsOnly)
 		} else {
 			// Der hier gibt eigenlich noch die station mit
-			cost := 0
-			cost, _, err = gs.RemoveStationTile(*i.Body.Position, true) // TODO: cost handeln und bool richtig setzten
-			gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", cost)
+			cost, _, err = gs.RemoveStationTile(*i.Body.Position, i.CostsOnly)
 		}
 		if err != nil {
 			return nil, fmt.Errorf("could not remobe station; %s", err.Error())
 		}
 
-		return ds.CreateGenericResponse("remobe station"), nil
+		return ds.CreateGenericResponse("remobe station", cost), nil
 	}, func(o *huma.Operation) {
 		o.Tags = []string{"station"}
 		o.Summary = "Station entfernen"
