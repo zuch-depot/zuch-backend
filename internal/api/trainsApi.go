@@ -1,3 +1,4 @@
+// Package api stellt allr Routen für die Rest schnittstellt und sorgt für websocket verbindungen
 package api
 
 import (
@@ -52,7 +53,7 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 		Body ds.TrainCreateMSG
 	},
 	) (*ds.GenericResponse, error) {
-		// TODO: level und lokomotive kann man angeben, auch beim anhängen. Habe erstmal default werte genommen
+		// : level und lokomotive kann man angeben, auch beim anhängen. Habe erstmal default werte genommen
 		cost, _, err := gs.AddTrain(i.Body.Name, i.Body.LocomotivePosition, i.Body.WaggonType, i.Body.Level, !i.CostsQuery.CostsOnly)
 		if err != nil {
 			return nil, fmt.Errorf("Could not create Train; %s", err.Error())
@@ -104,6 +105,7 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 		Body struct {
 			Pos        ds.MultitileUpdateMSG
 			Waggontype string
+			Level      int `example:"1" required:"false" default:"1"`
 		}
 	},
 	) (*ds.GenericResponse, error) {
@@ -113,19 +115,16 @@ func registerTrainRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("Train does not exist")
 		}
 		var err error
+		cost := 5
 		if i.Body.Pos.Position_to == nil {
-			var cost int
-			cost, err = train.AddWaggon(*i.Body.Pos.Position, i.Body.Waggontype, 1, gs, true) // TODO: cost handeln und bool richtig setzten
-			gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", cost)
+			cost, err = train.AddWaggon(*i.Body.Pos.Position, i.Body.Waggontype, i.Body.Level, gs, !i.CostsOnly)
 		} else {
-			var cost int
-			cost, err = train.AddWaggons(*i.Body.Pos.Position, *i.Body.Pos.Position_to, i.Body.Waggontype, 1, gs, true) // TODO: cost handeln und bool richtig setzten
-			gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", cost)
+			cost, err = train.AddWaggons(*i.Body.Pos.Position, *i.Body.Pos.Position_to, i.Body.Waggontype, i.Body.Level, gs, !i.CostsOnly)
 		}
 		if err != nil {
 			return nil, fmt.Errorf("Could not add waggon(s); %s", err.Error())
 		}
-		return ds.CreateGenericResponse("added waggons to train"), nil
+		return ds.CreateGenericResponse("added waggons to train", cost), nil
 	}, func(o *huma.Operation) {
 		o.Tags = []string{"train"}
 		o.Summary = "Waggons anhängen"
