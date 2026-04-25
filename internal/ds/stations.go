@@ -214,7 +214,7 @@ func (s *Station) GetFillLevel() int {
 // name kann auch "", Id ist Standardname
 func (s *Station) addPlattform(name string, tiles [][2]int, gs *GameState) {
 	if name == "" {
-		name = fmt.Sprint("Plattform ", gs.CurrentPlattformID.Load())
+		name = fmt.Sprint("Plattform", gs.CurrentPlattformID.Load())
 	}
 
 	s.Plattforms[int(gs.CurrentPlattformID.Load())] = &Plattform{Id: int(gs.CurrentPlattformID.Load()), Name: name, Tiles: tiles /*, Station: s*/}
@@ -233,10 +233,11 @@ func (s *Station) deletePlattform(Id int, gs *GameState) error {
 
 	// Entfernung der Plattform aus allen Stops
 	for _, schedule := range gs.Schedules {
-		for _, stop := range schedule.Stops {
+		for index, stop := range schedule.Stops {
 			if stop.IsPlattform && stop.Plattform.Id == plattform.Id {
-				err = schedule.RemoveStop(stop.Id, gs)
+				err = schedule.RemoveStop(index+1, gs)
 				if err != nil {
+					fmt.Println("Error while removing plattform from schedules")
 					return err
 				}
 				break
@@ -250,6 +251,7 @@ func (s *Station) deletePlattform(Id int, gs *GameState) error {
 		return err
 	}
 
+	fmt.Println("Deletet the Plattform")
 	// Kontrolle, ob die Station noch Plattformen hat
 	if len(s.Plattforms) == 0 {
 		// Station löschen
@@ -258,6 +260,7 @@ func (s *Station) deletePlattform(Id int, gs *GameState) error {
 		if !(before > len(gs.Stations)) {
 			return fmt.Errorf("couldn't find station in map")
 		}
+		fmt.Println("Deleted the station")
 	}
 
 	return nil
@@ -266,8 +269,10 @@ func (s *Station) deletePlattform(Id int, gs *GameState) error {
 // entgfernt alle Tiles der Plattform
 func (s *Station) RemovePlattform(Id int, gs *GameState, actuallyBuild bool) (int, error) {
 	refund := 0
-	for _, tilePos := range s.Plattforms[Id].Tiles {
-		temp, _, err := gs.RemoveStationTile(tilePos, actuallyBuild)
+	tiles := make([][2]int, len(s.Plattforms[Id].Tiles))
+	copy(tiles, s.Plattforms[Id].Tiles)
+	for i := range tiles {
+		temp, _, err := gs.RemoveStationTile(tiles[i], actuallyBuild)
 		refund += temp
 		if err != nil {
 			return 0, err

@@ -159,7 +159,7 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int, actuallyBui
 		// verkleinerung der max. Kapazität
 		station.Capacity -= gs.ConfigData.CapacityPerStationTile
 
-		// Entfernung des Tags aus dem Tile
+		// Entferung aus der Plattform
 		ends := plattform.getFirstLast(gs)
 		if ends[0][0] == position[0] && ends[0][1] == position[1] {
 			plattform.Tiles, _ = utils.RemoveElementFromSlice(plattform.Tiles, 0)
@@ -168,15 +168,18 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int, actuallyBui
 		} else {
 			// splitting TODO, erstmal Fehler
 			fmt.Println("Splitting, TODO!!")
-
 		}
 
+		// Entfernung des Tags aus dem Tile
 		gs.Tiles[position[0]][position[1]].IsPlattform = false
 
 		// gucken, ob die Plattform noch tiles hat
 		if len(plattform.Tiles) == 0 {
 			// Plattform löschen
-			station.deletePlattform(plattform.Id, gs)
+			err := station.deletePlattform(plattform.Id, gs)
+			if err != nil {
+				return 0, nil, err
+			}
 		}
 
 	} else {

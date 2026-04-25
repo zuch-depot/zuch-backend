@@ -162,7 +162,7 @@ func registerStationRoutes(api *huma.API, gs *ds.GameState) {
 		if !ok {
 			return nil, fmt.Errorf("could not find Plattform")
 		}
-		cost, err := station.RemovePlattform(platform.Id, gs, i.CostsOnly)
+		cost, err := station.RemovePlattform(platform.Id, gs, !i.CostsOnly)
 		if err != nil {
 			return nil, fmt.Errorf("could not remove Plattform; %s", err.Error())
 		}
