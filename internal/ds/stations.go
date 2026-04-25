@@ -237,7 +237,6 @@ func (s *Station) deletePlattform(Id int, gs *GameState) error {
 			if stop.IsPlattform && stop.Plattform.Id == plattform.Id {
 				err = schedule.RemoveStop(index+1, gs)
 				if err != nil {
-					fmt.Println("Error while removing plattform from schedules")
 					return err
 				}
 				break
@@ -251,7 +250,6 @@ func (s *Station) deletePlattform(Id int, gs *GameState) error {
 		return err
 	}
 
-	fmt.Println("Deletet the Plattform")
 	// Kontrolle, ob die Station noch Plattformen hat
 	if len(s.Plattforms) == 0 {
 		// Station löschen
@@ -260,7 +258,7 @@ func (s *Station) deletePlattform(Id int, gs *GameState) error {
 		if !(before > len(gs.Stations)) {
 			return fmt.Errorf("couldn't find station in map")
 		}
-		fmt.Println("Deleted the station")
+		gs.BroadcastChannel <- WsEnvelope{Type: "station.remove", Msg: s.Id}
 	}
 
 	return nil
