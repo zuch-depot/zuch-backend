@@ -110,7 +110,6 @@ func (t *Tile) AddTrack(subtile int, gs *GameState, actuallyBuild bool) (int, er
 	}
 
 	// Ab hier geht davon aus, dass richtig ist
-
 	if !actuallyBuild {
 		return gs.ConfigData.PriceTrack, nil
 	}

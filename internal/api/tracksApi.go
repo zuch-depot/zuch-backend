@@ -18,11 +18,10 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 	},
 	) (*ds.GenericResponse, error) {
 		var err error
+		var cost int
 		// wenn das gestetzt ist, mehrere gleise bauen
 		if i.Body.Position_to != nil {
-			var cost int
-			cost, err = gs.AddTracks(*i.Body.Position, *i.Body.Position_to, true) // TODO: cost handeln und bool richtig setzten
-			gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", cost)
+			cost, err = gs.AddTracks(*i.Body.Position, *i.Body.Position_to, !i.CostsOnly)
 			if err != nil {
 				return nil, fmt.Errorf("could not create track(s); %s", err.Error())
 			}
@@ -32,14 +31,12 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 			if err != nil {
 				return nil, fmt.Errorf("Could not find Tile; %s", err.Error())
 			}
-			cost, err := tile.AddTrack(i.Body.Position[2], gs, true) // TODO: cost handeln und bool richtig setzten
-			gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", cost)
-
+			cost, err = tile.AddTrack(i.Body.Position[2], gs, !i.CostsOnly)
 			if err != nil {
 				return nil, fmt.Errorf("Tile was found but could not create track(s); %s", err.Error())
 			}
 		}
-		return ds.CreateGenericResponse("created track(s)"), nil
+		return ds.CreateGenericResponse("created track(s)", cost), nil
 	}, func(o *huma.Operation) {
 		o.Tags = []string{"track"}
 		o.Summary = "Gleis(e) bauen"
@@ -52,9 +49,10 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 	},
 	) (*ds.GenericResponse, error) {
 		// für mehrere
+		var refund int
+		var err error
 		if i.Body.Position_to != nil {
-			refund, err := gs.RemoveTracks(*i.Body.Position, *i.Body.Position_to, true) // TODO: cost handeln und bool richtig setzten
-			gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", refund)
+			refund, err = gs.RemoveTracks(*i.Body.Position, *i.Body.Position_to, !i.CostsOnly)
 			if err != nil {
 				return nil, fmt.Errorf("could not remove track(s); %s", err.Error())
 			}
@@ -66,14 +64,13 @@ func registerTrackRoutes(api *huma.API, gs *ds.GameState) {
 				return nil, fmt.Errorf("Tile not found; %s", err.Error())
 			}
 			// dann entfernen
-			refund, err := tile.RemoveTrack(i.Body.Position[2], gs, true) // TODO: cost handeln und bool richtig setzten
-			gs.Logger.Debug("Temp, damit cost nicht Fehler wirft", refund)
+			refund, err = tile.RemoveTrack(i.Body.Position[2], gs, !i.CostsOnly)
 			if err != nil {
 				return nil, fmt.Errorf("Tile was found but could not remove track; %s", err.Error())
 			}
 		}
 		// dann rückmelden
-		return ds.CreateGenericResponse("removed track(s)"), nil
+		return ds.CreateGenericResponse("removed track(s)", -refund), nil
 	}, func(o *huma.Operation) {
 		o.Tags = []string{"track"}
 		o.Summary = "Gleis(e) zerstören"
