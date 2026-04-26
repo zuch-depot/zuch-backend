@@ -93,4 +93,5 @@ type SendAbleGamestate struct {
 	Trains      map[int]*Train
 	ActiveTiles map[int]*ActiveTile
 	ConfigData  ConfigData
+	Money       int
 }
