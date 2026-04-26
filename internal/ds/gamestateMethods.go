@@ -498,6 +498,13 @@ func (gs *GameState) AddTrain(name string, position [3]int, lokmotive string, le
 		name = fmt.Sprint(gs.CurrentTrainID.Load())
 	}
 
+	// ist der name einzigartig?
+	for _, train := range gs.Trains {
+		if train.Name == name {
+			return 0, nil, fmt.Errorf("Use a unique name")
+		}
+	}
+
 	train := &Train{Name: name, Id: int(gs.CurrentTrainID.Load()), Waggons: make([]*Waggon, 0)}
 
 	// Überprüft, ob das Subtile korrekt ist
