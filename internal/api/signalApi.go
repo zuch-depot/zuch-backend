@@ -44,7 +44,7 @@ func registerSignalRoutes(api *huma.API, gs *ds.GameState) {
 		if err != nil {
 			return nil, fmt.Errorf("Tile not found; %s", err.Error())
 		}
-		refund, err = tile.RemoveSignal(i.Body.Position[1], gs, !i.CostsOnly)
+		refund, err = tile.RemoveSignal(i.Body.Position[2], gs, !i.CostsOnly)
 		if err != nil {
 			return nil, fmt.Errorf("Tile was found but could not remove signal; %s", err.Error())
 		}
