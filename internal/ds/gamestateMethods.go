@@ -40,6 +40,12 @@ func (gs *GameState) AddStationTile(position [2]int, actuallyBuild bool) (int, *
 }
 
 func (gs *GameState) AddStationTiles(positionStart [2]int, positionEnd [2]int, actuallyBuild bool) (int, error) {
+	if actuallyBuild {
+		numb, err := gs.changeStationTiles(false, positionStart, positionEnd, false)
+		if err != nil {
+			return numb, err
+		}
+	}
 	return gs.changeStationTiles(false, positionStart, positionEnd, actuallyBuild)
 }
 
@@ -493,7 +499,7 @@ func (gs *GameState) getCargoCategory(cargoType string) string {
 
 // fügt Zug hinzu, wenn name leer ist, wird Id genommen.
 func (gs *GameState) AddTrain(name string, position [3]int, lokmotive string, level int, actuallyBuild bool) (int, *Train, error) {
-	// TODO: ohne createTrains train nicht zurückgeben
+	// TODO: ohne createDemoTrains train nicht zurückgeben
 	if name == "" {
 		name = fmt.Sprint(gs.CurrentTrainID.Load())
 	}
