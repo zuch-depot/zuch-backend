@@ -27,6 +27,7 @@ type Produktionszyklus struct {
 	Consumtion                 map[string]int `json:"Verbrauch"`
 	Produktion                 map[string]int `json:"Produktion"`
 	VerfuegbareLevelUndScaling []int          `json:"verfügbareLevelUndScaling"`
+	Gewinn                     int            // Geld, das man pro ausgeführten Zylkus bekommt
 }
 
 // Struktur für aktive Tiles

@@ -302,6 +302,8 @@ func (gs *GameState) ProcessActiveTiles() {
 				activeTile.Storage[cargoTypeToProduce] += int(float64(maxProducedQuantity) * possibleProduction)
 			}
 
+			//Geld verdienen
+			gs.AddMoney(int(float64(prodCyle.Gewinn) * possibleProduction))
 		}
 
 		// Verteile Ergebnis an umliegende Stationen, bei denen die Ware abgeholt werden kann

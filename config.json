@@ -135,7 +135,8 @@
                     "verfügbareLevelUndScaling": [
                         2,
                         2
-                    ]
+                    ],
+                    "Gewinn": 0
                 }
             ]
         },
@@ -149,7 +150,8 @@
                     "verfügbareLevelUndScaling": [
                         2,
                         2
-                    ]
+                    ],
+                    "Gewinn": 500
                 }
             ]
         },
@@ -164,7 +166,8 @@
                     "verfügbareLevelUndScaling": [
                         2,
                         2
-                    ]
+                    ],
+                    "Gewinn": 0
                 }
             ]
         },
@@ -181,7 +184,8 @@
                     "verfügbareLevelUndScaling": [
                         2,
                         2
-                    ]
+                    ],
+                    "Gewinn": 5
                 }
             ]
         },
@@ -195,7 +199,8 @@
                     "verfügbareLevelUndScaling": [
                         2,
                         2
-                    ]
+                    ],
+                    "Gewinn": 50
                 }
             ]
         }
