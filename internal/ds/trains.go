@@ -202,7 +202,7 @@ func (t *Train) move(gs *GameState) [2]int {
 			if !foundValidStop {
 				// TODO Nachricht: Konnte kein Ziel erreichen, Zug ist stuck
 				gs.Logger.Debug(fmt.Sprintln("Zug", t.Name, "kann kein Ziel erreichen."))
-				return [2]int{-1, -1}
+				return entblocken
 			}
 		}
 	}
@@ -227,6 +227,11 @@ func (t *Train) move(gs *GameState) [2]int {
 		percentMaxSpeed = 0.1
 	} else {
 		percentMaxSpeed = 0
+	}
+
+	// wenn man nicht weiter fahren kann, ist alles andere nutzlos
+	if percentMaxSpeed == 0 {
+		return entblocken
 	}
 
 	maxSpeed := float64(t.GetMaxSpeed()) * percentMaxSpeed // in kilometer pro stunde. Max. 720 km/h
