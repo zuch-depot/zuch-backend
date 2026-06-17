@@ -716,6 +716,7 @@ func (gs *GameState) validateTrainCategories(categories []string) ([]string, err
 	return r, nil
 }
 
+//region Tiles
 //---------------------------------------------- Tiles -----------------------------------------
 
 // fügt bei allen SubTiles zwischen den beiden SubTiles, die inklusive, wenn möglich eine Schiene ein
