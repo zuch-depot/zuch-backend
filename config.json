@@ -1,8 +1,8 @@
 {
     "Port": 8081,
     "TicksMilisec": 50,
-    "SizeX": 10,
-    "SizeY": 10,
+    "SizeX": 50,
+    "SizeY": 50,
     "SaveLocation": "./saves",
     "SaveCompressed": false,
     "LOADCOMPRESSED": true,
@@ -105,6 +105,36 @@
             "PriceIncreasePercent": 60,
             "OngoingCosts": 250,
             "OngoingCostsIncreasePercent": 50
+        },
+        "Universalwaggon": {
+            "Power": 0,
+            "PowerIncreasePercent": 0,
+            "EmptyWeight": 5,
+            "EmptyWeightIncreasePercent": 30,
+            "MaxSpeed": 120,
+            "MaxSpeedIncreasePercent": 30,
+            "Capacity": 15,
+            "CapacityIncreasePercent": 40,
+            "CargoCategory": "Allgemein",
+            "Price": 600,
+            "PriceIncreasePercent": 60,
+            "OngoingCosts": 250,
+            "OngoingCostsIncreasePercent": 50
+        },
+        "Flüssiggüterwaggon": {
+            "Power": 0,
+            "PowerIncreasePercent": 0,
+            "EmptyWeight": 5,
+            "EmptyWeightIncreasePercent": 30,
+            "MaxSpeed": 100,
+            "MaxSpeedIncreasePercent": 30,
+            "Capacity": 20,
+            "CapacityIncreasePercent": 40,
+            "CargoCategory": "Flüssigkeiten",
+            "Price": 1200,
+            "PriceIncreasePercent": 60,
+            "OngoingCosts": 350,
+            "OngoingCostsIncreasePercent": 50
         }
     },
     "Train Categories": {
@@ -122,6 +152,9 @@
         ],
         "Kühlware": [
             "Pommes"
+        ],
+        "Allgemein": [
+            "Plastik"
         ]
     },
     "Aktive Tiles": {
@@ -201,6 +234,21 @@
                         2
                     ],
                     "Gewinn": 50
+                }
+            ]
+        },
+        "Export": {
+            "Produktionszyklen": [
+                {
+                    "Verbrauch": {
+                        "Plastik": 4
+                    },
+                    "Produktion": {},
+                    "verfügbareLevelUndScaling": [
+                        2,
+                        2
+                    ],
+                    "Gewinn": 75
                 }
             ]
         }

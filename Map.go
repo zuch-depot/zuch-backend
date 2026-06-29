@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log/slog"
-	"strings"
 
 	"zuch-backend/internal/ds"
 )
@@ -121,14 +120,14 @@ func initializeTiles(gs *ds.GameState) {
 
 	// Erstellung der Tiles
 	for y := range gs.ConfigData.SizeY {
-		line := strings.Split(testMap[y], ".") // testing
+		//line := strings.Split(testMap[y], ".") // testing
 		for x := range gs.ConfigData.SizeX {
 			// hier die Infos für das Tile laden
 
 			// testing
 			var aktiveTile ds.ActiveTile
 			var tracks [4]bool
-			switch line[x] {
+			/*switch line[x] {
 			case "-":
 				tracks = [4]bool{true, false, true, false}
 			case "|":
@@ -164,14 +163,14 @@ func initializeTiles(gs *ds.GameState) {
 				aktiveTile = ds.ActiveTile{Id: 2, Name: "Wuppertal", Category: &temp, MaxStorage: 50, Y: y, X: x}
 				gs.ActiveTiles[aktiveTile.Id] = &aktiveTile
 			}
-
+			*/
 			// signals testing
 			var signals [4]bool
-			for p := range testSignals {
+			/*for p := range testSignals {
 				if testSignals[p][0] == int(x) && testSignals[p][1] == int(y) {
 					signals[testSignals[p][2]-1] = true
 				}
-			}
+			}*/
 
 			gs.Tiles[x][y] = &ds.Tile{IsPlattform: false, Tracks: tracks, Signals: signals, ActiveTile: &aktiveTile, IsLocked: false, X: int(x), Y: int(y)}
 		}

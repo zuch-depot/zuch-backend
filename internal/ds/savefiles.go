@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"os"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -82,6 +83,44 @@ func (gs *GameState) SaveGame(saveGameName string) (string, error) {
 	if err != nil {
 		gs.Logger.Error("Failure while writing File", slog.String("Error", err.Error()))
 		return "", err
+	}
+
+	// max. 5 savefiles
+	files, _ := os.ReadDir(gs.ConfigData.SaveLocation)
+	autosaves := make([]os.DirEntry, 0)
+	// zählen der autosaves
+	for _, b := range files {
+		pieces := strings.Split(b.Name(), "-")
+		if _, err := strconv.Atoi(pieces[1]); err != nil {
+			continue
+		}
+		pieces[2] = strings.TrimSuffix(pieces[2], ".json")
+		if _, err := strconv.Atoi(pieces[2]); err != nil {
+			continue
+		}
+		if pieces[0] != "savegame" {
+			continue
+		}
+		autosaves = append(autosaves, b)
+	}
+	if len(autosaves) > 5 {
+		// sortieren
+
+		slices.SortFunc(autosaves, func(a os.DirEntry, b os.DirEntry) int {
+			if a.Name() == b.Name() {
+				return 0
+			}
+			if a.Name() < b.Name() {
+				return -1
+			}
+			return 1
+		})
+		// macht desc
+		slices.Reverse(autosaves)
+		// löschen der nicht letzten 5
+		for _, b := range autosaves[5:] {
+			os.Remove(gs.ConfigData.SaveLocation + "//" + b.Name())
+		}
 	}
 
 	fmt.Println("Done Saving")

@@ -44,14 +44,15 @@ func main() {
 	// Ablauf
 	// beim ersten start (eventuell probieren Dateien einzulesen) sonst defaults setzen
 	// Map erstellen
-	initializeTiles(&gs)
-	createDemoTrains(&gs)
+	// initializeTiles(&gs)
+	//createDemoTrains(&gs)
+	gs.Money = 100000
 	// Reset(&gs)
 	// sich merken wer wer ist
 	// wenn wer rausfliegt sollten die sachen noch da sein
 
 	// lade das akutellste Savegame
-	// gs.LoadGame("")
+	gs.LoadGame("")
 
 	// hier den Server starten
 	go api.StartServer(&gs)
@@ -62,7 +63,7 @@ func main() {
 
 	gs.Ticker = time.NewTicker(time.Duration(gs.ConfigData.TicksMilisec) * time.Millisecond)
 
-	// go gs.SaveGame("")
+	go gs.SaveGame("")
 
 	// jeder Tick
 	// for gs.Tick = 0; ; gs.Tick++ { //--> gs.tick ist standartmäßig 0, wenn nicht, dann nur, weil das rausgeladen wurde
@@ -98,9 +99,9 @@ func main() {
 
 		gs.Mutex.Unlock()
 
-		// if gs.Tick == 100 {
-		// 	go saveGame(&gs)
-		// }
+		if gs.Tick == 1000 {
+			go gs.SaveGame("")
+		}
 
 		// das wartet hier bis ein tick ausgelöst wird,
 		<-gs.Ticker.C
@@ -123,6 +124,6 @@ func Reset(gs *ds.GameState) {
 	// TODO ggf. Geld resetten
 
 	initializeTiles(gs)
-	createDemoTrains(gs)
+	//createDemoTrains(gs)
 
 }
