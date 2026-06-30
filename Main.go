@@ -51,8 +51,13 @@ func main() {
 	// sich merken wer wer ist
 	// wenn wer rausfliegt sollten die sachen noch da sein
 
-	// lade das akutellste Savegame
-	gs.LoadGame("")
+	// lade eine Map
+	argsWithoutProg := os.Args[1:]
+	if len(argsWithoutProg) == 0 {
+		gs.LoadGame("")
+	} else {
+		gs.LoadGame(argsWithoutProg[0])
+	}
 
 	// hier den Server starten
 	go api.StartServer(&gs)
@@ -63,7 +68,7 @@ func main() {
 
 	gs.Ticker = time.NewTicker(time.Duration(gs.ConfigData.TicksMilisec) * time.Millisecond)
 
-	go gs.SaveGame("")
+	// go gs.SaveGame("")
 
 	// jeder Tick
 	// for gs.Tick = 0; ; gs.Tick++ { //--> gs.tick ist standartmäßig 0, wenn nicht, dann nur, weil das rausgeladen wurde
@@ -99,7 +104,7 @@ func main() {
 
 		gs.Mutex.Unlock()
 
-		if gs.Tick == 1000 {
+		if gs.Tick%1000 == 0 {
 			go gs.SaveGame("")
 		}
 

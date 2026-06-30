@@ -17,6 +17,8 @@ type ConfigData struct {
 	SizeX                    int
 	SizeY                    int
 	SaveLocation             string
+	NumberSaveFiles          int
+	TicksBetweenAutosaves    int
 	SaveCompressed           bool
 	LOADCOMPRESSED           bool // wird das überhaupt benutzt?
 	LoadUnloadSpeed          int

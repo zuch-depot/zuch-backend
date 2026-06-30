@@ -4,6 +4,8 @@
     "SizeX": 50,
     "SizeY": 50,
     "SaveLocation": "./saves",
+    "NumberSaveFiles": 5,
+    "TicksBetweenAutosaves": 200,
     "SaveCompressed": false,
     "LOADCOMPRESSED": true,
     "LoadUnloadSpeed": 1,
