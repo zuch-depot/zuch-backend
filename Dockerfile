@@ -50,14 +50,15 @@ FROM alpine:latest AS final
 # Leverage a cache mount to /var/cache/apk/ to speed up subsequent builds.
 
 # Copy the executable from the "build" stage.
-COPY --from=build /bin/server /bin/
-COPY ./config.json /bin/
+COPY --from=build /bin/server /work/
+COPY ./config.json /work/
+COPY ./saves/ work/saves/
 
 # Set working directory
-WORKDIR /bin
+WORKDIR /work
 
 # Expose the port that the application listens on.
 EXPOSE 8080
 
 # What the container should run when it is started.
-ENTRYPOINT [ "/bin/server" ]
+ENTRYPOINT [ "/work/server" ]
