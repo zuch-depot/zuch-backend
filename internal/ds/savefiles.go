@@ -16,7 +16,7 @@ import (
 //DAS ALLES braucht support für mehrere Instanzen auf einem Server
 // vielleicht auch erstmal nicht
 
-// Im Tick Loop NUR MIT GO aufrufen
+// Im Tick Loop NUR MIT GO aufrufen, der schließt aber richtig, ich schwöre
 // Speichert den Spielstand
 // ist aber bisher pass-by-value, dunno ob reference hier vielleicht mehr sinn macht
 // Die ticks sollte man noch anhalten
@@ -53,8 +53,12 @@ func (gs *GameState) SaveGame(saveGameName string) (string, error) {
 	// Die Objekte werden in einer netten JSON verpackt
 
 	// Dateiname wird ggf. abgeändert wenn es nicht compressed wird
-	// format ist yyyymmdd-hhmmss
-	filename := gs.ConfigData.SaveLocation + "/savegame-" + time.Now().Format("20060102-150405")
+	if saveGameName == "" {
+		// format ist yyyymmdd-hhmmss
+		saveGameName = gs.ConfigData.SaveLocation + "/savegame-" + time.Now().Format("20060102-150405")
+	} else {
+		saveGameName = gs.ConfigData.SaveLocation + "/savegame-" + saveGameName + "-" + time.Now().Format("20060102-150405")
+	}
 	var bytesToWrite []byte
 
 	stateByte, err := json.Marshal(gs)
@@ -72,13 +76,13 @@ func (gs *GameState) SaveGame(saveGameName string) (string, error) {
 		bytesToWrite = stateByte
 	} else {
 		// falls man die sich selber mal anschauen will
-		filename += ".json"
+		saveGameName += ".json"
 		bytesToWrite = stateByte
 	}
 	// dann wird es auf die Festplatte geschrieben
 	// Hier vielleicht noch die zeit oder das datum ans ende des dateinamen
-	gs.Logger.Info("Writing gamestate to Disk", slog.String("Filename", filename))
-	err = os.WriteFile(filename, bytesToWrite, 0644)
+	gs.Logger.Info("Writing gamestate to Disk", slog.String("Filename", saveGameName))
+	err = os.WriteFile(saveGameName, bytesToWrite, 0644)
 
 	if err != nil {
 		gs.Logger.Error("Failure while writing File", slog.String("Error", err.Error()))
@@ -103,7 +107,7 @@ func (gs *GameState) SaveGame(saveGameName string) (string, error) {
 		}
 		autosaves = append(autosaves, b)
 	}
-	if len(autosaves) > 5 {
+	if len(autosaves) > gs.ConfigData.NumberSaveFiles {
 		// sortieren
 
 		slices.SortFunc(autosaves, func(a os.DirEntry, b os.DirEntry) int {
@@ -126,63 +130,58 @@ func (gs *GameState) SaveGame(saveGameName string) (string, error) {
 	fmt.Println("Done Saving")
 
 	gs.UnPauseGame()
-	return filename, nil
+	return saveGameName, nil
 }
 
-// nur in saves
-// kann nur jsons
-func (gs *GameState) LoadGame(saveName string) error {
+// wenn es autosaves gibt, dann nimm den aktuellsten. Ansonsten den ersten aus map nehmen. Wenn es einen savePath gibt, dann den nehmen
+// kann nur jsons, Path muss mit json sein
+func (gs *GameState) LoadGame(savePath string) error {
 
 	//eigentlich pausieren
 	gs.Mutex.Lock()
 	defer gs.Mutex.Unlock()
 
-	//alle Dateien aus saves rauslesen
-	entries, err := os.ReadDir("saves")
-	if err != nil {
-		gs.Logger.Error(err.Error())
-		return err
-	}
-
-	if len(entries) == 0 {
-		gs.Logger.Error("No Savefile found")
-		return fmt.Errorf("No Savefile found")
-	}
-
-	//neuste zuerst, also größtes Datum zuerst
-	slices.SortFunc(entries, func(a, b os.DirEntry) int {
-		if a.Name() < b.Name() {
-			return 1
+	// wen kein Path angegeben wurde
+	if savePath == "" {
+		//alle Dateien aus saves rauslesen
+		entries, err := os.ReadDir("saves")
+		if err != nil {
+			gs.Logger.Error(err.Error())
+			return err
 		}
-		if a.Name() > b.Name() {
-			return -1
-		}
-		return 0
-	})
 
-	var saveFileName string
+		// gibt keine autosaves, also einen aus maps nehmen
+		if len(entries) == 0 {
 
-	if saveName == "" {
-		saveFileName = entries[0].Name()
-	} else {
-		for _, entry := range entries {
-			if strings.Split(entry.Name(), "-")[3] == saveName {
-				saveFileName = entry.Name()
-				break
-			} else {
-				gs.Logger.Error("That Savefile not found")
-				return fmt.Errorf("Savefile not found")
+			entries, err = os.ReadDir("maps")
+			if err != nil {
+				gs.Logger.Error(err.Error())
+				return err
 			}
+
+			// es gibt auch keine Map
+			if len(entries) == 0 {
+				return fmt.Errorf("No savefile in saves or maps found")
+			}
+
+			savePath = "maps/" + entries[0].Name()
+
+		} else {
+			//neuste zuerst, also größtes Datum zuerst
+			slices.SortFunc(entries, func(a, b os.DirEntry) int {
+				if a.Name() < b.Name() {
+					return 1
+				}
+				if a.Name() > b.Name() {
+					return -1
+				}
+				return 0
+			})
+			savePath = "saves/" + entries[0].Name()
 		}
 	}
 
-	saveFileName = "saves/" + saveFileName
-
-	// var sgs SaveAbleGamestate
-
-	fmt.Println(saveFileName)
-
-	data, err := os.ReadFile(saveFileName)
+	data, err := os.ReadFile(savePath)
 	if err != nil {
 		gs.Logger.Error(err.Error())
 		return err
@@ -193,6 +192,8 @@ func (gs *GameState) LoadGame(saveName string) error {
 		gs.Logger.Error(err.Error())
 		return err
 	}
+
+	fmt.Println("Loaded Game " + savePath)
 
 	gs.CurrentTrainID.Store(uint64(gs.ConfigData.Ids.CurrentTrainID))
 	gs.CurrentScheduleID.Store(uint64(gs.ConfigData.Ids.CurrentScheduleID))
