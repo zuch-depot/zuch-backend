@@ -265,6 +265,8 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int, actuallyBui
 
 		newStation := false
 
+		fmt.Println(stationBordering)
+
 		if stationBordering == nil {
 			// neue Station mit Standartwerten
 			station = &Station{Id: int(gs.CurrentStationID.Load()), Name: fmt.Sprint(gs.CurrentStationID.Load()), Storage: make(map[string]int), Plattforms: make(map[int]*Plattform)}
@@ -272,8 +274,6 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int, actuallyBui
 		} else {
 			station = stationBordering
 		}
-		// es gibt eine Station. Da ?sicher ein Tile hinzugefügt wird, vergrößere den Platz
-		station.Capacity += gs.ConfigData.CapacityPerStationTile
 
 		// Nun wird das Gleis bestimmt
 		gs.Tiles[position[0]][position[1]].IsPlattform = true
@@ -301,6 +301,8 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int, actuallyBui
 					last = true
 				}
 			}
+
+			fmt.Println(first, last)
 
 			if first {
 				// grenzt nur links an
@@ -375,6 +377,9 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int, actuallyBui
 		if !actuallyBuild {
 			return gs.ConfigData.PriceStation, station, nil
 		}
+
+		// es gibt eine Station. Da ?sicher ein Tile hinzugefügt wird, vergrößere den Platz
+		station.Capacity += gs.ConfigData.CapacityPerStationTile
 
 		err := gs.SubtractMoney(gs.ConfigData.PriceStation)
 		if err != nil {
