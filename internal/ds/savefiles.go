@@ -40,6 +40,9 @@ func (gs *GameState) SaveGame(saveGameName string) (string, error) {
 
 	gs.PauseGame()
 
+	os.Mkdir("maps", 0755)
+	os.Mkdir("saves", 0755)
+
 	//die Ids in integern speichern
 	gs.ConfigData.Ids = ids{
 		CurrentTrainID:      int(gs.CurrentTrainID.Load()),
