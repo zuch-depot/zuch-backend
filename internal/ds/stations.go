@@ -235,7 +235,7 @@ func (s *Station) deletePlattform(Id int, gs *GameState) error {
 	// Entfernung der Plattform aus allen Stops
 	for _, schedule := range gs.Schedules {
 		for index, stop := range schedule.Stops {
-			if stop.IsPlattform && stop.Plattform.Id == plattform.Id {
+			if stop.IsPlattform && stop.Platform == plattform.Id {
 				err = schedule.RemoveStop(index+1, gs)
 				if err != nil {
 					return err

@@ -11,7 +11,7 @@ type Tile struct {
 	Signals     [4]bool
 	IsPlattform bool
 	IsBlocked   bool // nur für tracks
-	ActiveTile  *ActiveTile
+	ActiveTile  int
 	X           int
 	Y           int
 
@@ -23,7 +23,7 @@ type Tile struct {
 // Definiert werden muss: Id, Category, Name, MaxStorage?
 type ActiveTile struct {
 	Id       int
-	Category *ActiveTileCategory
+	Category *ActiveTileCategory // nicht schlimm, da es sich nicht verändert
 	Name     string
 	Level    int
 	// Stations   []*Station
@@ -93,7 +93,7 @@ func (a *ActiveTile) Rename(name string, gs *GameState) error {
 // Fügt bei i ein gleis hinzu, wenn da keins ist, da keine Plattform ist und das Tile nicht locked ist
 // returnt true bei erfolg und false bei error
 func (t *Tile) AddTrack(subtile int, gs *GameState, actuallyBuild bool) (int, error) {
-	if t.ActiveTile.Category != nil {
+	if t.ActiveTile != 0 {
 		return 0, fmt.Errorf("There is a Active Tile there, no Tracks can be build on this tile.")
 	}
 	if t.IsBlocked {
@@ -167,7 +167,7 @@ func (t *Tile) AddSignal(subtile int, gs *GameState, actuallyBuild bool) (int, e
 		return 0, fmt.Errorf("An error accured while adding a signal. Please provide valid subtile coordinates between 1 and 4.")
 	}
 
-	if t.ActiveTile.Category != nil {
+	if t.ActiveTile != 0 {
 		return 0, fmt.Errorf("There is a Active Tile there, no Signal can be build on this tile.")
 	}
 
@@ -319,7 +319,8 @@ func (gs *GameState) ProcessActiveTiles() {
 
 						stationFound := false
 						// ist es eine Plattform der Station?
-						if stop.IsPlattform && stop.Plattform.isPlattfromFromStation(station) {
+						p, _ := gs.GetPlattformByID(stop.Platform)
+						if stop.IsPlattform && p.isPlattfromFromStation(station) {
 
 							// hat die Plattform bei dem Stop einen LoadCommand für den Typen oder keinen LoadCommand?
 							loadTypes := stop.LoadUnloadCommand[1].CargoTypes

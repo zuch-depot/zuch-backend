@@ -85,12 +85,7 @@ func registerScheduleRoutes(api *huma.API, gs *ds.GameState) {
 			return nil, fmt.Errorf("schedule does not exist")
 		}
 
-		plattform, err := gs.GetPlattformByID(*i.Body.PlattformID)
-		if err != nil {
-			return nil, fmt.Errorf("could not find Plattform; %s", err.Error())
-		}
-
-		stop, err := schedule.AddStopStation(plattform, gs)
+		stop, err := schedule.AddStopStation(*i.Body.PlattformID, gs)
 		if err != nil {
 			return nil, fmt.Errorf("could not add Plattform; %s", err.Error())
 		}

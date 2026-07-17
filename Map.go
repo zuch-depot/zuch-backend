@@ -67,11 +67,11 @@ func createDemoTrains(gs *ds.GameState) {
 	var schedule *ds.Schedule
 	schedule, _ = gs.AddSchedule("Nord")
 	var stop *ds.Stop
-	stop, _ = schedule.AddStopStation(gs.Stations[1].Plattforms[1], gs)
+	// stop, _ = schedule.AddStopStation(gs.Stations[1].Plattforms[1], gs)
 	stop.SetLoadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false, gs)
 	stop.SetUnloadCommand([]string{"Pommes"}, false, gs)
 
-	stop, _ = schedule.AddStopStation(gs.Stations[3].Plattforms[3], gs)
+	// stop, _ = schedule.AddStopStation(gs.Stations[3].Plattforms[3], gs)
 	stop.SetLoadCommand([]string{"Pommes"}, false, gs)
 	stop.SetUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false, gs)
 
@@ -84,11 +84,11 @@ func createDemoTrains(gs *ds.GameState) {
 
 	// Zug zwei mit eigenem Schedule
 	schedule, _ = gs.AddSchedule("Süd")
-	stop, _ = schedule.AddStopStation(gs.Stations[3].Plattforms[3], gs)
+	// stop, _ = schedule.AddStopStation(gs.Stations[3].Plattforms[3], gs)
 	stop.SetLoadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false, gs)
 	stop.SetUnloadCommand([]string{"Pommes"}, false, gs)
 
-	stop, _ = schedule.AddStopStation(gs.Stations[2].Plattforms[2], gs)
+	// stop, _ = schedule.AddStopStation(gs.Stations[2].Plattforms[2], gs)
 	stop.SetLoadCommand([]string{"Pommes"}, false, gs)
 	stop.SetUnloadCommand([]string{"Kartoffeln", "Sonnenblumenöl"}, false, gs)
 
@@ -125,7 +125,7 @@ func initializeTiles(gs *ds.GameState) {
 			// hier die Infos für das Tile laden
 
 			// testing
-			var aktiveTile ds.ActiveTile
+			// var aktiveTile ds.ActiveTile
 			var tracks [4]bool
 			/*switch line[x] {
 			case "-":
@@ -172,7 +172,7 @@ func initializeTiles(gs *ds.GameState) {
 				}
 			}*/
 
-			gs.Tiles[x][y] = &ds.Tile{IsPlattform: false, Tracks: tracks, Signals: signals, ActiveTile: &aktiveTile, IsLocked: false, X: int(x), Y: int(y)}
+			gs.Tiles[x][y] = &ds.Tile{IsPlattform: false, Tracks: tracks, Signals: signals, IsLocked: false, IsBlocked: false, X: int(x), Y: int(y)}
 		}
 	}
 

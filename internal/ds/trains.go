@@ -34,11 +34,6 @@ type Train struct {
 
 type Waggon struct {
 	Position [3]int // x,y,sub
-	// MaxSpeed     int
-	// CargoStorage *CargoStorage
-
-	// Power       int //wie viele Tonnen kann er ziehen
-	// EmptyWeight int //wie viel wiegt der Waggon leer
 
 	Filled          int
 	FilledCargoType string
@@ -321,7 +316,8 @@ func (t *Train) calculateTrain(gs *GameState) [2]int {
 	// if t.NextStop.IsPlattform && t.LoadingTime == 0 && len(t.CurrentPath) == 0 {
 	goals := t.NextStop.getGoals(gs)
 	if t.NextStop.IsPlattform && slices.Contains(goals, t.Waggons[0].Position) && !t.FinishedLoading && len(t.CurrentPath) == 0 {
-		gs.Logger.Debug("Zug " + t.Name + " in " + t.NextStop.Plattform.GetStation(gs).Name + " eingefahren.")
+		p, _ := gs.GetPlattformByID(t.NextStop.Platform)
+		gs.Logger.Debug("Zug " + t.Name + " in " + p.GetStation(gs).Name + " eingefahren.")
 
 		t.LoadingTime++
 
@@ -346,7 +342,8 @@ func (t *Train) loadUnload(gs *GameState) error {
 	var r bool
 
 	// station, in die der Zug steht
-	sta := t.NextStop.Plattform.GetStation(gs)
+	p, _ := gs.GetPlattformByID(t.NextStop.Platform)
+	sta := p.GetStation(gs)
 
 	// es wird durch die Reihenfolge der Commands zuerst geladen, dann entladen.
 	// Dabei wird nur beladen, wenn entladen fertig ist, bzw. noch kapazität von Gütern bewegt pro Tick über gelassen hat

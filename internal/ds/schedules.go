@@ -17,7 +17,7 @@ type Schedule struct {
 // Einzige Referenz in Schedule, deshalb werden alle mit gelöscht?
 type Stop struct {
 	Id                int // NOTWENDIG, muss > 1 sein, == 0 ist null
-	Plattform         *Plattform
+	Platform          int
 	Goal              [3]int //(?Signal als) Wegpunkt
 	IsPlattform       bool
 	Name              string               // Name Wegpunkt
@@ -36,7 +36,8 @@ type LoadUnloadCommand struct {
 // returnt beide Enden der Plattform, wenn es eine ist, und sonst nur den Wegpunkt
 func (s *Stop) getGoals(gs *GameState) [][3]int {
 	if s.IsPlattform {
-		r := s.Plattform.getFirstLast(gs)
+		p, _ := gs.GetPlattformByID(s.Platform)
+		r := p.getFirstLast(gs)
 		return [][3]int{r[0], r[1]}
 	}
 	return [][3]int{s.Goal}
@@ -45,7 +46,8 @@ func (s *Stop) getGoals(gs *GameState) [][3]int {
 // Returnt Name des Wegpunktes oder Station + Plattform
 func (s *Stop) getName(gs *GameState) string {
 	if s.IsPlattform {
-		return s.Plattform.GetStation(gs).Name + " " + s.Plattform.Name
+		p, _ := gs.GetPlattformByID(s.Platform)
+		return p.GetStation(gs).Name + " " + p.Name
 	}
 	return s.Name
 }
@@ -124,12 +126,12 @@ func (s *Schedule) RemoveStops(indexStart int, indexEnde int, gs *GameState) err
 }
 
 // fügt eine Station zu. Damit Waren geladen oder entladen werden sollen müssen dem Stop ein Load, bzw. Unload Befehle mit entsprechender Methode hinzugefügt werden.
-func (s *Schedule) AddStopStation(plattform *Plattform, gs *GameState) (*Stop, error) {
-	if plattform == nil || plattform.Id == 0 {
-		return &Stop{}, fmt.Errorf("Error while adding a Stop to a schedule. Either Plattform is nil or the id is 0.")
+func (s *Schedule) AddStopStation(platformId int, gs *GameState) (*Stop, error) {
+	if platformId <= 0 {
+		return &Stop{}, fmt.Errorf("Error while adding a Stop to a schedule, the id is invalid.")
 	}
 
-	s.Stops = append(s.Stops, &Stop{Id: int(gs.CurrentStopID.Load()), Plattform: plattform, IsPlattform: true})
+	s.Stops = append(s.Stops, &Stop{Id: int(gs.CurrentStopID.Load()), Platform: platformId, IsPlattform: true})
 	gs.CurrentStopID.Add(1)
 
 	gs.BroadcastChannel <- WsEnvelope{Type: "schedule.update", Msg: s}

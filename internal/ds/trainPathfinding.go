@@ -218,7 +218,8 @@ func (t *Train) recalculatePath(gs *GameState) {
 	slices.Reverse(paths[i])
 	//Hinzufügen der Tiles der Station ans Ende, damit der Zug bis nach Hinten einfährt, wenn das Ziel eine Plattform ist
 	if t.NextStop.IsPlattform {
-		paths[i] = append(paths[i], t.NextStop.Plattform.getPathToOpposite(goals[i])...)
+		p, _ := gs.GetPlattformByID(t.NextStop.Platform)
+		paths[i] = append(paths[i], p.getPathToOpposite(goals[i])...)
 	}
 	t.CurrentPath = paths[i]
 

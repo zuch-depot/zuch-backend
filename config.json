@@ -1,8 +1,8 @@
 {
     "Port": 8081,
     "TicksMilisec": 50,
-    "SizeX": 50,
-    "SizeY": 50,
+    "SizeX": 10,
+    "SizeY": 10,
     "SaveLocation": "./saves",
     "NumberSaveFiles": 5,
     "TicksBetweenAutosaves": 200,

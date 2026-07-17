@@ -411,18 +411,18 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int, actuallyBui
 		for x := xMin; x <= xMin+(gs.ConfigData.StationRange*2) && x < len(gs.Tiles[0]); x++ {
 			// jedes Aktive Tile braucht eine Category, muss also nicht existent sein, wenn keine Referenz darauf auf eine gibt
 			// daran erkenne ich jetzt, dass in dem Tile ein aktives Tile ist
-			if gs.Tiles[x][y].ActiveTile.Category != nil {
+			if gs.Tiles[x][y].ActiveTile != 0 {
 				tile := gs.Tiles[x][y]
 
 				// gucken, ob die Station schon hinterlegt ist
 				stationFound := false
-				for i := 0; i < len(tile.ActiveTile.Stations); i++ {
+				for i := 0; i < len(gs.ActiveTiles[tile.ActiveTile].Stations); i++ {
 					// wenn aktuelle Station schon referenziert ist
 					// muss über Id, weil sonst Pointer verglichen werden und die Objekte kann man nciht vergleichen wegen map
-					if tile.ActiveTile.Stations[i] == station.Id {
+					if gs.ActiveTiles[tile.ActiveTile].Stations[i] == station.Id {
 						stationFound = true
 						if remove {
-							tile.ActiveTile.Stations, err = utils.RemoveElementFromSlice(tile.ActiveTile.Stations, i)
+							gs.ActiveTiles[tile.ActiveTile].Stations, err = utils.RemoveElementFromSlice(gs.ActiveTiles[tile.ActiveTile].Stations, i)
 							if err != nil {
 								return 0, nil, err
 							}
@@ -432,7 +432,7 @@ func (gs *GameState) changeStationTile(remove bool, position [2]int, actuallyBui
 				}
 				// wenn die Station nicht gefunden wurde und hinzugefügt werden soll, hinzufügen der Station
 				if !stationFound && !remove {
-					gs.Tiles[x][y].ActiveTile.Stations = append(gs.Tiles[x][y].ActiveTile.Stations, station.Id)
+					gs.ActiveTiles[gs.Tiles[x][y].ActiveTile].Stations = append(gs.ActiveTiles[gs.Tiles[x][y].ActiveTile].Stations, station.Id)
 					// continue
 				}
 			}
