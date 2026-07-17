@@ -44,7 +44,7 @@ func main() {
 	// Ablauf
 	// beim ersten start (eventuell probieren Dateien einzulesen) sonst defaults setzen
 	// Map erstellen
-	initializeTiles(&gs)
+	// initializeTiles(&gs)
 	//createDemoTrains(&gs)
 	gs.Money = 100000
 	// Reset(&gs)
@@ -52,12 +52,12 @@ func main() {
 	// wenn wer rausfliegt sollten die sachen noch da sein
 
 	// lade eine Map
-	// argsWithoutProg := os.Args[1:]
-	// if len(argsWithoutProg) == 0 {
-	// 	gs.LoadGame("")
-	// } else {
-	// 	gs.LoadGame(argsWithoutProg[0])
-	// }
+	argsWithoutProg := os.Args[1:]
+	if len(argsWithoutProg) == 0 {
+		gs.LoadGame("")
+	} else {
+		gs.LoadGame(argsWithoutProg[0])
+	}
 
 	// hier den Server starten
 	go api.StartServer(&gs)

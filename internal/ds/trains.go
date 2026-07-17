@@ -677,6 +677,7 @@ func (t *Train) UnassignSchedule(gs *GameState) {
 	t.NextStop = nil
 	t.CurrentPath = [][3]int{}
 	t.CurrentPathSignals = [][3]int{}
+	t.FinishedLoading = true
 	gs.BroadcastChannel <- WsEnvelope{Type: "train.update", Msg: t}
 }
 
